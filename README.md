@@ -32,3 +32,7 @@
 - **Lombok**
 - **Swagger**
 - **MapStruct**
+
+## Architecture Diagram
+
+![Expense Hub Architecture](expenseshubdiagram.png)
