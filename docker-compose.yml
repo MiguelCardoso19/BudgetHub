@@ -1,0 +1,37 @@
+services:
+  authentication-db:
+    image: postgres:latest
+    container_name: authentication-db
+    environment:
+      POSTGRES_DB: authentication-db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+    ports:
+      - "5433:5432"
+    volumes:
+      - authentication-data:/var/lib/postgresql/data
+
+  portal-microservice:
+    build:
+      context: ./portalMicroservice/
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - authentication-microservice
+
+  authentication-microservice:
+    build:
+      context: ./authenticationMicroservice/
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://authentication-db:5432/authentication-db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: user
+    depends_on:
+      - authentication-db
+
+volumes:
+  authentication-data:
