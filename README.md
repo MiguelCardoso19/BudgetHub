@@ -23,6 +23,7 @@
 - **Java 21**
 - **Spring Boot 3**
 - **Spring Data JPA**
+- **JSON Web Token (JWT)**
 - **PostgreSQL**
 - **Apache Kafka**
 - **Spring Cloud OpenFeign**
@@ -35,4 +36,4 @@
 
 ## Architecture Diagram
 
-![Expense Hub Architecture](expenseshubdiagram.png)
+![Expense Hub Architecture](expensehubdiagram.png)
