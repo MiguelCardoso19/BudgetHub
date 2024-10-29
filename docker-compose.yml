@@ -11,6 +11,18 @@ services:
     volumes:
       - authentication-data:/var/lib/postgresql/data
 
+  budget-db:
+    image: postgres:latest
+    container_name: budget-db
+    environment:
+      POSTGRES_DB: budget-db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+    ports:
+      - "5434:5432"
+    volumes:
+      - budget-data:/var/lib/postgresql/data
+
   portal-microservice:
     build:
       context: ./portalMicroservice/
@@ -19,6 +31,19 @@ services:
       - "8080:8080"
     depends_on:
       - authentication-microservice
+
+  budget-microservice:
+    build:
+      context: ./budgetMicroservice/
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://budget-db:5432/budget-db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: user
+    depends_on:
+      - budget-db
 
   authentication-microservice:
     build:
@@ -35,3 +60,4 @@ services:
 
 volumes:
   authentication-data:
+  budget-data:
