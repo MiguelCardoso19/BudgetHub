@@ -17,7 +17,7 @@
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/budgetmicroservice" />
+            <option value="$PROJECT_DIR$/budgetMicroservice" />
           </set>
         </option>
       </GradleProjectSettings>

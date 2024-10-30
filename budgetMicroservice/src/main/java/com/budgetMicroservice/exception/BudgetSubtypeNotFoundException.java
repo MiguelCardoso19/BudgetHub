@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import static com.budgetMicroservice.exception.ErrorMessage.BUDGET_SUBTYPE_NOT_FOUND;
 
-
 @Getter
 public class BudgetSubtypeNotFoundException extends Exception {
     private final String message;

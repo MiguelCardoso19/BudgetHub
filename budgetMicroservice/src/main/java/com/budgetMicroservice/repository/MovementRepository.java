@@ -8,4 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface MovementRepository extends JpaRepository<Movement, UUID> {
+    boolean existsByDocumentNumberAndIdNot(String documentNumber, UUID id);
+    boolean existsByDocumentNumber(String documentNumber);
 }

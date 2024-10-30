@@ -2,13 +2,15 @@ package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.BudgetSubtypeDTO;
 import com.budgetMicroservice.dto.BudgetTypeDTO;
+import com.budgetMicroservice.exception.BudgetSubtypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
-import com.budgetMicroservice.mapper.BudgetTypeMapper;
+import com.budgetMicroservice.mapper.BudgetMapper;
 import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.repository.BudgetSubtypeRepository;
 import com.budgetMicroservice.service.BudgetSubtypeService;
 import com.budgetMicroservice.service.BudgetTypeService;
+import com.budgetMicroservice.validator.BudgetValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,43 +22,33 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     private final BudgetSubtypeRepository budgetSubtypeRepository;
+    private final BudgetMapper budgetMapper;
     private final BudgetTypeService budgetTypeService;
-    private final BudgetTypeMapper budgetTypeMapper;
 
     @Override
-    public BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException {
+    public BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException, BudgetSubtypeAlreadyExistsException {
         BudgetTypeDTO budgetType = budgetTypeService.findBudgetTypeById(budgetSubtypeDTO.getBudgetTypeId());
 
-        BudgetSubtype budgetSubtype = budgetTypeMapper.toEntity(budgetSubtypeDTO);
-        budgetSubtype.setBudgetType(budgetTypeMapper.toEntity(budgetType));
+        BudgetValidator.checkForExistingBudgetSubtype(budgetSubtypeDTO, budgetSubtypeRepository);
+
+        BudgetSubtype budgetSubtype = budgetMapper.toEntity(budgetSubtypeDTO);
+        budgetSubtype.setBudgetType(budgetMapper.toEntity(budgetType));
         budgetSubtypeRepository.save(budgetSubtype);
 
-        return budgetTypeMapper.toDTO(budgetSubtype);
-    }
-
-    /**
-     *
-     * TO IMPLEMENT LATER
-     *
-     */
-    @Override
-    public Double getTotalSpentForType(UUID typeId) throws BudgetTypeNotFoundException {
-        BudgetTypeDTO budgetType = budgetTypeService.findBudgetTypeById(typeId);
-
-        return budgetTypeMapper.toEntity(budgetType).getSubtypes().stream()
-                .mapToDouble(BudgetSubtype::getTotalSpent)
-                .sum();
+        return budgetMapper.toDTO(budgetSubtype);
     }
 
     @Override
-    public BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException {
+    public BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException {
         BudgetSubtype budgetSubtype = budgetSubtypeRepository.findById(budgetSubtypeDTO.getId())
                 .orElseThrow(() -> new BudgetSubtypeNotFoundException(budgetSubtypeDTO.getId()));
 
-        budgetTypeMapper.updateFromDTO(budgetSubtypeDTO, budgetSubtype);
+        BudgetValidator.checkForExistingBudgetSubtypeUpdate(budgetSubtypeDTO, budgetSubtypeRepository);
+
+        budgetMapper.updateFromDTO(budgetSubtypeDTO, budgetSubtype);
         budgetSubtypeRepository.save(budgetSubtype);
 
-        return budgetTypeMapper.toDTO(budgetSubtype);
+        return budgetMapper.toDTO(budgetSubtype);
     }
 
     @Override
@@ -72,12 +64,24 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
         BudgetSubtype budgetSubtype = budgetSubtypeRepository.findById(id)
                 .orElseThrow(() -> new BudgetSubtypeNotFoundException(id));
 
-        return budgetTypeMapper.toDTO(budgetSubtype);
+        return budgetMapper.toDTO(budgetSubtype);
     }
 
     @Override
     public Page<BudgetSubtypeDTO> findAllBudgetSubtypes(Pageable pageable) {
         Page<BudgetSubtype> budgetSubtypePage = budgetSubtypeRepository.findAll(pageable);
-        return budgetSubtypePage.map(budgetTypeMapper::toDTO);
+        return budgetSubtypePage.map(budgetMapper::toDTO);
+    }
+
+    @Override
+    public BudgetSubtype findById(UUID id) throws BudgetSubtypeNotFoundException {
+        return budgetSubtypeRepository.findById(id)
+                .orElseThrow(() -> new BudgetSubtypeNotFoundException(id));
+
+    }
+
+    @Override
+    public void save(BudgetSubtype budgetSubtype) {
+        budgetSubtypeRepository.save(budgetSubtype);
     }
 }

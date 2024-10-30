@@ -22,8 +22,6 @@ public class InvoiceDTO extends AbstractDTO {
     @NotEmpty
     private String description;
 
-    @NotNull
-    @NotEmpty
     private UUID movementId;
 
     private byte[] file;

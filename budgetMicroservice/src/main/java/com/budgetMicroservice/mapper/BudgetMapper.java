@@ -9,18 +9,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
-public interface BudgetTypeMapper {
+public interface BudgetMapper {
 
     @Mapping(target = "budgetTypeId", source = "budgetType.id")
     BudgetSubtypeDTO toDTO(BudgetSubtype budgetSubtype);
 
     BudgetTypeDTO toDTO(BudgetType budgetType);
-
     BudgetType toEntity(BudgetTypeDTO budgetTypeDTO);
-
     BudgetSubtype toEntity(BudgetSubtypeDTO budgetSubtypeDTO);
-
     void updateFromDTO(BudgetTypeDTO budgetTypeDTO, @MappingTarget BudgetType budgetType);
-
     void updateFromDTO(BudgetSubtypeDTO budgetSubtypeDTO, @MappingTarget BudgetSubtype budgetSubtype);
 }

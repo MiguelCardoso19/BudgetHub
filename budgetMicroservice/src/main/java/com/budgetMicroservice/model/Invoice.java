@@ -21,7 +21,7 @@ public class Invoice extends AbstractEntity {
 
     @NotAudited
     @OneToOne
-    @JoinColumn(name = "movement_id", nullable = false)
+    @JoinColumn(name = "movement_id")
     private Movement movement;
 
     @Lob

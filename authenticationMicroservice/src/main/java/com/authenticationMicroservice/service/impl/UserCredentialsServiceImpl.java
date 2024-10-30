@@ -29,7 +29,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
 
     @Override
     public AuthenticationResponseDTO register(UserCredentialsDTO userCredentialsDTO) throws UserCredentialsValidationException {
-        UserCredentialsValidator.validateUserCredentials(userCredentialsDTO, userCredentialsRepository);
+        UserCredentialsValidator.validateUserCredentialsCreation(userCredentialsDTO, userCredentialsRepository);
 
         UserCredentials newUser = dtoMapper.toEntity(userCredentialsDTO, passwordEncoder);
         userCredentialsRepository.save(newUser);
@@ -60,7 +60,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
             throw new InvalidPasswordException();
         }
 
-        UserCredentialsValidator.validateUserCredentials(userCredentialsDTO, userCredentialsRepository);
+        UserCredentialsValidator.validateUserCredentialsUpdate(userCredentialsDTO, userCredentialsRepository);
 
         dtoMapper.updateFromDTO(userCredentialsDTO, existingUser, passwordEncoder);
 

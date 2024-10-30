@@ -29,7 +29,9 @@ public class Movement extends AbstractEntity {
 
     private Double ivaValue;
 
-    private Double totalValueWithIva;
+    private Double ivaRate;
+
+    private Double totalValue;
 
     private boolean paid;
 
@@ -50,6 +52,14 @@ public class Movement extends AbstractEntity {
     @NotAudited
     @ManyToOne
     private Supplier supplier;
+
+    public Double getIvaRate() {
+        return ivaRate;
+    }
+
+    public void setIvaRate(Double ivaRate) {
+        this.ivaRate = ivaRate;
+    }
 
     public MovementType getMovementType() {
         return movementType;
@@ -99,12 +109,12 @@ public class Movement extends AbstractEntity {
         this.ivaValue = ivaValue;
     }
 
-    public Double getTotalValueWithIva() {
-        return totalValueWithIva;
+    public Double getTotalValue() {
+        return totalValue;
     }
 
-    public void setTotalValueWithIva(Double totalValueWithIva) {
-        this.totalValueWithIva = totalValueWithIva;
+    public void setTotalValue(Double totalValueWithIva) {
+        this.totalValue = totalValueWithIva;
     }
 
     public boolean isPaid() {

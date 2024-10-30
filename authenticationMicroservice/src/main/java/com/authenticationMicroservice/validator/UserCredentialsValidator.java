@@ -11,24 +11,73 @@ import java.util.List;
 @Slf4j
 public class UserCredentialsValidator {
 
-    public static void validateUserCredentials(UserCredentialsDTO userCredentialsDTO,
-                                               UserCredentialsRepository repository) throws UserCredentialsValidationException {
+    public static void validateUserCredentialsCreation(UserCredentialsDTO userCredentialsDTO,
+                                                       UserCredentialsRepository repository)
+            throws UserCredentialsValidationException {
 
         List<String> errorMessages = new ArrayList<>();
 
-        validateNifForExistingUser(userCredentialsDTO, repository, errorMessages);
-        validateEmailForExistingUser(userCredentialsDTO, repository, errorMessages);
-        validatePhoneNumberForExistingUser(userCredentialsDTO, repository, errorMessages);
+        validateNifForExistingUserCreation(userCredentialsDTO, repository, errorMessages);
+        validateEmailForExistingUserCreation(userCredentialsDTO, repository, errorMessages);
+        validatePhoneNumberForExistingUserCreation(userCredentialsDTO, repository, errorMessages);
 
         if (!errorMessages.isEmpty()) {
             throw new UserCredentialsValidationException(errorMessages);
         }
     }
 
-    private static void validateNifForExistingUser(UserCredentialsDTO userCredentialsDTO,
-                                                   UserCredentialsRepository repository,
-                                                   List<String> errorMessages) {
-        log.info("Checking for existing NIF: {}", userCredentialsDTO.getNif());
+    public static void validateUserCredentialsUpdate(UserCredentialsDTO userCredentialsDTO,
+                                                     UserCredentialsRepository repository)
+            throws UserCredentialsValidationException {
+
+        List<String> errorMessages = new ArrayList<>();
+
+        validateNifForExistingUserUpdate(userCredentialsDTO, repository, errorMessages);
+        validateEmailForExistingUserUpdate(userCredentialsDTO, repository, errorMessages);
+        validatePhoneNumberForExistingUserUpdate(userCredentialsDTO, repository, errorMessages);
+
+        if (!errorMessages.isEmpty()) {
+            throw new UserCredentialsValidationException(errorMessages);
+        }
+    }
+
+    private static void validateNifForExistingUserCreation(UserCredentialsDTO userCredentialsDTO,
+                                                           UserCredentialsRepository repository,
+                                                           List<String> errorMessages) {
+        log.info("Checking for existing NIF (creation): {}", userCredentialsDTO.getNif());
+
+        if (repository.existsByNif(userCredentialsDTO.getNif())) {
+            errorMessages.add("NIF already exists: " + userCredentialsDTO.getNif());
+            log.error("Validation failed: NIF already exists. NIF: {}", userCredentialsDTO.getNif());
+        }
+    }
+
+    private static void validateEmailForExistingUserCreation(UserCredentialsDTO userCredentialsDTO,
+                                                             UserCredentialsRepository repository,
+                                                             List<String> errorMessages) {
+        log.info("Checking for existing email (creation): {}", userCredentialsDTO.getEmail());
+
+        if (repository.existsByEmail(userCredentialsDTO.getEmail())) {
+            errorMessages.add("Email already exists: " + userCredentialsDTO.getEmail());
+            log.error("Validation failed: Email already exists. Email: {}", userCredentialsDTO.getEmail());
+        }
+    }
+
+    private static void validatePhoneNumberForExistingUserCreation(UserCredentialsDTO userCredentialsDTO,
+                                                                   UserCredentialsRepository repository,
+                                                                   List<String> errorMessages) {
+        log.info("Checking for existing phone number (creation): {}", userCredentialsDTO.getPhoneNumber());
+
+        if (repository.existsByPhoneNumber(userCredentialsDTO.getPhoneNumber())) {
+            errorMessages.add("This phone number already exists: " + userCredentialsDTO.getPhoneNumber());
+            log.error("Validation failed: Phone number already exists. Phone number: {}", userCredentialsDTO.getPhoneNumber());
+        }
+    }
+
+    private static void validateNifForExistingUserUpdate(UserCredentialsDTO userCredentialsDTO,
+                                                         UserCredentialsRepository repository,
+                                                         List<String> errorMessages) {
+        log.info("Checking for existing NIF (update): {}", userCredentialsDTO.getNif());
 
         if (repository.existsByNifAndIdNot(userCredentialsDTO.getNif(), userCredentialsDTO.getId())) {
             errorMessages.add("NIF already exists: " + userCredentialsDTO.getNif());
@@ -36,10 +85,10 @@ public class UserCredentialsValidator {
         }
     }
 
-    private static void validateEmailForExistingUser(UserCredentialsDTO userCredentialsDTO,
-                                                     UserCredentialsRepository repository,
-                                                     List<String> errorMessages) {
-        log.info("Checking for existing email: {}", userCredentialsDTO.getEmail());
+    private static void validateEmailForExistingUserUpdate(UserCredentialsDTO userCredentialsDTO,
+                                                           UserCredentialsRepository repository,
+                                                           List<String> errorMessages) {
+        log.info("Checking for existing email (update): {}", userCredentialsDTO.getEmail());
 
         if (repository.existsByEmailAndIdNot(userCredentialsDTO.getEmail(), userCredentialsDTO.getId())) {
             errorMessages.add("Email already exists: " + userCredentialsDTO.getEmail());
@@ -47,14 +96,14 @@ public class UserCredentialsValidator {
         }
     }
 
-    private static void validatePhoneNumberForExistingUser(UserCredentialsDTO userCredentialsDTO,
-                                                           UserCredentialsRepository repository,
-                                                           List<String> errorMessages) {
-        log.info("Checking for existing email: {}", userCredentialsDTO.getPhoneNumber());
+    private static void validatePhoneNumberForExistingUserUpdate(UserCredentialsDTO userCredentialsDTO,
+                                                                 UserCredentialsRepository repository,
+                                                                 List<String> errorMessages) {
+        log.info("Checking for existing phone number (update): {}", userCredentialsDTO.getPhoneNumber());
 
-        if (repository.existsByEmailAndIdNot(userCredentialsDTO.getPhoneNumber(), userCredentialsDTO.getId())) {
+        if (repository.existsByPhoneNumberAndIdNot(userCredentialsDTO.getPhoneNumber(), userCredentialsDTO.getId())) {
             errorMessages.add("This phone number already exists: " + userCredentialsDTO.getPhoneNumber());
-            log.error("Validation failed: Email already exists. Email: {}", userCredentialsDTO.getPhoneNumber());
+            log.error("Validation failed: Phone number already exists. Phone number: {}", userCredentialsDTO.getPhoneNumber());
         }
     }
 }

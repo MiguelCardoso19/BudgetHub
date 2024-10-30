@@ -30,7 +30,7 @@ public class BudgetSubtype extends AbstractEntity {
     }
 
     public Double getTotalSpent() {
-        return totalSpent;
+        return totalSpent == null ? 0.0 : totalSpent;
     }
 
     public void setTotalSpent(Double totalSpent) {

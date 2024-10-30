@@ -13,4 +13,12 @@ public interface UserCredentialsRepository extends JpaRepository<UserCredentials
     Optional<UserCredentials> findByEmail(String email);
     boolean existsByNifAndIdNot(String nif, UUID id);
     boolean existsByEmailAndIdNot(String email, UUID id);
+
+    boolean existsByNif(String nif);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByPhoneNumber(String phoneNumber);
+
+    boolean existsByPhoneNumberAndIdNot(String phoneNumber, UUID id);
 }

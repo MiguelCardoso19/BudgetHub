@@ -1,6 +1,7 @@
 package com.budgetMicroservice.controller;
 
 import com.budgetMicroservice.dto.BudgetTypeDTO;
+import com.budgetMicroservice.exception.BudgetTypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.service.BudgetTypeService;
 import jakarta.validation.Valid;
@@ -20,7 +21,7 @@ public class BudgetTypeController {
     private final BudgetTypeService budgetTypeService;
 
     @PostMapping("/create")
-    public ResponseEntity<BudgetTypeDTO> createBudgetType(@Valid @RequestBody BudgetTypeDTO budgetTypeDTO) {
+    public ResponseEntity<BudgetTypeDTO> createBudgetType(@Valid @RequestBody BudgetTypeDTO budgetTypeDTO) throws BudgetTypeAlreadyExistsException {
         return ResponseEntity.ok(budgetTypeService.createBudgetType(budgetTypeDTO));
     }
 
@@ -31,7 +32,7 @@ public class BudgetTypeController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<BudgetTypeDTO> updateBudgetType(@Valid @RequestBody BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException {
+    public ResponseEntity<BudgetTypeDTO> updateBudgetType(@Valid @RequestBody BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException {
         return ResponseEntity.ok(budgetTypeService.updateBudgetType(budgetTypeDTO));
     }
 

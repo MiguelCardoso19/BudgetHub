@@ -1,6 +1,7 @@
 package com.budgetMicroservice.controller;
 
 import com.budgetMicroservice.dto.BudgetSubtypeDTO;
+import com.budgetMicroservice.exception.BudgetSubtypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.service.BudgetSubtypeService;
@@ -21,12 +22,12 @@ public class BudgetSubtypeController {
     private final BudgetSubtypeService budgetSubtypeService;
 
     @PostMapping("/create")
-    public ResponseEntity<BudgetSubtypeDTO> addSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException {
+    public ResponseEntity<BudgetSubtypeDTO> addSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException {
         return ResponseEntity.ok(budgetSubtypeService.addSubtypeToBudget(budgetSubtypeDTO));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<BudgetSubtypeDTO> updateSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException {
+    public ResponseEntity<BudgetSubtypeDTO> updateSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException {
         return ResponseEntity.ok(budgetSubtypeService.updateBudgetSubtype(budgetSubtypeDTO));
     }
 

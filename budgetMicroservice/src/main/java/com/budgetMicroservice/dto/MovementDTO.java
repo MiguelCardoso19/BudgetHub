@@ -17,8 +17,6 @@ public class MovementDTO extends AbstractDTO {
     @NotEmpty
     private UUID supplierId;
 
-    @NotNull
-    @NotEmpty
     private UUID typeId;
 
     private UUID subtypeId;
@@ -44,11 +42,19 @@ public class MovementDTO extends AbstractDTO {
 
     private Double ivaValue;
 
-    @NotNull
-    @NotEmpty
     private Double totalValue;
 
+    private Double ivaRate;
+
     private boolean paid;
+
+    public Double getIvaRate() {
+        return ivaRate;
+    }
+
+    public void setIvaRate(Double ivaRate) {
+        this.ivaRate = (ivaRate != null) ? ivaRate : 0.0;
+    }
 
     public UUID getSupplierId() {
         return supplierId;
@@ -137,4 +143,5 @@ public class MovementDTO extends AbstractDTO {
     public void setPaid(boolean paid) {
         this.paid = paid;
     }
+
 }
