@@ -14,8 +14,8 @@ public interface BudgetTypeService {
     BudgetTypeDTO createBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeAlreadyExistsException;
     BudgetTypeDTO updateBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException;
     void deleteBudgetType(UUID id) throws BudgetTypeNotFoundException;
-    BudgetTypeDTO findBudgetTypeById(UUID id) throws BudgetTypeNotFoundException;
+    BudgetTypeDTO findBudgetTypeDTOById(UUID id) throws BudgetTypeNotFoundException, BudgetSubtypeNotFoundException;
     Page<BudgetTypeDTO> findAllBudgetTypes(Pageable pageable);
-    BudgetType findById(UUID id) throws BudgetSubtypeNotFoundException;
+    BudgetType findBudgetTypeEntityById(UUID id) throws BudgetSubtypeNotFoundException;
     void save(BudgetType budgetType);
 }

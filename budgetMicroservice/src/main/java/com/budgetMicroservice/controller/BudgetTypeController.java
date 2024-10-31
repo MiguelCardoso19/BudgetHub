@@ -1,6 +1,7 @@
 package com.budgetMicroservice.controller;
 
 import com.budgetMicroservice.dto.BudgetTypeDTO;
+import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.service.BudgetTypeService;
@@ -37,8 +38,8 @@ public class BudgetTypeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BudgetTypeDTO> findBudgetTypeById(@PathVariable UUID id) throws BudgetTypeNotFoundException {
-        return ResponseEntity.ok(budgetTypeService.findBudgetTypeById(id));
+    public ResponseEntity<BudgetTypeDTO> findBudgetTypeById(@PathVariable UUID id) throws BudgetTypeNotFoundException, BudgetSubtypeNotFoundException {
+        return ResponseEntity.ok(budgetTypeService.findBudgetTypeDTOById(id));
     }
 
     @GetMapping("/all")

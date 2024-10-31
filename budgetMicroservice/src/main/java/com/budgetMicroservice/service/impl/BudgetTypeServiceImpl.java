@@ -54,14 +54,6 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     }
 
     @Override
-    public BudgetTypeDTO findBudgetTypeById(UUID id) throws BudgetTypeNotFoundException {
-        BudgetType budgetType = budgetTypeRepository.findById(id)
-                .orElseThrow(() -> new BudgetTypeNotFoundException(id));
-
-        return budgetMapper.toDTO(budgetType);
-    }
-
-    @Override
     public Page<BudgetTypeDTO> findAllBudgetTypes(Pageable pageable) {
         Page<BudgetType> budgetTypePage = budgetTypeRepository.findAll(pageable);
 
@@ -69,13 +61,22 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     }
 
     @Override
-    public BudgetType findById(UUID id) throws BudgetSubtypeNotFoundException {
-        return budgetTypeRepository.findById(id)
-                .orElseThrow(() -> new BudgetSubtypeNotFoundException(id));
+    public BudgetType findBudgetTypeEntityById(UUID id) throws BudgetSubtypeNotFoundException {
+        return findById(id);
     }
 
     @Override
-    public void save(BudgetType budgetType){
+    public BudgetTypeDTO findBudgetTypeDTOById(UUID id) throws BudgetSubtypeNotFoundException {
+        return budgetMapper.toDTO(findById(id));
+    }
+
+    @Override
+    public void save(BudgetType budgetType) {
         budgetTypeRepository.save(budgetType);
+    }
+
+    private BudgetType findById(UUID id) throws BudgetSubtypeNotFoundException {
+        return budgetTypeRepository.findById(id)
+                .orElseThrow(() -> new BudgetSubtypeNotFoundException(id));
     }
 }

@@ -9,6 +9,7 @@ import com.budgetMicroservice.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,7 +50,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<InvoiceDTO>> getAllInvoices(Pageable pageable) {
+    public ResponseEntity<Page<InvoiceDTO>> getAllInvoices(@PageableDefault(size = 10, page = 0) Pageable pageable) {
         return ResponseEntity.ok(invoiceService.getAll(pageable));
     }
 

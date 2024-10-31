@@ -22,6 +22,7 @@ public class BudgetTypeDTO extends AbstractDTO {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<BudgetSubtypeDTO> subtypes;
 
+
     public String getName() {
         return name;
     }

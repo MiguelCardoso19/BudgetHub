@@ -27,7 +27,7 @@ public class SupplierController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SupplierDTO> findBySupplierById(@PathVariable UUID id) throws SupplierNotFoundException {
-        return ResponseEntity.ok(supplierService.findSupplierById(id));
+        return ResponseEntity.ok(supplierService.findSupplierDTOById(id));
     }
 
     @PutMapping("/update")

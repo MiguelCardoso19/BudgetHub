@@ -11,11 +11,11 @@ import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public interface BudgetSubtypeService {
-    BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException, BudgetSubtypeAlreadyExistsException;
+    BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException;
     BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException;
     void deleteBudgetSubtype(UUID subtypeId) throws BudgetSubtypeNotFoundException;
-    BudgetSubtypeDTO findBudgetSubtypeById(UUID subtypeId) throws BudgetSubtypeNotFoundException;
+    BudgetSubtypeDTO findBudgetSubtypeDTOById(UUID subtypeId) throws BudgetSubtypeNotFoundException;
     Page<BudgetSubtypeDTO> findAllBudgetSubtypes(Pageable pageable);
-    BudgetSubtype findById(UUID subtypeId) throws BudgetSubtypeNotFoundException;
+    BudgetSubtype findBudgetSubtypeEntityById(UUID subtypeId) throws BudgetSubtypeNotFoundException;
     void save(BudgetSubtype subtype);
 }

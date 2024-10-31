@@ -1,11 +1,10 @@
 package com.budgetMicroservice.dto;
 
-import com.budgetMicroservice.model.Movement;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
 import java.util.UUID;
 
 
@@ -22,9 +21,19 @@ public class BudgetSubtypeDTO extends AbstractDTO {
     @NotEmpty
     private String description;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID budgetTypeId;
 
-    private List<Movement> movements;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private BudgetTypeDTO budgetType;
+
+    public BudgetTypeDTO getBudgetType() {
+        return budgetType;
+    }
+
+    public void setBudgetType(BudgetTypeDTO budgetType) {
+        this.budgetType = budgetType;
+    }
 
     public String getName() {
         return name;
@@ -48,15 +57,6 @@ public class BudgetSubtypeDTO extends AbstractDTO {
 
     public void setBudgetTypeId(UUID budgetTypeId) {
         this.budgetTypeId = budgetTypeId;
-    }
-
-
-    public List<Movement> getMovements() {
-        return movements;
-    }
-
-    public void setMovements(List<Movement> movements) {
-        this.movements = movements;
     }
 
     public String getDescription() {

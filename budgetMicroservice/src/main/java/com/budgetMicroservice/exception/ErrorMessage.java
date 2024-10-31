@@ -7,6 +7,10 @@ import static org.springframework.http.HttpStatus.*;
 
 public enum ErrorMessage {
     BUDGET_TYPE_NOT_FOUND("BUDGET_TYPE_NOT_FOUND", "Budget type not found with ID: %s", NOT_FOUND),
+    MAX_UPLOAD_SIZE_EXCEEDED("MAX_UPLOAD_SIZE_EXCEEDED", "File size exceeds the maximum limit of 5MB", BAD_REQUEST),
+    MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE("MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE","No movements found for the budget type with ID : %s", NOT_FOUND),
+    MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE("MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE","No movements found for the budget subtype with ID : %s", NOT_FOUND),
+    MOVEMENT_VALIDATION_ERROR("MOVEMENT_VALIDATION_ERROR", "Movement operation failed due to the following error/s: %s", CONFLICT),
     MOVEMENT_ALREADY_EXISTS("MOVEMENT_ALREADY_EXISTS", "A movement with the document number '%s' already exists", CONFLICT),
     FAILED_TO_UPLOAD_FILE("FAILED_TO_UPLOAD_FILE", "File upload failed for Invoice ID: %s", CONFLICT),
     INVOICE_ALREADY_EXISTS("INVOICE_ALREADY_EXISTS", "A invoice with the document number '%s' already exists", CONFLICT),

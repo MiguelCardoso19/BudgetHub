@@ -10,10 +10,10 @@ import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public interface SupplierService {
-    Supplier findById(UUID id) throws SupplierNotFoundException, SupplierNotFoundException;
+    Supplier findSupplierEntityById(UUID id) throws SupplierNotFoundException;
     SupplierDTO create(SupplierDTO supplierDTO) throws SupplierValidationException;
     void delete(UUID id) throws SupplierNotFoundException;
     SupplierDTO update(SupplierDTO supplierDTO) throws SupplierNotFoundException, SupplierValidationException;
     Page<SupplierDTO> findAll(Pageable pageable);
-    SupplierDTO findSupplierById(UUID id) throws SupplierNotFoundException;
+    SupplierDTO findSupplierDTOById(UUID id) throws SupplierNotFoundException;
 }

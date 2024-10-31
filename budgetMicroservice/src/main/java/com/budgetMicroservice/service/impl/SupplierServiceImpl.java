@@ -22,12 +22,6 @@ public class SupplierServiceImpl implements SupplierService {
     private final SupplierMapper supplierMapper;
 
     @Override
-    public Supplier findById(UUID id) throws SupplierNotFoundException {
-        return supplierRepository.findById(id)
-                .orElseThrow(() -> new SupplierNotFoundException(id));
-    }
-
-    @Override
     public SupplierDTO create(SupplierDTO supplierDTO) throws SupplierValidationException {
         SupplierValidator.validateSupplierCreation(supplierDTO, supplierRepository);
 
@@ -62,7 +56,16 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public SupplierDTO findSupplierById(UUID id) throws SupplierNotFoundException {
+    public SupplierDTO findSupplierDTOById(UUID id) throws SupplierNotFoundException {
         return supplierMapper.toDTO(findById(id));
+    }
+
+    @Override
+    public Supplier findSupplierEntityById(UUID id) throws SupplierNotFoundException {
+        return findById(id);
+    }
+
+    private Supplier findById(UUID id) throws SupplierNotFoundException {
+        return supplierRepository.findById(id).orElseThrow(() -> new SupplierNotFoundException(id));
     }
 }

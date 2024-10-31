@@ -46,7 +46,7 @@ public class Movement extends AbstractEntity {
 
     @NotAudited
     @ManyToOne
-    @JoinColumn(name = "budget_type_id", nullable = false)
+    @JoinColumn(name = "budget_type_id")
     private BudgetType budgetType;
 
     @NotAudited

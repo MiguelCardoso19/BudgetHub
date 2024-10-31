@@ -2,6 +2,7 @@ package com.budgetMicroservice.dto;
 
 import com.budgetMicroservice.enumerator.MovementType;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,11 +16,14 @@ public class MovementDTO extends AbstractDTO {
 
     @NotNull
     @NotEmpty
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID supplierId;
 
-    private UUID typeId;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private UUID budgetTypeId;
 
-    private UUID subtypeId;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private UUID budgetSubtypeId;
 
     @Enumerated(EnumType.STRING)
     private MovementType movementType;
@@ -40,20 +44,63 @@ public class MovementDTO extends AbstractDTO {
     @NotEmpty
     private Double valueWithoutIva;
 
+    private Double ivaRate = 0.0;
+
     private Double ivaValue;
 
     private Double totalValue;
 
-    private Double ivaRate;
-
     private boolean paid;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private InvoiceDTO invoice;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private BudgetTypeDTO budgetType;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private BudgetSubtypeDTO budgetSubtype;
+
+    private SupplierDTO supplier;
+
+    public InvoiceDTO getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(InvoiceDTO invoice) {
+        this.invoice = invoice;
+    }
+
+    public BudgetTypeDTO getBudgetType() {
+        return budgetType;
+    }
+
+    public void setBudgetType(BudgetTypeDTO budgetType) {
+        this.budgetType = budgetType;
+    }
+
+    public BudgetSubtypeDTO getBudgetSubtype() {
+        return budgetSubtype;
+    }
+
+    public void setBudgetSubtype(BudgetSubtypeDTO budgetSubtype) {
+        this.budgetSubtype = budgetSubtype;
+    }
+
+    public SupplierDTO getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(SupplierDTO supplier) {
+        this.supplier = supplier;
+    }
 
     public Double getIvaRate() {
         return ivaRate;
     }
 
     public void setIvaRate(Double ivaRate) {
-        this.ivaRate = (ivaRate != null) ? ivaRate : 0.0;
+        this.ivaRate = ivaRate;
     }
 
     public UUID getSupplierId() {
@@ -64,20 +111,20 @@ public class MovementDTO extends AbstractDTO {
         this.supplierId = supplierId;
     }
 
-    public UUID getTypeId() {
-        return typeId;
+    public UUID getBudgetTypeId() {
+        return budgetTypeId;
     }
 
-    public void setTypeId(UUID typeId) {
-        this.typeId = typeId;
+    public void setBudgetTypeId(UUID budgetTypeId) {
+        this.budgetTypeId = budgetTypeId;
     }
 
-    public UUID getSubtypeId() {
-        return subtypeId;
+    public UUID getBudgetSubtypeId() {
+        return budgetSubtypeId;
     }
 
-    public void setSubtypeId(UUID subtypeId) {
-        this.subtypeId = subtypeId;
+    public void setBudgetSubtypeId(UUID budgetSubtypeId) {
+        this.budgetSubtypeId = budgetSubtypeId;
     }
 
     public MovementType getMovementType() {

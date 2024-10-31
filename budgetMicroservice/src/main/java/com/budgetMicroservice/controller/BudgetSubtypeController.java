@@ -39,7 +39,7 @@ public class BudgetSubtypeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BudgetSubtypeDTO> findSubtypeById(@PathVariable UUID id) throws BudgetSubtypeNotFoundException {
-        return ResponseEntity.ok(budgetSubtypeService.findBudgetSubtypeById(id));
+        return ResponseEntity.ok(budgetSubtypeService.findBudgetSubtypeDTOById(id));
     }
 
     @GetMapping("/all")

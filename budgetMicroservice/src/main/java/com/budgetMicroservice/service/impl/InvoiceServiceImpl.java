@@ -50,7 +50,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
 
         if (invoiceDTO.getMovementId() != null) {
-            Movement movement = movementService.findById(invoiceDTO.getMovementId());
+            Movement movement = movementService.getMovementEntityById(invoiceDTO.getMovementId());
             invoice.setMovement(movement);
         }
 
@@ -58,11 +58,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.toDTO(savedInvoice);
     }
 
+    @Override
     public InvoiceDTO addMovementToInvoice(UUID invoiceId, UUID movementId) throws InvoiceNotFoundException, MovementNotFoundException {
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
 
-        Movement movement = movementService.findById(movementId);
+        Movement movement = movementService.getMovementEntityById(movementId);
         invoice.setMovement(movement);
 
         Invoice updatedInvoice = invoiceRepository.save(invoice);

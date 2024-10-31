@@ -1,17 +1,17 @@
 package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.MovementDTO;
-import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
-import com.budgetMicroservice.exception.MovementAlreadyExistsException;
-import com.budgetMicroservice.exception.MovementNotFoundException;
-import com.budgetMicroservice.exception.SupplierNotFoundException;
+import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.mapper.MovementMapper;
 import com.budgetMicroservice.model.*;
 import com.budgetMicroservice.repository.MovementRepository;
 import com.budgetMicroservice.service.*;
+import com.budgetMicroservice.util.MovementUtils; // Import the new utility class
 import com.budgetMicroservice.validator.MovementValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -27,27 +27,19 @@ public class MovementServiceImpl implements MovementService {
 
     @Override
     @Transactional
-    public MovementDTO createMovement(MovementDTO movementDTO)
-            throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException {
+    public MovementDTO create(MovementDTO movementDTO) throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException {
+        Supplier supplier = supplierService.findSupplierEntityById(movementDTO.getSupplierId());
+
         MovementValidator.validateDocumentNumberForExistingMovement(movementDTO, movementRepository);
-
-        Double ivaValue = (movementDTO.getValueWithoutIva() * movementDTO.getIvaRate()) / 100;
-        Double totalValue = movementDTO.getValueWithoutIva() + ivaValue;
-
-        movementDTO.setIvaValue(ivaValue);
-        movementDTO.setTotalValue(totalValue);
+        MovementUtils.calculateIvaAndTotal(movementDTO);
 
         Movement movement = movementMapper.toEntity(movementDTO);
-        movement.setSupplier(supplierService.findById(movementDTO.getSupplierId()));
+        movement.setSupplier(supplier);
 
-        if (movementDTO.getSubtypeId() != null) {
-            BudgetSubtype budgetSubtype = budgetSubtypeService.findById(movementDTO.getSubtypeId());
-            movement.setBudgetSubtype(budgetSubtype);
-            updateSpentAmounts(budgetSubtype, null, totalValue);
-        } else if (movementDTO.getTypeId() != null) {
-            BudgetType budgetType = budgetTypeService.findById(movementDTO.getTypeId());
-            movement.setBudgetType(budgetType);
-            updateSpentAmounts(null, budgetType, totalValue);
+        MovementUtils.setBudget(movement, movementDTO, budgetSubtypeService, budgetTypeService);
+
+        if (movement.isPaid()) {
+            MovementUtils.updateSpentAmounts(budgetSubtypeService, budgetTypeService, movement, movement.getTotalValue());
         }
 
         Movement savedMovement = movementRepository.save(movement);
@@ -55,32 +47,81 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
-    public MovementDTO updateMovementStatus(UUID id) throws MovementNotFoundException {
-        Movement movement = movementRepository.findById(id).orElseThrow(() -> new MovementNotFoundException(id));
-        movement.setPaid(true);
+    @Transactional
+    public MovementDTO update(MovementDTO movementDTO) throws MovementNotFoundException, SupplierNotFoundException, BudgetSubtypeNotFoundException, MovementAlreadyExistsException, MovementValidationException {
+        Movement existingMovement = movementRepository.findById(movementDTO.getId()).orElseThrow(() -> new MovementNotFoundException(movementDTO.getId()));
 
-        return movementMapper.toDTO(movementRepository.save(movement));
+        Supplier existingSupplier = supplierService.findSupplierEntityById(movementDTO.getSupplierId());
+
+        MovementValidator.validateDocumentNumberForExistingMovementUpdate(movementDTO, movementRepository);
+        MovementUtils.calculateIvaAndTotal(movementDTO);
+
+        if (existingMovement.isPaid()) {
+            MovementUtils.adjustBudgetAmounts(budgetSubtypeService, budgetTypeService, existingMovement, movementDTO);
+        }
+
+        movementMapper.updateFromDTO(movementDTO, existingMovement);
+        existingMovement.setSupplier(existingSupplier);
+        MovementUtils.setBudget(existingMovement, movementDTO, budgetSubtypeService, budgetTypeService);
+
+        return movementMapper.toDTO(movementRepository.save(existingMovement));
     }
 
     @Override
-    public Movement findById(UUID id) throws MovementNotFoundException {
-        return movementRepository.findById(id).orElseThrow(() -> new MovementNotFoundException(id));
+    public Movement getMovementEntityById(UUID id) throws MovementNotFoundException {
+        return findById(id);
     }
 
-    /**
-     *
-     *  FIX: CALL THEIR SERVICES, ONLY UPDATE AFTER PAID STATUS = TRUE
-     *
-     */
-    private void updateSpentAmounts(BudgetSubtype subtype, BudgetType type, Double amount) {
-        if (subtype != null) {
-            subtype.setTotalSpent(subtype.getTotalSpent() + amount);
-            budgetSubtypeService.save(subtype);
+    @Override
+    public MovementDTO getMovementDTOById(UUID id) throws MovementNotFoundException {
+        return movementMapper.toDTO(findById(id));
+    }
+
+    @Override
+    public void delete(UUID id) throws MovementNotFoundException {
+        Movement existingMovement = movementRepository.findById(id).orElseThrow(() -> new MovementNotFoundException(id));
+
+        MovementUtils.removeMovementValueFromBudget(existingMovement, budgetSubtypeService, budgetTypeService);
+
+        movementRepository.deleteById(id);
+    }
+
+
+    @Override
+    public Page<MovementDTO> getAll(Pageable pageable) {
+        return movementRepository.findAll(pageable).map(movementMapper::toDTO);
+    }
+
+    @Override
+    public Page<MovementDTO> getMovementsByBudgetType(UUID budgetTypeId, Pageable pageable) throws MovementsNotFoundForBudgetTypeException {
+        Page<Movement> movements = movementRepository.findByBudgetTypeId(budgetTypeId, pageable);
+        if (movements.isEmpty()) {
+            throw new MovementsNotFoundForBudgetTypeException(budgetTypeId);
         }
 
-        if (type != null) {
-            type.setTotalSpent(type.getTotalSpent() + amount);
-            budgetTypeService.save(type);
+        return movements.map(movementMapper::toDTOWithoutBudgetType);
+    }
+
+    @Override
+    public Page<MovementDTO> getMovementsByBudgetSubtype(UUID budgetSubtypeId, Pageable pageable) throws MovementsNotFoundForBudgetSubtypeException {
+        Page<Movement> movements = movementRepository.findByBudgetSubtypeId(budgetSubtypeId, pageable);
+
+        if (movements.isEmpty()) {
+            throw new MovementsNotFoundForBudgetSubtypeException(budgetSubtypeId);
         }
+
+        return movements.map(movementMapper::toDTOWithoutBudgetSubtype);
+    }
+
+    @Override
+    public MovementDTO updateMovementStatus(UUID id) throws MovementNotFoundException {
+        Movement movement = movementRepository.findById(id).orElseThrow(() -> new MovementNotFoundException(id));
+        movement.setPaid(true);
+        MovementUtils.updateSpentAmounts(budgetSubtypeService, budgetTypeService, movement, movement.getTotalValue());
+        return movementMapper.toDTO(movementRepository.save(movement));
+    }
+
+    private Movement findById(UUID id) throws MovementNotFoundException {
+        return movementRepository.findById(id).orElseThrow(() -> new MovementNotFoundException(id));
     }
 }
