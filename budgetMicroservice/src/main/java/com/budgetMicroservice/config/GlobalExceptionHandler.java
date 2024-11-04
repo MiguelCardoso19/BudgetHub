@@ -1,11 +1,13 @@
 package com.budgetMicroservice.config;
 
 import com.budgetMicroservice.exception.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import static com.budgetMicroservice.exception.ErrorMessage.JSON_PARSE_ERROR;
 import static com.budgetMicroservice.exception.ErrorMessage.MAX_UPLOAD_SIZE_EXCEEDED;
 
 @ControllerAdvice
@@ -105,10 +107,25 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 
+    @ExceptionHandler(GenerateExcelException.class)
+    public ResponseEntity<ErrorResponse> handleExcelGenerateException(GenerateExcelException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleMaxSizeException(MaxUploadSizeExceededException ex) {
         ErrorResponse errorResponse = new ErrorResponse(MAX_UPLOAD_SIZE_EXCEEDED.getMessage(),
                                                         MAX_UPLOAD_SIZE_EXCEEDED.getStatus().value(),
                                                         MAX_UPLOAD_SIZE_EXCEEDED.getErrorCode());
-        return new ResponseEntity<>(errorResponse, MAX_UPLOAD_SIZE_EXCEEDED.getStatus());    }
+        return new ResponseEntity<>(errorResponse, MAX_UPLOAD_SIZE_EXCEEDED.getStatus());
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<ErrorResponse> handleJsonProcessingException(JsonProcessingException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(JSON_PARSE_ERROR.getMessage(),
+                                                        JSON_PARSE_ERROR.getStatus().value(),
+                                                        JSON_PARSE_ERROR.getErrorCode());
+        return new ResponseEntity<>(errorResponse, JSON_PARSE_ERROR.getStatus());
+    }
 }

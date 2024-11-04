@@ -4,6 +4,7 @@ import com.budgetMicroservice.dto.SupplierDTO;
 import com.budgetMicroservice.exception.SupplierNotFoundException;
 import com.budgetMicroservice.exception.SupplierValidationException;
 import com.budgetMicroservice.model.Supplier;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,6 +15,6 @@ public interface SupplierService {
     SupplierDTO create(SupplierDTO supplierDTO) throws SupplierValidationException;
     void delete(UUID id) throws SupplierNotFoundException;
     SupplierDTO update(SupplierDTO supplierDTO) throws SupplierNotFoundException, SupplierValidationException;
-    Page<SupplierDTO> findAll(Pageable pageable);
+    Page<SupplierDTO> findAll(Pageable pageable) throws JsonProcessingException;
     SupplierDTO findSupplierDTOById(UUID id) throws SupplierNotFoundException;
 }

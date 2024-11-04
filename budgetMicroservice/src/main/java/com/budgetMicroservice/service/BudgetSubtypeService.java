@@ -5,6 +5,7 @@ import com.budgetMicroservice.exception.BudgetSubtypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.model.BudgetSubtype;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,7 +16,7 @@ public interface BudgetSubtypeService {
     BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException;
     void deleteBudgetSubtype(UUID subtypeId) throws BudgetSubtypeNotFoundException;
     BudgetSubtypeDTO findBudgetSubtypeDTOById(UUID subtypeId) throws BudgetSubtypeNotFoundException;
-    Page<BudgetSubtypeDTO> findAllBudgetSubtypes(Pageable pageable);
+    Page<BudgetSubtypeDTO> findAllBudgetSubtypes(Pageable pageable) throws JsonProcessingException;
     BudgetSubtype findBudgetSubtypeEntityById(UUID subtypeId) throws BudgetSubtypeNotFoundException;
     void save(BudgetSubtype subtype);
 }

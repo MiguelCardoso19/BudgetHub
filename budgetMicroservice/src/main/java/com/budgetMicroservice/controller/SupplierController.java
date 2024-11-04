@@ -4,6 +4,7 @@ import com.budgetMicroservice.dto.SupplierDTO;
 import com.budgetMicroservice.exception.SupplierNotFoundException;
 import com.budgetMicroservice.exception.SupplierValidationException;
 import com.budgetMicroservice.service.SupplierService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,7 +44,7 @@ public class SupplierController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<SupplierDTO>> findAll(@PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public ResponseEntity<Page<SupplierDTO>> findAll(@PageableDefault(size = 10, page = 0) Pageable pageable) throws JsonProcessingException {
         return ResponseEntity.ok(supplierService.findAll(pageable));
     }
 }

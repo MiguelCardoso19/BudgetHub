@@ -53,6 +53,7 @@ public class JwtService {
                 .claim("roles", user.getRoles().stream()
                         .map(Enum::name)
                         .collect(Collectors.toList()))
+                .claim("email", user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(HS256, SECRET_KEY)

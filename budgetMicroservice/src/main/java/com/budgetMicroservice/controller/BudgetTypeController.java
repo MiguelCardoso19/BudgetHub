@@ -5,6 +5,7 @@ import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.service.BudgetTypeService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,7 +45,7 @@ public class BudgetTypeController {
 
     @GetMapping("/all")
     public ResponseEntity<Page<BudgetTypeDTO>> findAllBudgetTypes(
-            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+            @PageableDefault(size = 10, page = 0) Pageable pageable) throws JsonProcessingException {
         return ResponseEntity.ok(budgetTypeService.findAllBudgetTypes(pageable));
     }
 }

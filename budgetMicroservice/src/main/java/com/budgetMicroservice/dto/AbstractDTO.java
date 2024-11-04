@@ -1,15 +1,12 @@
 package com.budgetMicroservice.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
+@Getter
+@Setter
 public class AbstractDTO {
     private UUID id;
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
 }

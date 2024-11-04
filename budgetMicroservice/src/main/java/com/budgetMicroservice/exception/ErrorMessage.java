@@ -7,8 +7,10 @@ import static org.springframework.http.HttpStatus.*;
 
 public enum ErrorMessage {
     BUDGET_TYPE_NOT_FOUND("BUDGET_TYPE_NOT_FOUND", "Budget type not found with ID: %s", NOT_FOUND),
+    JSON_PARSE_ERROR("JSON_PARSE_ERROR", "Invalid JSON format", BAD_REQUEST),
     MAX_UPLOAD_SIZE_EXCEEDED("MAX_UPLOAD_SIZE_EXCEEDED", "File size exceeds the maximum limit of 5MB", BAD_REQUEST),
     MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE("MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE","No movements found for the budget type with ID : %s", NOT_FOUND),
+    MOVEMENTS_NOT_FOUND_BETWEEN_DATES("MOVEMENTS_NOT_FOUND_BETWEEN_DATES","No movements found between the dates %s and %s", NOT_FOUND),
     MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE("MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE","No movements found for the budget subtype with ID : %s", NOT_FOUND),
     MOVEMENT_VALIDATION_ERROR("MOVEMENT_VALIDATION_ERROR", "Movement operation failed due to the following error/s: %s", CONFLICT),
     MOVEMENT_ALREADY_EXISTS("MOVEMENT_ALREADY_EXISTS", "A movement with the document number '%s' already exists", CONFLICT),
@@ -20,6 +22,7 @@ public enum ErrorMessage {
     SUPPLIER_NOT_FOUND("SUPPLIER_NOT_FOUND", "Supplier not found with ID: %s", NOT_FOUND),
     BUDGET_SUBTYPE_ALREADY_EXISTS("BUDGET_SUBTYPE_ALREADY_EXISTS", "A budget subtype with the name '%s' already exists", CONFLICT),
     BUDGET_TYPE_ALREADY_EXISTS("BUDGET_TYPE_ALREADY_EXISTS", "A budget type with the name '%s' already exists", CONFLICT),
+    FAILED_TO_GENERATE_EXCEL("FAILED_TO_GENERATE_EXCEL", "Failed to generate the Excel file", CONFLICT),
     BUDGET_SUBTYPE_NOT_FOUND("BUDGET_SUBTYPE_NOT_FOUND", "Budget subtype not found with ID: %s", NOT_FOUND);
 
     @Getter

@@ -6,6 +6,7 @@ import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
 import com.budgetMicroservice.exception.InvoiceNotFoundException;
 import com.budgetMicroservice.exception.MovementNotFoundException;
 import com.budgetMicroservice.service.InvoiceService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,7 +51,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<InvoiceDTO>> getAllInvoices(@PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public ResponseEntity<Page<InvoiceDTO>> getAllInvoices(@PageableDefault(size = 10, page = 0) Pageable pageable) throws JsonProcessingException {
         return ResponseEntity.ok(invoiceService.getAll(pageable));
     }
 
@@ -61,6 +62,6 @@ public class InvoiceController {
 
     @GetMapping("/{id}")
     public ResponseEntity<InvoiceDTO> getById(@PathVariable UUID id) throws InvoiceNotFoundException {
-        return ResponseEntity.ok(invoiceService.getById(id));
+        return ResponseEntity.ok(invoiceService.findInvoiceInvoiceDTOById(id));
     }
 }

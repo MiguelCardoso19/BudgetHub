@@ -1,7 +1,10 @@
 package com.budgetMicroservice.model;
 
+import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.enumerator.MovementType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
@@ -9,6 +12,8 @@ import java.time.LocalDate;
 
 @Entity
 @Audited
+@Getter
+@Setter
 public class Movement extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
@@ -17,9 +22,6 @@ public class Movement extends AbstractEntity {
 
     @Column(nullable = false)
     private LocalDate dateOfEmission;
-
-    @Column(nullable = false)
-    private String documentNumber;
 
     @Column(nullable = false)
     private String description;
@@ -33,7 +35,8 @@ public class Movement extends AbstractEntity {
 
     private Double totalValue;
 
-    private boolean paid;
+    @Enumerated(EnumType.STRING)
+    private MovementStatus status;
 
     @NotAudited
     @OneToOne(mappedBy = "movement", cascade = CascadeType.ALL)
@@ -52,108 +55,4 @@ public class Movement extends AbstractEntity {
     @NotAudited
     @ManyToOne
     private Supplier supplier;
-
-    public Double getIvaRate() {
-        return ivaRate;
-    }
-
-    public void setIvaRate(Double ivaRate) {
-        this.ivaRate = ivaRate;
-    }
-
-    public MovementType getMovementType() {
-        return movementType;
-    }
-
-    public void setMovementType(MovementType movementType) {
-        this.movementType = movementType;
-    }
-
-    public LocalDate getDateOfEmission() {
-        return dateOfEmission;
-    }
-
-    public void setDateOfEmission(LocalDate dateOfEmission) {
-        this.dateOfEmission = dateOfEmission;
-    }
-
-    public String getDocumentNumber() {
-        return documentNumber;
-    }
-
-    public void setDocumentNumber(String documentNumber) {
-        this.documentNumber = documentNumber;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Double getValueWithoutIva() {
-        return valueWithoutIva;
-    }
-
-    public void setValueWithoutIva(Double valueWithoutIva) {
-        this.valueWithoutIva = valueWithoutIva;
-    }
-
-    public Double getIvaValue() {
-        return ivaValue;
-    }
-
-    public void setIvaValue(Double ivaValue) {
-        this.ivaValue = ivaValue;
-    }
-
-    public Double getTotalValue() {
-        return totalValue;
-    }
-
-    public void setTotalValue(Double totalValueWithIva) {
-        this.totalValue = totalValueWithIva;
-    }
-
-    public boolean isPaid() {
-        return paid;
-    }
-
-    public void setPaid(boolean paid) {
-        this.paid = paid;
-    }
-
-    public Invoice getInvoice() {
-        return invoice;
-    }
-
-    public void setInvoice(Invoice invoice) {
-        this.invoice = invoice;
-    }
-
-    public BudgetSubtype getBudgetSubtype() {
-        return budgetSubtype;
-    }
-
-    public void setBudgetSubtype(BudgetSubtype budgetSubtype) {
-        this.budgetSubtype = budgetSubtype;
-    }
-
-    public BudgetType getBudgetType() {
-        return budgetType;
-    }
-
-    public void setBudgetType(BudgetType budgetType) {
-        this.budgetType = budgetType;
-    }
-
-    public Supplier getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(Supplier supplier) {
-        this.supplier = supplier;
-    }
 }

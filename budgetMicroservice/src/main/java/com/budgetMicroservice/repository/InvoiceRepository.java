@@ -8,6 +8,4 @@ import java.util.UUID;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
-    boolean existsByDocumentNumber(String documentNumber);
-    boolean existsByDocumentNumberAndIdNot(String documentNumber, UUID id);
 }

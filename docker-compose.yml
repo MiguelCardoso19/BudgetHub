@@ -18,10 +18,57 @@ services:
       POSTGRES_DB: budget-db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: user
+      KAFKA_BROKER: kafka:9092
     ports:
       - "5434:5432"
     volumes:
       - budget-data:/var/lib/postgresql/data
+
+  notification-db:
+    image: postgres:latest
+    container_name: notification-db
+    environment:
+      POSTGRES_DB: notification-db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+    ports:
+      - "5436:5432"
+    volumes:
+      - notification-data:/var/lib/postgresql/data
+
+  payment-db:
+    image: postgres:latest
+    container_name: payment-db
+    environment:
+      POSTGRES_DB: payment-db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+    ports:
+      - "5435:5432"
+    volumes:
+      - payment-data:/var/lib/postgresql/data
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    expose:
+      - "9093"
+    environment:
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: OUTSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
 
   portal-microservice:
     build:
@@ -29,8 +76,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    depends_on:
-      - authentication-microservice
 
   budget-microservice:
     build:
@@ -44,6 +89,32 @@ services:
       SPRING_DATASOURCE_PASSWORD: user
     depends_on:
       - budget-db
+
+  notification-microservice:
+    build:
+      context: ./notificationMicroservice/
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notification-db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: user
+    depends_on:
+      - notification-db
+
+  payment-microservice:
+    build:
+      context: ./paymentMicroservice/
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment-db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: user
+    depends_on:
+      - payment-db
 
   authentication-microservice:
     build:
@@ -61,3 +132,5 @@ services:
 volumes:
   authentication-data:
   budget-data:
+  notification-data:
+  payment-data:

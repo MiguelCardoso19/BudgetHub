@@ -1,10 +1,8 @@
 package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.BudgetSubtypeDTO;
-import com.budgetMicroservice.dto.BudgetTypeDTO;
 import com.budgetMicroservice.exception.BudgetSubtypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
-import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.mapper.BudgetMapper;
 import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.model.BudgetType;
@@ -12,9 +10,13 @@ import com.budgetMicroservice.repository.BudgetSubtypeRepository;
 import com.budgetMicroservice.service.BudgetSubtypeService;
 import com.budgetMicroservice.service.BudgetTypeService;
 import com.budgetMicroservice.validator.BudgetValidator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -25,8 +27,13 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     private final BudgetSubtypeRepository budgetSubtypeRepository;
     private final BudgetMapper budgetMapper;
     private final BudgetTypeService budgetTypeService;
+   // private final KafkaTemplate<String, BudgetSubtypeDTO> kafkaBudgetSubtypeTemplate;
+  //  private final KafkaTemplate<String, String> kafkaStringTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Override
+  //  @KafkaListener(topics = "add-budget-subtype", groupId = "budget_subtype_group", concurrency = "10")
     public BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException {
         BudgetType budgetType = budgetTypeService.findBudgetTypeEntityById(budgetSubtypeDTO.getBudgetTypeId());
 
@@ -36,23 +43,28 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
         budgetSubtype.setBudgetType(budgetType);
         budgetSubtypeRepository.save(budgetSubtype);
 
-        return budgetMapper.toDTO(budgetSubtype);
+        BudgetSubtypeDTO savedBudgetSubtypeDTO = budgetMapper.toDTO(budgetSubtype);
+    //    kafkaBudgetSubtypeTemplate.send("add-budget-subtype", savedBudgetSubtypeDTO);
+        return savedBudgetSubtypeDTO;
     }
 
     @Override
+ //   @KafkaListener(topics = "update-budget-subtype", groupId = "budget_subtype_group", concurrency = "10")
     public BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException {
-        BudgetSubtype budgetSubtype = budgetSubtypeRepository.findById(budgetSubtypeDTO.getId())
-                .orElseThrow(() -> new BudgetSubtypeNotFoundException(budgetSubtypeDTO.getId()));
+        BudgetSubtype budgetSubtype = budgetSubtypeRepository.findById(budgetSubtypeDTO.getId()).orElseThrow(() -> new BudgetSubtypeNotFoundException(budgetSubtypeDTO.getId()));
 
         BudgetValidator.checkForExistingBudgetSubtypeUpdate(budgetSubtypeDTO, budgetSubtypeRepository);
 
         budgetMapper.updateFromDTO(budgetSubtypeDTO, budgetSubtype);
         budgetSubtypeRepository.save(budgetSubtype);
+        BudgetSubtypeDTO savedBudgetSubtypeDTO = budgetMapper.toDTO(budgetSubtype);
+   //     kafkaBudgetSubtypeTemplate.send("update-budget-subtype", savedBudgetSubtypeDTO);
 
-        return budgetMapper.toDTO(budgetSubtype);
+        return savedBudgetSubtypeDTO;
     }
 
     @Override
+ //   @KafkaListener(topics = "delete-budget-subtype", groupId = "budget_subtype_group", concurrency = "10")
     public void deleteBudgetSubtype(UUID subtypeId) throws BudgetSubtypeNotFoundException {
         if (!budgetSubtypeRepository.existsById(subtypeId)) {
             throw new BudgetSubtypeNotFoundException(subtypeId);
@@ -61,8 +73,10 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     }
 
     @Override
-    public Page<BudgetSubtypeDTO> findAllBudgetSubtypes(Pageable pageable) {
+   // @KafkaListener(topics = "find-all-budget-subtype", groupId = "budget_subtype_group", concurrency = "10")
+    public Page<BudgetSubtypeDTO> findAllBudgetSubtypes(Pageable pageable) throws JsonProcessingException {
         Page<BudgetSubtype> budgetSubtypePage = budgetSubtypeRepository.findAll(pageable);
+    //    kafkaStringTemplate.send("find-all-budget-subtype", objectMapper.writeValueAsString(budgetSubtypePage));
         return budgetSubtypePage.map(budgetMapper::toDTO);
     }
 
@@ -72,8 +86,11 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     }
 
     @Override
+   // @KafkaListener(topics = "find-budget-subtype-by-id", groupId = "budget_subtype_group", concurrency = "10")
     public BudgetSubtypeDTO findBudgetSubtypeDTOById(UUID id) throws BudgetSubtypeNotFoundException {
-        return budgetMapper.toDTO(findById(id));
+        BudgetSubtypeDTO budgetSubtypeDTO = budgetMapper.toDTO(findById(id));
+   //     kafkaBudgetSubtypeTemplate.send("find-budget-subtype-by-id", budgetSubtypeDTO);
+        return budgetSubtypeDTO;
     }
 
     @Override
@@ -82,8 +99,7 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     }
 
     private BudgetSubtype findById(UUID id) throws BudgetSubtypeNotFoundException {
-        return budgetSubtypeRepository.findById(id)
-                .orElseThrow(() -> new BudgetSubtypeNotFoundException(id));
+        return budgetSubtypeRepository.findById(id).orElseThrow(() -> new BudgetSubtypeNotFoundException(id));
 
     }
 }

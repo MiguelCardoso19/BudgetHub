@@ -4,6 +4,7 @@
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$/authenticationMicroservice" />
     <file type="web" url="file://$PROJECT_DIR$/budgetMicroservice" />
+    <file type="web" url="file://$PROJECT_DIR$/notificationMicroservice" />
     <file type="web" url="file://$PROJECT_DIR$/portalMicroservice" />
   </component>
   <component name="ProjectRootManager">

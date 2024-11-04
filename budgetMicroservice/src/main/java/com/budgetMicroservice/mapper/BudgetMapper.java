@@ -6,6 +6,7 @@ import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.model.BudgetType;
 import org.mapstruct.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,10 @@ public interface BudgetMapper {
 
     @Named("withoutBudgetType")
     default List<BudgetSubtypeDTO> mapSubtypesWithoutBudgetType(List<BudgetSubtype> subtypes) {
+        if (subtypes == null) {
+            return Collections.emptyList();
+        }
+
         return subtypes.stream().map(
                         subtype -> {
                             BudgetSubtypeDTO dto = toDTO(subtype);

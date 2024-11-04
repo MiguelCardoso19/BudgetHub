@@ -1,14 +1,21 @@
 package com.budgetMicroservice.util;
 
 import com.budgetMicroservice.dto.MovementDTO;
+import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.MovementValidationException;
 import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.model.BudgetType;
 import com.budgetMicroservice.model.Movement;
+import com.budgetMicroservice.repository.MovementRepository;
 import com.budgetMicroservice.service.BudgetSubtypeService;
 import com.budgetMicroservice.service.BudgetTypeService;
 import com.budgetMicroservice.validator.MovementValidator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+
+import java.time.LocalDate;
+import java.util.List;
 
 public class MovementUtils {
 
@@ -80,5 +87,53 @@ public class MovementUtils {
             type.setTotalSpent(type.getTotalSpent() - totalValue);
             budgetTypeService.save(type);
         }
+    }
+
+    public static void populateSheetWithMovements(XSSFSheet sheet, List<Movement> movements) {
+        int rowIdx = 0;
+
+        Row headerRow = sheet.createRow(rowIdx++);
+        headerRow.createCell(0).setCellValue("ID");
+        headerRow.createCell(1).setCellValue("Movement Type");
+        headerRow.createCell(2).setCellValue("Date of Emission");
+        headerRow.createCell(3).setCellValue("Description");
+        headerRow.createCell(4).setCellValue("Value Without IVA");
+        headerRow.createCell(5).setCellValue("IVA Value");
+        headerRow.createCell(6).setCellValue("IVA Rate");
+        headerRow.createCell(7).setCellValue("Total Value");
+        headerRow.createCell(8).setCellValue("Status");
+        headerRow.createCell(9).setCellValue("Supplier");
+        headerRow.createCell(10).setCellValue("Budget Subtype");
+        headerRow.createCell(11).setCellValue("Budget Type");
+
+        for (Movement movement : movements) {
+            Row row = sheet.createRow(rowIdx++);
+            row.createCell(0).setCellValue(movement.getId() != null ? movement.getId().toString() : "N/A");
+            row.createCell(1).setCellValue(movement.getMovementType() != null ? movement.getMovementType().name() : "N/A");
+            row.createCell(2).setCellValue(movement.getDateOfEmission() != null ? movement.getDateOfEmission().toString() : "N/A");
+            row.createCell(3).setCellValue(movement.getDescription() != null ? movement.getDescription() : "N/A");
+            row.createCell(4).setCellValue(movement.getValueWithoutIva() != null ? movement.getValueWithoutIva() : 0.0);
+            row.createCell(5).setCellValue(movement.getIvaValue() != null ? movement.getIvaValue() : 0.0);
+            row.createCell(6).setCellValue(movement.getIvaRate() != null ? movement.getIvaRate() : 0.0);
+            row.createCell(7).setCellValue(movement.getTotalValue() != null ? movement.getTotalValue() : 0.0);
+            row.createCell(8).setCellValue(movement.getStatus() != null ? movement.getStatus().name() : "N/A");
+            row.createCell(9).setCellValue(movement.getSupplier() != null ? movement.getSupplier().getCompanyName() : "N/A");
+            row.createCell(10).setCellValue(movement.getBudgetSubtype() != null ? movement.getBudgetSubtype().getName() : "N/A");
+            row.createCell(11).setCellValue(movement.getBudgetType() != null ? movement.getBudgetType().getName() : "N/A");
+        }
+    }
+
+    public static List<Movement> filterMovements(
+            MovementRepository movementRepository,
+            LocalDate startDate,
+            LocalDate endDate,
+            MovementStatus status) {
+
+        return switch ((startDate != null ? 1 : 0) + (endDate != null ? 2 : 0) + (status != null ? 4 : 0)) {
+            case 7 -> movementRepository.findByDateOfEmissionBetweenAndStatus(startDate, endDate, status);
+            case 3 -> movementRepository.findByDateOfEmissionBetween(startDate, endDate);
+            case 4 -> movementRepository.findByStatus(status);
+            default -> movementRepository.findAll();
+        };
     }
 }
