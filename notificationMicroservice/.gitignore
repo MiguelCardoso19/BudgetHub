@@ -37,3 +37,4 @@ out/
 .vscode/
 
 src/main/resources/appsecret.properties
+src/main/resources/application.properties

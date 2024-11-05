@@ -1,5 +1,6 @@
 package com.budgetMicroservice.controller;
 
+import com.budgetMicroservice.dto.AttachFileRequestDTO;
 import com.budgetMicroservice.dto.InvoiceDTO;
 import com.budgetMicroservice.exception.FailedToUploadFileException;
 import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
@@ -29,8 +30,8 @@ public class InvoiceController {
     public ResponseEntity<InvoiceDTO> uploadFileToInvoice(
             @PathVariable UUID invoiceId,
             @RequestParam("file") MultipartFile file) throws InvoiceNotFoundException, FailedToUploadFileException {
-
-        return ResponseEntity.ok(invoiceService.attachFileToInvoice(invoiceId, file));
+        invoiceService.attachFileToInvoice(invoiceId, file);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/create")

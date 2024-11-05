@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/ExpenseHub.iml" filepath="$PROJECT_DIR$/.idea/ExpenseHub.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/authenticationMicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/authenticationMicroservice.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/budgetmicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/budgetmicroservice.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/notificationMicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/notificationMicroservice.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/portalMicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/portalMicroservice.main.iml" />
     </modules>
   </component>

@@ -11,6 +11,7 @@ import com.budgetMicroservice.validator.SupplierValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,28 +22,27 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class SupplierServiceImpl implements SupplierService {
+@Slf4j
+public class  SupplierServiceImpl implements SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
-  //  private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
- //   private final KafkaTemplate<String, String> kafkaStringTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
 
     @Override
-  //  @KafkaListener(topics = "create-supplier", groupId = "supplier_group", concurrency = "10")
+    @KafkaListener(topics = "create-supplier", groupId = "supplier_group", concurrency = "10")
     public SupplierDTO create(SupplierDTO supplierDTO) throws SupplierValidationException {
         SupplierValidator.validateSupplierCreation(supplierDTO, supplierRepository);
 
         Supplier supplier = supplierMapper.toEntity(supplierDTO);
         Supplier savedSupplier = supplierRepository.save(supplier);
         SupplierDTO savedSupplierDTO = supplierMapper.toDTO(savedSupplier);
-     //   kafkaSupplierTemplate.send("create-supplier", savedSupplierDTO);
 
+        kafkaSupplierTemplate.send("supplier-response", savedSupplierDTO);
         return savedSupplierDTO;
     }
 
     @Override
-   // @KafkaListener(topics = "update-supplier", groupId = "supplier_group", concurrency = "10")
+    @KafkaListener(topics = "update-supplier", groupId = "supplier_group", concurrency = "10")
     public SupplierDTO update(SupplierDTO supplierDTO) throws SupplierNotFoundException, SupplierValidationException {
         SupplierValidator.validateSupplierUpdate(supplierDTO, supplierRepository);
 
@@ -51,22 +51,28 @@ public class SupplierServiceImpl implements SupplierService {
 
         Supplier updatedSupplier = supplierRepository.save(existingSupplier);
         SupplierDTO updatedSupplierDTO = supplierMapper.toDTO(updatedSupplier);
-     //   kafkaSupplierTemplate.send("update-supplier", updatedSupplierDTO);
+        kafkaSupplierTemplate.send("update-response", updatedSupplierDTO);
 
         return updatedSupplierDTO;
     }
 
     @Override
-   // @KafkaListener(topics = "delete-supplier", groupId = "supplier_group", concurrency = "10")
+    @KafkaListener(topics = "delete-supplier", groupId = "uuid_group", concurrency = "10")
     public void delete(UUID id) throws SupplierNotFoundException {
-        supplierRepository.delete(findById(id));
+        if (supplierRepository.existsById(id)) {
+            supplierRepository.delete(findById(id));
+            return;
+        }
+
+        throw new SupplierNotFoundException(id);
     }
 
     @Override
-  //  @KafkaListener(topics = "find-all-suppliers", groupId = "supplier_group", concurrency = "10")
-    public Page<SupplierDTO> findAll(Pageable pageable) throws JsonProcessingException {
+    @KafkaListener(topics = "find-all-suppliers", groupId = "pageable_group", concurrency = "10")
+    public Page<SupplierDTO> findAll(Pageable pageable) {
+        log.info(pageable.toString());
         Page<Supplier> supplierPage = supplierRepository.findAll(pageable);
-     //   kafkaStringTemplate.send("find-all-suppliers", objectMapper.writeValueAsString(supplierPage));
+     //   kafkaStringTemplate.send("find-all-suppliers-response", objectMapper.writeValueAsString(supplierPage));
 
         return supplierPage.map(supplierMapper::toDTO);
     }

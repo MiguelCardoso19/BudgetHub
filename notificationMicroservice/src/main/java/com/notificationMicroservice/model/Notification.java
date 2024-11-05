@@ -12,7 +12,6 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -27,13 +26,11 @@ public class Notification {
     private UUID id;
 
     @CreatedDate
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdDate;
 
     @LastModifiedDate
     @Column(insertable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime lastModifiedDate;
 
     @CreatedBy
@@ -48,15 +45,15 @@ public class Notification {
     @NotAudited
     private int version;
 
-    private String from;
+    private String sender;
 
-    private String to;
+    private String recipient;
 
     private String subject;
 
     private String body;
 
-    private LocalDate sendDate;
+    private LocalDateTime sentDate;
 
     @Enumerated(EnumType.STRING)
     private NotificationType type;
@@ -64,6 +61,6 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private NotificationStatus status;
 
-    @Lob
-    private byte[] attachment;
+    @Column(columnDefinition = "TEXT")
+    private String attachment;
 }

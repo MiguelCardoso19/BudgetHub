@@ -11,5 +11,4 @@ public class NotificationMicroserviceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(NotificationMicroserviceApplication.class, args);
 	}
-
 }

@@ -11,12 +11,14 @@ import com.budgetMicroservice.repository.MovementRepository;
 import com.budgetMicroservice.service.BudgetSubtypeService;
 import com.budgetMicroservice.service.BudgetTypeService;
 import com.budgetMicroservice.validator.MovementValidator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 public class MovementUtils {
 
     public static void calculateIvaAndTotal(MovementDTO movementDTO) throws MovementValidationException {
@@ -106,6 +108,12 @@ public class MovementUtils {
         headerRow.createCell(10).setCellValue("Budget Subtype");
         headerRow.createCell(11).setCellValue("Budget Type");
 
+        if (movements.isEmpty()) {
+            Row emptyRow = sheet.createRow(rowIdx++);
+            emptyRow.createCell(0).setCellValue("No data available for the selected period.");
+            return;
+        }
+
         for (Movement movement : movements) {
             Row row = sheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(movement.getId() != null ? movement.getId().toString() : "N/A");
@@ -129,7 +137,9 @@ public class MovementUtils {
             LocalDate endDate,
             MovementStatus status) {
 
-        return switch ((startDate != null ? 1 : 0) + (endDate != null ? 2 : 0) + (status != null ? 4 : 0)) {
+        int conditionCode = (startDate != null ? 1 : 0) + (endDate != null ? 2 : 0) + (status != null ? 4 : 0);
+
+        return switch (conditionCode) {
             case 7 -> movementRepository.findByDateOfEmissionBetweenAndStatus(startDate, endDate, status);
             case 3 -> movementRepository.findByDateOfEmissionBetween(startDate, endDate);
             case 4 -> movementRepository.findByStatus(status);

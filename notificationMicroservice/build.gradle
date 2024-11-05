@@ -30,7 +30,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	compileOnly 'org.mapstruct:mapstruct:1.5.5.Final'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
-	//	implementation 'org.liquibase:liquibase-core'
+	implementation 'org.liquibase:liquibase-core'
 	implementation 'org.hibernate:hibernate-envers:6.2.7.Final'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation 'org.apache.kafka:kafka-streams'

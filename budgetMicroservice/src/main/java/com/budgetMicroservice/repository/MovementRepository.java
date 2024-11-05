@@ -17,11 +17,7 @@ import java.util.UUID;
 public interface MovementRepository extends JpaRepository<Movement, UUID> {
     Page<Movement> findByBudgetSubtypeId(UUID budgetSubtypeId, Pageable pageable);
     Page<Movement> findByBudgetTypeId(UUID budgetTypeId, Pageable pageable);
-
     List<Movement> findByDateOfEmissionBetweenAndStatus(LocalDate startDate, LocalDate endDate, MovementStatus status);
-
     List<Movement> findByDateOfEmissionBetween(LocalDate startDate, LocalDate endDate);
-
     List<Movement> findByStatus(MovementStatus status);
-    //  Optional<List<MovementDTO>> findByDateBetweenAndStatus(LocalDate startDate, LocalDate endDate, String status);
 }

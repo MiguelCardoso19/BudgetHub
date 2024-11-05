@@ -3,17 +3,19 @@ package com.notificationMicroservice.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notificationMicroservice.exception.FailedToSendEmailException;
+import com.notificationMicroservice.mapper.NotificationMapper;
 import com.notificationMicroservice.model.Notification;
 import com.notificationMicroservice.repository.NotificationRepository;
 import com.notificationMicroservice.service.NotificationService;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.util.ByteArrayDataSource;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -21,40 +23,47 @@ import java.util.Base64;
 import java.util.List;
 
 import static com.notificationMicroservice.enumerators.NotificationStatus.*;
+import static com.notificationMicroservice.enumerators.NotificationType.EMAIL;
+
+import com.notificationMicroservice.dto.NotificationRequestDTO;
 
 @Service
 @RequiredArgsConstructor
-@EnableScheduling
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final JavaMailSender emailSender;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final NotificationMapper notificationMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
-    @Transactional
-    @Override
-    @KafkaListener(topics = "email-notification-topic", groupId = "notification_group")
-    public void sendEmail(String message) throws JsonProcessingException, FailedToSendEmailException {
-        Notification notification = objectMapper.readValue(message, Notification.class);
+    @Value("${spring.mail.username}")
+    private String senderEmail;
+
+    @KafkaListener(topics = "notification-topic", groupId = "notification_group")
+    public void sendEmail(String message) throws FailedToSendEmailException {
+        Notification notification = null;
 
         try {
+            NotificationRequestDTO notificationRequest = objectMapper.readValue(message, NotificationRequestDTO.class);
+
             MimeMessage mimeMessage = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setTo(notificationRequest.getRecipient());
+            helper.setSubject(notificationRequest.getSubject());
+            helper.setText(notificationRequest.getBody());
 
-            helper.setFrom(notification.getFrom());
-            helper.setTo(notification.getTo());
-            helper.setSubject(notification.getSubject());
-            helper.setText(notification.getBody());
-
-            if (notification.getAttachment() != null) {
-                byte[] attachmentBytes = Base64.getDecoder().decode(notification.getAttachment());
-                helper.addAttachment("Movements_Report.xlsx", new ByteArrayDataSource(attachmentBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-            }
+            byte[] attachmentBytes = Base64.getDecoder().decode(notificationRequest.getAttachment());
+            helper.addAttachment("Movements_Report.xlsx", new ByteArrayResource(attachmentBytes));
 
             emailSender.send(mimeMessage);
+
+            notification = notificationMapper.toEntity(notificationRequest);
+            notification.setType(EMAIL);
             notification.setStatus(SENT);
-        } catch (Exception e) {
+            notification.setSender(senderEmail);
+
+        } catch (MessagingException | JsonProcessingException e) {
             notification.setStatus(FAILED);
-            throw new FailedToSendEmailException(notification.getTo());
+            throw new FailedToSendEmailException(notification.getRecipient());
         } finally {
             notificationRepository.save(notification);
         }
