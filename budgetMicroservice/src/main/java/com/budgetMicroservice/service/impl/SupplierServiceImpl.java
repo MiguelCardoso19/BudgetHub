@@ -1,5 +1,6 @@
 package com.budgetMicroservice.service.impl;
 
+import com.budgetMicroservice.dto.PageableDTO;
 import com.budgetMicroservice.dto.SupplierDTO;
 import com.budgetMicroservice.exception.SupplierNotFoundException;
 import com.budgetMicroservice.exception.SupplierValidationException;
@@ -8,8 +9,6 @@ import com.budgetMicroservice.model.Supplier;
 import com.budgetMicroservice.repository.SupplierRepository;
 import com.budgetMicroservice.service.SupplierService;
 import com.budgetMicroservice.validator.SupplierValidator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,7 +22,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class  SupplierServiceImpl implements SupplierService {
+public class SupplierServiceImpl implements SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
     private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
@@ -67,19 +66,33 @@ public class  SupplierServiceImpl implements SupplierService {
         throw new SupplierNotFoundException(id);
     }
 
-    @Override
     @KafkaListener(topics = "find-all-suppliers", groupId = "pageable_group", concurrency = "10")
+    public void handlePageableRequest(PageableDTO pageableDTO) {
+        log.info("Received message: {}", pageableDTO);
+        log.info("Received message: {}", pageableDTO);
+        log.info("Received message: {}", pageableDTO);
+        Page<SupplierDTO> supplierPage = findAll(pageableDTO.toPageable());
+        log.info(supplierPage.toString());
+
+        // kafkaTemplate.send("find-all-suppliers-response", PageDTO.from(supplierPage));
+    }
+
+    @Override
     public Page<SupplierDTO> findAll(Pageable pageable) {
         log.info(pageable.toString());
         Page<Supplier> supplierPage = supplierRepository.findAll(pageable);
-     //   kafkaStringTemplate.send("find-all-suppliers-response", objectMapper.writeValueAsString(supplierPage));
 
         return supplierPage.map(supplierMapper::toDTO);
     }
 
     @Override
+    @KafkaListener(topics = "find-by-id-supplier", groupId = "uuid_group", concurrency = "10")
     public SupplierDTO findSupplierDTOById(UUID id) throws SupplierNotFoundException {
-        return supplierMapper.toDTO(findById(id));
+        SupplierDTO supplierDTO = supplierMapper.toDTO(findById(id));
+
+        kafkaSupplierTemplate.send("supplier-response", supplierDTO);
+
+        return supplierDTO;
     }
 
     @Override

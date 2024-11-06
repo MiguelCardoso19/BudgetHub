@@ -1,6 +1,7 @@
 package com.portalMicroservice.dto.authentication;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.portalMicroservice.enumerator.NationalityEnum;
 import com.portalMicroservice.enumerator.UserGenderEnum;
@@ -15,6 +16,7 @@ import java.util.Set;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "Data Transfer Object representing user credentials, used for registration and update.")
 public class UserCredentialsDTO extends AbstractDTO {
 

@@ -22,6 +22,5 @@ public class SignInRequestDTO {
     @NotNull
     @NotEmpty
     @Schema(description = "Password of the user, used for authentication", example = "P@ssw0rd123", required = true)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 }

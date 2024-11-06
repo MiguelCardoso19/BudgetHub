@@ -23,20 +23,18 @@ public class MovementDTO extends AbstractDTO {
 
     @NotNull
     @NotEmpty
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID supplierId;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID budgetTypeId;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID budgetSubtypeId;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID invoiceId;
 
+    private String documentNumber;
+
     @Enumerated(EnumType.STRING)
-    private MovementType movementType;
+    private MovementType type;
 
     @NotNull
     @NotEmpty

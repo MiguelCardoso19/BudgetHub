@@ -1,4 +1,4 @@
-package com.portalMicroservice.exception;
+package com.portalMicroservice.exception.portal;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

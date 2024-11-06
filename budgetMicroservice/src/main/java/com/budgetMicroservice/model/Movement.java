@@ -18,7 +18,10 @@ public class Movement extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MovementType movementType;
+    private MovementType type;
+
+    @Column(nullable = false)
+    private String documentNumber;
 
     @Column(nullable = false)
     private LocalDate dateOfEmission;

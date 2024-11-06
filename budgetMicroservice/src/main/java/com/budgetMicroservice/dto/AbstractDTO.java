@@ -9,4 +9,5 @@ import java.util.UUID;
 @Setter
 public class AbstractDTO {
     private UUID id;
+    private int version;
 }

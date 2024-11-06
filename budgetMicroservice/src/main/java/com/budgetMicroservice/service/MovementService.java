@@ -1,6 +1,7 @@
 package com.budgetMicroservice.service;
 
 import com.budgetMicroservice.dto.MovementDTO;
+import com.budgetMicroservice.dto.MovementUpdateStatusRequestDTO;
 import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.model.Movement;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 public interface MovementService {
     MovementDTO create(MovementDTO movementDTO) throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException;
-    MovementDTO updateMovementStatus(UUID id, MovementStatus status) throws MovementNotFoundException;
+    MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException;
     Movement getMovementEntityById(UUID id) throws MovementNotFoundException;
     Page<MovementDTO> getAll(Pageable pageable) throws JsonProcessingException;
     MovementDTO getMovementDTOById(UUID id) throws MovementNotFoundException;

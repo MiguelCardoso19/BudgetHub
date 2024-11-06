@@ -20,4 +20,6 @@ public interface MovementRepository extends JpaRepository<Movement, UUID> {
     List<Movement> findByDateOfEmissionBetweenAndStatus(LocalDate startDate, LocalDate endDate, MovementStatus status);
     List<Movement> findByDateOfEmissionBetween(LocalDate startDate, LocalDate endDate);
     List<Movement> findByStatus(MovementStatus status);
+    boolean existsByDocumentNumber(String documentNumber);
+    boolean existsByDocumentNumberAndIdNot(String documentNumber, UUID id);
 }

@@ -37,7 +37,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
         BudgetType budgetType = budgetMapper.toEntity(budgetTypeDTO);
         budgetTypeRepository.save(budgetType);
         BudgetTypeDTO savedBudgetTypeDTO = budgetMapper.toDTO(budgetType);
-        kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
+       // kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
 
         return savedBudgetTypeDTO;
     }
@@ -53,7 +53,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
         budgetTypeRepository.save(budgetType);
         BudgetTypeDTO savedBudgetTypeDTO = budgetMapper.toDTO(budgetType);
 
-        kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
+      //  kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
         return savedBudgetTypeDTO;
     }
 
@@ -71,7 +71,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     @KafkaListener(topics = "find-all-budget-type", groupId = "budget_type_group", concurrency = "10")
     public Page<BudgetTypeDTO> findAllBudgetTypes(Pageable pageable) throws JsonProcessingException {
         Page<BudgetType> budgetTypePage = budgetTypeRepository.findAll(pageable);
-        kafkaStringTemplate.send("budget-type-response", objectMapper.writeValueAsString(budgetTypePage));
+     //   kafkaStringTemplate.send("budget-type-response", objectMapper.writeValueAsString(budgetTypePage));
         return budgetTypePage.map(budgetMapper::toDTO);
     }
 
@@ -84,7 +84,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     @KafkaListener(topics = "find-budget-type-by-id", groupId = "uuid_group", concurrency = "10")
     public BudgetTypeDTO findBudgetTypeDTOById(UUID id) throws BudgetSubtypeNotFoundException {
         BudgetTypeDTO budgetTypeDTO = budgetMapper.toDTO(findById(id));
-        kafkaBudgetTypeTemplate.send("budget-type-response", budgetTypeDTO);
+      //  kafkaBudgetTypeTemplate.send("budget-type-response", budgetTypeDTO);
         return budgetTypeDTO;
     }
 

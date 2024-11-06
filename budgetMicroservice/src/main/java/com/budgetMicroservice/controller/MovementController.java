@@ -1,6 +1,7 @@
 package com.budgetMicroservice.controller;
 
 import com.budgetMicroservice.dto.MovementDTO;
+import com.budgetMicroservice.dto.MovementUpdateStatusRequestDTO;
 import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.service.MovementService;
@@ -37,8 +38,8 @@ public class MovementController {
     }
 
     @PutMapping("/status/update/{id}")
-    public ResponseEntity<MovementDTO> updateMovementStatus(@PathVariable UUID id, @RequestBody MovementStatus status) throws MovementNotFoundException {
-        return ResponseEntity.ok(movementService.updateMovementStatus(id, status));
+    public ResponseEntity<MovementDTO> updateMovementStatus(@RequestBody MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException {
+        return ResponseEntity.ok(movementService.updateMovementStatus(movementUpdateStatusRequestDTO));
     }
 
     @GetMapping("/{id}")

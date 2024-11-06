@@ -29,7 +29,7 @@ public class FeignClientInterceptor implements RequestInterceptor {
             if ("application/json".equalsIgnoreCase(requestTemplate.headers().getOrDefault("Content-Type",
                     List.of()).stream().findFirst().orElse(null))) {
                 String body = new String(requestTemplate.body(), UTF_8);
-                FeignClientUtils.extractUserDetails(body, attributes);
+                FeignClientUtils.extractDetails(body, attributes);
             }
         }
     }

@@ -11,6 +11,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -29,6 +30,7 @@ import com.notificationMicroservice.dto.NotificationRequestDTO;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final JavaMailSender emailSender;
@@ -44,27 +46,31 @@ public class NotificationServiceImpl implements NotificationService {
 
         try {
             NotificationRequestDTO notificationRequest = objectMapper.readValue(message, NotificationRequestDTO.class);
-
-            MimeMessage mimeMessage = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.setTo(notificationRequest.getRecipient());
-            helper.setSubject(notificationRequest.getSubject());
-            helper.setText(notificationRequest.getBody());
-
-            byte[] attachmentBytes = Base64.getDecoder().decode(notificationRequest.getAttachment());
-            helper.addAttachment("Movements_Report.xlsx", new ByteArrayResource(attachmentBytes));
-
-            emailSender.send(mimeMessage);
-
+            log.info("Notification request to: {}", notificationRequest.getRecipient());
             notification = notificationMapper.toEntity(notificationRequest);
             notification.setType(EMAIL);
             notification.setStatus(SENT);
             notification.setSender(senderEmail);
+            notification.setBody("Please find attached the movements report for the specified period.");
+            notification.setSubject("Movements Report");
+
+            MimeMessage mimeMessage = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setTo(notificationRequest.getRecipient());
+            helper.setSubject(notification.getSubject());
+            helper.setText(notification.getBody());
+
+            byte[] attachmentBytes = Base64.getDecoder().decode(notificationRequest.getAttachment());
+            helper.addAttachment("Movements_Report.xlsx", new ByteArrayResource(attachmentBytes));
+            log.info("Notification request to: {}, sent", notification.getRecipient());
+            emailSender.send(mimeMessage);
 
         } catch (MessagingException | JsonProcessingException e) {
             notification.setStatus(FAILED);
+            log.info("Notification request to: {}, failed", notification.getRecipient());
             throw new FailedToSendEmailException(notification.getRecipient());
         } finally {
+            log.info("Notification request to: {}, save", notification.getRecipient());
             notificationRepository.save(notification);
         }
     }

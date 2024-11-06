@@ -99,7 +99,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @KafkaListener(topics = "update-invoice", groupId = "invoice_group", concurrency = "10")
-    public InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException, InvoiceAlreadyExistsException {
+    public InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException {
         Invoice existingInvoice = invoiceRepository.findById(invoiceDTO.getId())
                 .orElseThrow(() -> new InvoiceNotFoundException(invoiceDTO.getId()));
 
@@ -124,7 +124,7 @@ public class InvoiceServiceImpl implements InvoiceService {
      @KafkaListener(topics = "get-all-invoices", groupId = "invoice_group", concurrency = "10")
     public Page<InvoiceDTO> getAll(Pageable pageable) throws JsonProcessingException {
         Page<Invoice> invoicesPage = invoiceRepository.findAll(pageable);
-        kafkaStringTemplate.send("invoice-response", objectMapper.writeValueAsString(invoicesPage));
+      //  kafkaStringTemplate.send("invoice-response", objectMapper.writeValueAsString(invoicesPage));
         return invoicesPage.map(invoiceMapper::toDTO);
     }
 

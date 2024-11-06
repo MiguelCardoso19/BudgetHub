@@ -1,13 +1,12 @@
 package com.budgetMicroservice.config;
 
-import com.budgetMicroservice.atest.PageableSerializer;
 import com.budgetMicroservice.dto.*;
+import com.budgetMicroservice.enumerator.MovementStatus;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.UUIDSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -25,16 +24,44 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, Pageable> pageableProducerFactory() {
+    public ProducerFactory<String, MovementUpdateStatusRequestDTO> movementUpdateStatusRequestProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, PageableSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
     @Bean
-    public KafkaTemplate<String, Pageable> pageableKafkaTemplate() {
+    public KafkaTemplate<String, MovementUpdateStatusRequestDTO> movementUpdateStatusRequestKafkaTemplate() {
+        return new KafkaTemplate<>(movementUpdateStatusRequestProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, PageDTO<SupplierDTO>> pageSupplierProducerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, PageDTO<SupplierDTO>> pageSupplierKafkaTemplate() {
+        return new KafkaTemplate<>(pageSupplierProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, PageableDTO> pageableProducerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, PageableDTO> pageableKafkaTemplate() {
         return new KafkaTemplate<>(pageableProducerFactory());
     }
 

@@ -117,7 +117,7 @@ public class MovementUtils {
         for (Movement movement : movements) {
             Row row = sheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(movement.getId() != null ? movement.getId().toString() : "N/A");
-            row.createCell(1).setCellValue(movement.getMovementType() != null ? movement.getMovementType().name() : "N/A");
+            row.createCell(1).setCellValue(movement.getType() != null ? movement.getType().name() : "N/A");
             row.createCell(2).setCellValue(movement.getDateOfEmission() != null ? movement.getDateOfEmission().toString() : "N/A");
             row.createCell(3).setCellValue(movement.getDescription() != null ? movement.getDescription() : "N/A");
             row.createCell(4).setCellValue(movement.getValueWithoutIva() != null ? movement.getValueWithoutIva() : 0.0);

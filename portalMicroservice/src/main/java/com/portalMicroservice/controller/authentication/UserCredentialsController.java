@@ -1,6 +1,6 @@
 package com.portalMicroservice.controller.authentication;
 
-import com.portalMicroservice.client.UserCredentialsFeignClient;
+import com.portalMicroservice.client.authentication.UserCredentialsFeignClient;
 import com.portalMicroservice.dto.authentication.AuthenticationResponseDTO;
 import com.portalMicroservice.dto.authentication.DeleteRequestDTO;
 import com.portalMicroservice.dto.authentication.UserCredentialsDTO;

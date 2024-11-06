@@ -17,7 +17,7 @@ public class JwtAuthenticationFilterUtils {
     private static final ObjectWriter objectWriter = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
     public static boolean isExemptEndpoint(String requestURI) {
-        return requestURI.startsWith("/api/v1/auth/sign-in") ||
+        return  requestURI.startsWith("/api/v1/auth/sign-in") ||
                 requestURI.startsWith("/api/v1/user-credentials/register") ||
                 requestURI.startsWith("/v3/api-docs") ||
                 requestURI.startsWith("/swagger-ui") ||
@@ -36,7 +36,7 @@ public class JwtAuthenticationFilterUtils {
     public static void writeErrorResponse(HttpServletResponse response, String code, String message, int status) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json");
-        response.getWriter().write(objectWriter.writeValueAsString(new ErrorResponse(code, message, status)));
+        response.getWriter().write(objectWriter.writeValueAsString(new ErrorResponse(code, status, message)));
         response.getWriter().flush();
     }
 

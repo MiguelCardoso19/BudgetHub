@@ -1,4 +1,4 @@
-package com.portalMicroservice.client;
+package com.portalMicroservice.client.authentication;
 
 import com.portalMicroservice.config.CustomErrorDecoder;
 import com.portalMicroservice.dto.authentication.AuthenticationResponseDTO;

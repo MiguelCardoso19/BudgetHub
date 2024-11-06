@@ -1,6 +1,6 @@
 package com.portalMicroservice.controller.authentication;
 
-import com.portalMicroservice.client.AuthenticationFeignClient;
+import com.portalMicroservice.client.authentication.AuthenticationFeignClient;
 import com.portalMicroservice.dto.authentication.AuthenticationResponseDTO;
 import com.portalMicroservice.dto.authentication.SignInRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,11 +27,11 @@ public class AuthenticationController {
      *  TO DELETE LATER
      *
      */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/test-role")
-    public ResponseEntity<String> testRoleEndpoint() {
-        return ResponseEntity.ok("Access granted to users with ADMIN role.");
-    }
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @GetMapping("/test-role")
+//    public ResponseEntity<String> testRoleEndpoint() {
+//        return ResponseEntity.ok("Access granted to users with ADMIN role.");
+//    }
 
     @Operation(
             summary = "Sign in using user credentials",
