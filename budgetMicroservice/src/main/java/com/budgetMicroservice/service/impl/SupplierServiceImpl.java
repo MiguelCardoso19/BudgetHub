@@ -1,6 +1,5 @@
 package com.budgetMicroservice.service.impl;
 
-import com.budgetMicroservice.dto.PageableDTO;
 import com.budgetMicroservice.dto.SupplierDTO;
 import com.budgetMicroservice.exception.SupplierNotFoundException;
 import com.budgetMicroservice.exception.SupplierValidationException;
@@ -28,12 +27,11 @@ public class SupplierServiceImpl implements SupplierService {
     private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
 
     @Override
-    @KafkaListener(topics = "create-supplier", groupId = "supplier_group", concurrency = "10")
+    @KafkaListener(topics = "create-supplier", groupId = "supplier_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
     public SupplierDTO create(SupplierDTO supplierDTO) throws SupplierValidationException {
         SupplierValidator.validateSupplierCreation(supplierDTO, supplierRepository);
 
-        Supplier supplier = supplierMapper.toEntity(supplierDTO);
-        Supplier savedSupplier = supplierRepository.save(supplier);
+        Supplier savedSupplier = supplierRepository.save(supplierMapper.toEntity(supplierDTO));
         SupplierDTO savedSupplierDTO = supplierMapper.toDTO(savedSupplier);
 
         kafkaSupplierTemplate.send("supplier-response", savedSupplierDTO);
@@ -41,18 +39,17 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    @KafkaListener(topics = "update-supplier", groupId = "supplier_group", concurrency = "10")
+    @KafkaListener(topics = "update-supplier", groupId = "supplier_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
     public SupplierDTO update(SupplierDTO supplierDTO) throws SupplierNotFoundException, SupplierValidationException {
         SupplierValidator.validateSupplierUpdate(supplierDTO, supplierRepository);
+        findById(supplierDTO.getId());
+        Supplier existingSupplier = supplierMapper.toEntity(supplierDTO);
+        SupplierDTO updatedSupplierDTO = supplierMapper.toDTO(supplierRepository.save(existingSupplier));
 
-        Supplier existingSupplier = findById(supplierDTO.getId());
-        supplierMapper.updateFromDTO(supplierDTO, existingSupplier);
-
-        Supplier updatedSupplier = supplierRepository.save(existingSupplier);
-        SupplierDTO updatedSupplierDTO = supplierMapper.toDTO(updatedSupplier);
-        kafkaSupplierTemplate.send("update-response", updatedSupplierDTO);
+        kafkaSupplierTemplate.send("supplier-response", updatedSupplierDTO);
 
         return updatedSupplierDTO;
+
     }
 
     @Override
@@ -66,18 +63,8 @@ public class SupplierServiceImpl implements SupplierService {
         throw new SupplierNotFoundException(id);
     }
 
-    @KafkaListener(topics = "find-all-suppliers", groupId = "pageable_group", concurrency = "10")
-    public void handlePageableRequest(PageableDTO pageableDTO) {
-        log.info("Received message: {}", pageableDTO);
-        log.info("Received message: {}", pageableDTO);
-        log.info("Received message: {}", pageableDTO);
-        Page<SupplierDTO> supplierPage = findAll(pageableDTO.toPageable());
-        log.info(supplierPage.toString());
-
-        // kafkaTemplate.send("find-all-suppliers-response", PageDTO.from(supplierPage));
-    }
-
     @Override
+    @KafkaListener(topics = "find-all-suppliers", groupId = "pageable_group", concurrency = "10")
     public Page<SupplierDTO> findAll(Pageable pageable) {
         log.info(pageable.toString());
         Page<Supplier> supplierPage = supplierRepository.findAll(pageable);
@@ -91,7 +78,6 @@ public class SupplierServiceImpl implements SupplierService {
         SupplierDTO supplierDTO = supplierMapper.toDTO(findById(id));
 
         kafkaSupplierTemplate.send("supplier-response", supplierDTO);
-
         return supplierDTO;
     }
 

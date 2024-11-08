@@ -58,13 +58,10 @@ public class MovementDTO extends AbstractDTO {
     @Enumerated(EnumType.STRING)
     private MovementStatus status = ACCEPTED;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private InvoiceDTO invoice;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BudgetTypeDTO budgetType;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BudgetSubtypeDTO budgetSubtype;
 
     private SupplierDTO supplier;

@@ -10,96 +10,62 @@ import feign.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.UUID;
+import java.util.function.Consumer;
 
+@Slf4j
 public class FeignClientUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public static void extractDetails(String body, ServletRequestAttributes attributes) {
-
         HttpServletRequest request = attributes.getRequest();
 
-        try {
-            UserCredentialsDTO userCredentialsDTO = objectMapper.readValue(body, UserCredentialsDTO.class);
-            if (userCredentialsDTO != null) {
-                String userNif = userCredentialsDTO.getNif();
-                UUID id = userCredentialsDTO.getId();
-                String email = userCredentialsDTO.getEmail();
+        processDTO(body, UserCredentialsDTO.class, user -> {
+            request.setAttribute("nif", user.getNif());
+            if (user.getId() != null) request.setAttribute("id", user.getId());
+            if (user.getEmail() != null) request.setAttribute("email", user.getEmail());
+        });
 
-                request.setAttribute("nif", userNif);
-                if (id != null) {
-                    request.setAttribute("id", id);
-                }
-                if (email != null) {
-                    request.setAttribute("email", email);
-                }
-                return;
+        processDTO(body, BudgetSubtypeDTO.class, budget -> {
+            request.setAttribute("name", budget.getName());
+            request.setAttribute("id", budget.getId());
+        });
+
+        processDTO(body, BudgetTypeDTO.class, budgetType -> {
+            request.setAttribute("name", budgetType.getName());
+            request.setAttribute("id", budgetType.getId());
+        });
+
+        processDTO(body, SupplierDTO.class, supplier ->
+                request.setAttribute("id", supplier.getId())
+        );
+
+        processDTO(body, InvoiceDTO.class, invoice ->
+                request.setAttribute("id", invoice.getId())
+        );
+
+        processDTO(body, MovementDTO.class, movement -> {
+            if (movement.getId() != null) request.setAttribute("id", movement.getId());
+            if (movement.getInvoiceId() != null) request.setAttribute("invoice-id", movement.getInvoiceId());
+            if (movement.getBudgetSubtypeId() != null) request.setAttribute("budget-subtype-id", movement.getBudgetSubtypeId());
+            if (movement.getBudgetTypeId() != null) request.setAttribute("budget-type-id", movement.getBudgetTypeId());
+            if (movement.getSupplierId() != null) request.setAttribute("supplier-id", movement.getSupplierId());
+        });
+    }
+
+    private static <T> void processDTO(String body, Class<T> dtoClass, Consumer<T> action) {
+        try {
+            T dto = objectMapper.readValue(body, dtoClass);
+            if (dto != null) {
+                action.accept(dto);
             }
         } catch (JsonProcessingException e) {
-        }
-
-        try {
-            BudgetSubtypeDTO budgetSubtypeDTO = objectMapper.readValue(body, BudgetSubtypeDTO.class);
-            if (budgetSubtypeDTO != null) {
-                request.setAttribute("name", budgetSubtypeDTO.getName());
-                request.setAttribute("id", budgetSubtypeDTO.getId());
-                return;
-            }
-        } catch (JsonProcessingException e) {
-        }
-
-        try {
-            BudgetTypeDTO budgetTypeDTO = objectMapper.readValue(body, BudgetTypeDTO.class);
-            if (budgetTypeDTO != null) {
-                request.setAttribute("name", budgetTypeDTO.getName());
-                request.setAttribute("id", budgetTypeDTO.getId());
-                return;
-            }
-        } catch (JsonProcessingException e) {
-        }
-
-        try {
-            SupplierDTO supplierDTO = objectMapper.readValue(body, SupplierDTO.class);
-            if (supplierDTO != null) {
-                request.setAttribute("id", supplierDTO.getId());
-                return;
-            }
-        } catch (JsonProcessingException e) {
-        }
-
-        try {
-            InvoiceDTO invoiceDTO = objectMapper.readValue(body, InvoiceDTO.class);
-            if (invoiceDTO != null) {
-                request.setAttribute("id", invoiceDTO.getId());
-                return;
-            }
-        } catch (JsonProcessingException e) {
-        }
-
-        try {
-            MovementDTO movementDTO = objectMapper.readValue(body, MovementDTO.class);
-            if (movementDTO != null) {
-                if (movementDTO.getId() != null) {
-                    request.setAttribute("id", movementDTO.getId());
-                }
-                if (movementDTO.getInvoiceId() != null) {
-                    request.setAttribute("invoice-id", movementDTO.getInvoiceId());
-                }
-                if (movementDTO.getBudgetSubtypeId() != null) {
-                    request.setAttribute("budget-subtype-id", movementDTO.getBudgetSubtypeId());
-                }
-                if (movementDTO.getBudgetTypeId() != null) {
-                    request.setAttribute("budget-type-id", movementDTO.getBudgetTypeId());
-                }
-                if (movementDTO.getSupplierId() != null) {
-                    request.setAttribute("supplier-id", movementDTO.getSupplierId());
-                }
-            }
-        } catch (JsonProcessingException e) {
+            log.info("Failed to process {}: {}", dtoClass.getSimpleName(), e.getMessage());
         }
     }
+
 
     @SneakyThrows
     public static String extractErrorMessage(Response response) {

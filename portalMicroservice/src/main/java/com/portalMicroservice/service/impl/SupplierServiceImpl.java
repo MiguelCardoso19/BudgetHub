@@ -25,13 +25,13 @@ public class SupplierServiceImpl implements SupplierService {
     private final ConcurrentHashMap<UUID, CompletableFuture<SupplierDTO>> pendingRequests = new ConcurrentHashMap<>();
     private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
     private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final long TIMEOUT_DURATION = 30;
+    private static final long TIMEOUT_DURATION = 10;
 
     @Override
     public SupplierDTO create(SupplierDTO supplierDTO) throws ExecutionException, InterruptedException, GenericException {
         CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
+        pendingRequests.put(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"), future);
 
         kafkaSupplierTemplate.send("create-supplier", supplierDTO);
 
@@ -46,6 +46,7 @@ public class SupplierServiceImpl implements SupplierService {
     @Override
     public SupplierDTO update(SupplierDTO supplierDTO) throws ExecutionException, InterruptedException, GenericException {
         CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
+        pendingRequests.put(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"), future);
 
         kafkaSupplierTemplate.send("update-supplier", supplierDTO);
 
@@ -63,7 +64,7 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public SupplierDTO getById(UUID id) throws ExecutionException, InterruptedException, GenericException {
+    public SupplierDTO getById(UUID id) throws GenericException {
         CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
         pendingRequests.put(id, future);
 
@@ -72,18 +73,16 @@ public class SupplierServiceImpl implements SupplierService {
 
         try {
             return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
             log.error("Request timed out while retrieving supplier by ID: {}", id);
             throw new GenericException();
         }
     }
 
-    @KafkaListener(topics = "supplier-response", groupId = "response_group", concurrency = "10")
-    public void listen(String message) throws JsonProcessingException, GenericException {
-        SupplierDTO supplierDTO = objectMapper.readValue(message, SupplierDTO.class);
+    @KafkaListener(topics = "supplier-response", groupId = "supplier_response_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
+    public void listen(SupplierDTO supplierDTO) throws GenericException {
         log.info("Received message: {}", supplierDTO.getCompanyName());
-
-        CompletableFuture<SupplierDTO> future = pendingRequests.remove(supplierDTO.getId());
+        CompletableFuture<SupplierDTO> future = pendingRequests.remove(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"));
         if (future != null) {
             future.complete(supplierDTO);
         } else {

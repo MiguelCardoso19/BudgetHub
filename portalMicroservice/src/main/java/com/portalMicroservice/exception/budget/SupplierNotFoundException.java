@@ -3,8 +3,6 @@ package com.portalMicroservice.exception.budget;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-import java.util.UUID;
-
 import static com.portalMicroservice.exception.ErrorMessage.SUPPLIER_NOT_FOUND;
 
 @Getter
@@ -13,7 +11,7 @@ public class SupplierNotFoundException extends Exception {
     private final HttpStatus status;
     private final String errorCode;
 
-    public SupplierNotFoundException(UUID id) {
+    public SupplierNotFoundException(String id) {
         super(SUPPLIER_NOT_FOUND.getMessage(id));
         this.message = SUPPLIER_NOT_FOUND.getMessage(id);
         this.status = SUPPLIER_NOT_FOUND.getStatus();

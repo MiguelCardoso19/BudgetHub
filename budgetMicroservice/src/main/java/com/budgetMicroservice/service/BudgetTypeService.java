@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface BudgetTypeService {
     BudgetTypeDTO createBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeAlreadyExistsException;
-    BudgetTypeDTO updateBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException;
+    BudgetTypeDTO updateBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException, BudgetSubtypeNotFoundException;
     void deleteBudgetType(UUID id) throws BudgetTypeNotFoundException;
     BudgetTypeDTO findBudgetTypeDTOById(UUID id) throws BudgetTypeNotFoundException, BudgetSubtypeNotFoundException;
     Page<BudgetTypeDTO> findAllBudgetTypes(Pageable pageable) throws JsonProcessingException;

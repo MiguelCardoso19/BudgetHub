@@ -21,7 +21,7 @@ public class Invoice extends AbstractEntity {
     private String description;
 
     @NotAudited
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "invoice")
     @JoinColumn(name = "movement_id")
     private Movement movement;
 

@@ -33,6 +33,7 @@
 - **Stripe API**
 - **Liquibase**
 - **Docker**
+- **Redis**
 - **Gradle**
 - **Lombok**
 - **Swagger**

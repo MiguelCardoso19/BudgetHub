@@ -24,12 +24,10 @@ public class InvoiceDTO extends AbstractDTO {
     @NotEmpty
     private String description;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID movementId;
 
     @Lob
     private byte[] file;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private MovementDTO movement;
 }

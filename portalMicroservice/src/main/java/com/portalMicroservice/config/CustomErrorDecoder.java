@@ -12,13 +12,16 @@ import feign.Response;
 import feign.codec.ErrorDecoder;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class CustomErrorDecoder implements ErrorDecoder {
 
     @SneakyThrows
@@ -41,24 +44,28 @@ public class CustomErrorDecoder implements ErrorDecoder {
     }
 
     private void handleNotFound(String methodKey, HttpServletRequest request) throws UserNotFoundException, EmailNotFoundException, BudgetSubtypeNotFoundException, InvoiceNotFoundException, BudgetTypeNotFoundException, SupplierNotFoundException, MovementsNotFoundForBudgetTypeException, MovementsNotFoundForBudgetSubtypeException, MovementNotFoundException {
+        String path = request.getRequestURI();
+        String[] pathParts = path.split("/");
+        Optional<String> optionalId = Optional.ofNullable(pathParts[pathParts.length - 1]).filter(id -> !id.isEmpty());
+
         if (methodKey.contains("refreshToken") || methodKey.contains("delete") || methodKey.contains("update")) {
             throw new UserNotFoundException((UUID) request.getAttribute("id"));
         } else if (methodKey.contains("signIn")) {
             throw new EmailNotFoundException((String) request.getAttribute("email"));
         } else if (methodKey.contains("updateSubtype") || methodKey.contains("deleteSubtype") || methodKey.contains("findSubtypeById")) {
-            throw new BudgetSubtypeNotFoundException((UUID) request.getAttribute("id"));
+            throw new BudgetSubtypeNotFoundException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         } else if (methodKey.contains("getInvoiceById") || methodKey.contains("updateInvoice") || methodKey.contains("deleteInvoice")) {
-            throw new InvoiceNotFoundException((UUID) request.getAttribute("id"));
+            throw new InvoiceNotFoundException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         } else if (methodKey.contains("updateBudgeType") || methodKey.contains("deleteBudgeType") || methodKey.contains("findBudgeTypeById")) {
-            throw new BudgetTypeNotFoundException((UUID) request.getAttribute("id"));
+            throw new BudgetTypeNotFoundException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         } else if (methodKey.contains("getSupplierById") || methodKey.contains("deleteSupplier") || methodKey.contains("updateSupplier")) {
-            throw new SupplierNotFoundException((UUID) request.getAttribute("id"));
+            throw new SupplierNotFoundException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         } else if (methodKey.contains("getMovementsByBudgetType")) {
-            throw new MovementsNotFoundForBudgetTypeException((UUID) request.getAttribute("id"));
+            throw new MovementsNotFoundForBudgetTypeException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         } else if (methodKey.contains("getMovementsByBudgetSubtype")) {
-            throw new MovementsNotFoundForBudgetSubtypeException((UUID) request.getAttribute("id"));
+            throw new MovementsNotFoundForBudgetSubtypeException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         } else if (methodKey.contains("deleteMovement") || methodKey.contains("updateMovement")) {
-            throw new MovementNotFoundException((UUID) request.getAttribute("id"));
+            throw new MovementNotFoundException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         }
     }
 

@@ -3,8 +3,6 @@ package com.portalMicroservice.exception.budget;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-import java.util.UUID;
-
 import static com.portalMicroservice.exception.ErrorMessage.MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE;
 
 @Getter
@@ -13,7 +11,7 @@ public class MovementsNotFoundForBudgetSubtypeException extends Exception {
     private final HttpStatus status;
     private final String errorCode;
 
-    public MovementsNotFoundForBudgetSubtypeException(UUID id) {
+    public MovementsNotFoundForBudgetSubtypeException(String id) {
         super(MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE.getMessage(id));
         this.message = MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE.getMessage(id);
         this.status = MOVEMENTS_NOT_FOUND_FOR_BUDGET_SUBTYPE.getStatus();

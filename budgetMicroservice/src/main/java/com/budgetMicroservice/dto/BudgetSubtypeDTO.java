@@ -24,9 +24,7 @@ public class BudgetSubtypeDTO extends AbstractDTO {
     @NotEmpty
     private String description;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private UUID budgetTypeId;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BudgetTypeDTO budgetType;
 }

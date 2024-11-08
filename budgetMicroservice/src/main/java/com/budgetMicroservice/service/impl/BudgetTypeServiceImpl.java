@@ -1,11 +1,13 @@
 package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.BudgetTypeDTO;
+import com.budgetMicroservice.dto.InvoiceDTO;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.mapper.BudgetMapper;
 import com.budgetMicroservice.model.BudgetType;
+import com.budgetMicroservice.model.Invoice;
 import com.budgetMicroservice.repository.BudgetTypeRepository;
 import com.budgetMicroservice.service.BudgetTypeService;
 import com.budgetMicroservice.validator.BudgetValidator;
@@ -26,34 +28,30 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     private final BudgetTypeRepository budgetTypeRepository;
     private final BudgetMapper budgetMapper;
     private final KafkaTemplate<String, BudgetTypeDTO> kafkaBudgetTypeTemplate;
-    private final KafkaTemplate<String, String> kafkaStringTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    @KafkaListener(topics = "add-budget-type", groupId = "budget_type_group", concurrency = "10")
+    @KafkaListener(topics = "create-budget-type", groupId = "budget_type_group", concurrency = "10", containerFactory = "budgetTypeKafkaListenerContainerFactory")
     public BudgetTypeDTO createBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeAlreadyExistsException {
         BudgetValidator.checkForExistingBudgetType(budgetTypeDTO, budgetTypeRepository);
 
         BudgetType budgetType = budgetMapper.toEntity(budgetTypeDTO);
         budgetTypeRepository.save(budgetType);
         BudgetTypeDTO savedBudgetTypeDTO = budgetMapper.toDTO(budgetType);
-       // kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
+        kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
 
         return savedBudgetTypeDTO;
     }
 
     @Override
-    @KafkaListener(topics = "update-budget-type", groupId = "budget_type_group", concurrency = "10")
-    public BudgetTypeDTO updateBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException {
-        BudgetType budgetType = budgetTypeRepository.findById(budgetTypeDTO.getId()).orElseThrow(() -> new BudgetTypeNotFoundException(budgetTypeDTO.getId()));
-
+    @KafkaListener(topics = "update-budget-type", groupId = "budget_type_group", concurrency = "10", containerFactory = "budgetTypeKafkaListenerContainerFactory")
+    public BudgetTypeDTO updateBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException, BudgetSubtypeNotFoundException {
+        findById(budgetTypeDTO.getId());
         BudgetValidator.checkForExistingBudgetTypeUpdate(budgetTypeDTO, budgetTypeRepository);
 
-        budgetMapper.updateFromDTO(budgetTypeDTO, budgetType);
-        budgetTypeRepository.save(budgetType);
-        BudgetTypeDTO savedBudgetTypeDTO = budgetMapper.toDTO(budgetType);
+        BudgetType budgetType = budgetMapper.toEntity(budgetTypeDTO);
+        BudgetTypeDTO savedBudgetTypeDTO = budgetMapper.toDTO(budgetTypeRepository.save(budgetType));
 
-      //  kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
+        kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
         return savedBudgetTypeDTO;
     }
 
@@ -84,7 +82,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     @KafkaListener(topics = "find-budget-type-by-id", groupId = "uuid_group", concurrency = "10")
     public BudgetTypeDTO findBudgetTypeDTOById(UUID id) throws BudgetSubtypeNotFoundException {
         BudgetTypeDTO budgetTypeDTO = budgetMapper.toDTO(findById(id));
-      //  kafkaBudgetTypeTemplate.send("budget-type-response", budgetTypeDTO);
+        kafkaBudgetTypeTemplate.send("budget-type-response", budgetTypeDTO);
         return budgetTypeDTO;
     }
 

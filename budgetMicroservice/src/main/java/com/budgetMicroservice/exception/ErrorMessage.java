@@ -23,7 +23,8 @@ public enum ErrorMessage {
     BUDGET_SUBTYPE_ALREADY_EXISTS("BUDGET_SUBTYPE_ALREADY_EXISTS", "A budget subtype with the name '%s' already exists", CONFLICT),
     BUDGET_TYPE_ALREADY_EXISTS("BUDGET_TYPE_ALREADY_EXISTS", "A budget type with the name '%s' already exists", CONFLICT),
     FAILED_TO_GENERATE_EXCEL("FAILED_TO_GENERATE_EXCEL", "Failed to generate the Excel file", CONFLICT),
-    BUDGET_SUBTYPE_NOT_FOUND("BUDGET_SUBTYPE_NOT_FOUND", "Budget subtype not found with ID: %s", NOT_FOUND);
+    BUDGET_SUBTYPE_NOT_FOUND("BUDGET_SUBTYPE_NOT_FOUND", "Budget subtype not found with ID: %s", NOT_FOUND),
+    OPTIMISTIC_LOCKING_FAILURE("OPTIMISTIC_LOCKING_FAILURE", "This entity has been modified by another transaction", CONFLICT);
 
     @Getter
     private final String errorCode;

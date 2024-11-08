@@ -42,7 +42,8 @@ public class Movement extends AbstractEntity {
     private MovementStatus status;
 
     @NotAudited
-    @OneToOne(mappedBy = "movement", cascade = CascadeType.ALL)
+    @JoinColumn(name = "invoice_id")
+    @OneToOne(cascade = CascadeType.ALL)
     private Invoice invoice;
 
     @NotAudited

@@ -9,5 +9,4 @@ import org.mapstruct.MappingTarget;
 public interface SupplierMapper {
     Supplier toEntity(SupplierDTO supplierDTO);
     SupplierDTO toDTO(Supplier supplier);
-    void updateFromDTO(SupplierDTO supplierDTO, @MappingTarget Supplier supplier);
 }

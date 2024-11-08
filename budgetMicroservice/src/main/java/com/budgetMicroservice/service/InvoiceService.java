@@ -20,7 +20,7 @@ public interface InvoiceService {
     InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException, InvoiceAlreadyExistsException;
     void delete(UUID id) throws InvoiceNotFoundException;
     Page<InvoiceDTO> getAll(Pageable pageable) throws JsonProcessingException;
-    InvoiceDTO findInvoiceInvoiceDTOById(UUID id) throws InvoiceNotFoundException;
+    InvoiceDTO findInvoiceDTOById(UUID id) throws InvoiceNotFoundException;
     InvoiceDTO addMovementToInvoice(UUID invoiceId, UUID movementId) throws InvoiceNotFoundException, MovementNotFoundException;
     Invoice findInvoiceEntityById(UUID id) throws InvoiceNotFoundException;
     void attachBase64FileToInvoice(AttachFileRequestDTO request) throws InvoiceNotFoundException, FailedToUploadFileException;

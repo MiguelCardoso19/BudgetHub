@@ -23,10 +23,6 @@ public interface BudgetMapper {
 
     BudgetSubtype toEntity(BudgetSubtypeDTO budgetSubtypeDTO);
 
-    void updateFromDTO(BudgetTypeDTO budgetTypeDTO, @MappingTarget BudgetType budgetType);
-
-    void updateFromDTO(BudgetSubtypeDTO budgetSubtypeDTO, @MappingTarget BudgetSubtype budgetSubtype);
-
     @Named("withoutBudgetType")
     default List<BudgetSubtypeDTO> mapSubtypesWithoutBudgetType(List<BudgetSubtype> subtypes) {
         if (subtypes == null) {

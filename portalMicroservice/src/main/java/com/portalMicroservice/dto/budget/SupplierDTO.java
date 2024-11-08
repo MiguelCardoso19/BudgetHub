@@ -6,10 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SupplierDTO extends AbstractDTO {
+public class SupplierDTO extends AbstractDTO implements Serializable {
 
     @NotBlank(message = "Company name is required")
     private String companyName;

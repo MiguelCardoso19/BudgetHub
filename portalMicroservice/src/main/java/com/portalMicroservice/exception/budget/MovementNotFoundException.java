@@ -4,7 +4,6 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static com.portalMicroservice.exception.ErrorMessage.MOVEMENTS_NOT_FOUND_BETWEEN_DATES;
 import static com.portalMicroservice.exception.ErrorMessage.MOVEMENT_NOT_FOUND;
@@ -16,7 +15,7 @@ public class MovementNotFoundException extends Exception {
     private final HttpStatus status;
     private final String errorCode;
 
-    public MovementNotFoundException(UUID id) {
+    public MovementNotFoundException(String id) {
         super(MOVEMENT_NOT_FOUND.getMessage(id));
         this.message = MOVEMENT_NOT_FOUND.getMessage(id);
         this.status = MOVEMENT_NOT_FOUND.getStatus();

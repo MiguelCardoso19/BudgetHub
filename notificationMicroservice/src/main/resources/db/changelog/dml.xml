@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+    <changeSet id="2" author="MiguelCardoso">
+        <insert tableName="notification">
+            <column name="id" value="123e4567-e89b-12d3-a456-426614174000"/>
+            <column name="created_date" value="2023-01-01T00:00:00"/>
+            <column name="last_modified_date" value="2023-01-01T00:00:00"/>
+            <column name="created_by" value="liquibase"/>
+            <column name="last_modified_by" value="liquibase"/>
+            <column name="version" value="1"/>
+            <column name="sender" value="expensehub1@gmail.com"/>
+            <column name="recipient" value="miguel40cardoso@gmail.com"/>
+            <column name="subject" value="Test Email from scheduler"/>
+            <column name="body" value="This is a test email body for retry testing."/>
+            <column name="sent_date" value="2023-01-01T00:00:00"/>
+            <column name="type" value="EMAIL"/>
+            <column name="status" value="FAILED"/>
+            <column name="attachment" value=""/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

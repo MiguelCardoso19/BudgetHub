@@ -3,8 +3,6 @@ package com.portalMicroservice.exception.budget;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-import java.util.UUID;
-
 import static com.portalMicroservice.exception.ErrorMessage.BUDGET_SUBTYPE_NOT_FOUND;
 
 @Getter
@@ -13,7 +11,7 @@ public class BudgetSubtypeNotFoundException extends Exception {
     private final HttpStatus status;
     private final String errorCode;
 
-    public BudgetSubtypeNotFoundException(UUID id) {
+    public BudgetSubtypeNotFoundException(String id) {
         super(BUDGET_SUBTYPE_NOT_FOUND.getMessage(id));
         this.message = BUDGET_SUBTYPE_NOT_FOUND.getMessage(id);
         this.status = BUDGET_SUBTYPE_NOT_FOUND.getStatus();

@@ -2,6 +2,7 @@ package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.AttachFileRequestDTO;
 import com.budgetMicroservice.dto.InvoiceDTO;
+import com.budgetMicroservice.dto.SupplierDTO;
 import com.budgetMicroservice.exception.FailedToUploadFileException;
 import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
 import com.budgetMicroservice.exception.InvoiceNotFoundException;
@@ -9,12 +10,14 @@ import com.budgetMicroservice.exception.MovementNotFoundException;
 import com.budgetMicroservice.mapper.InvoiceMapper;
 import com.budgetMicroservice.model.Invoice;
 import com.budgetMicroservice.model.Movement;
+import com.budgetMicroservice.model.Supplier;
 import com.budgetMicroservice.repository.InvoiceRepository;
 import com.budgetMicroservice.service.InvoiceService;
 import com.budgetMicroservice.service.MovementService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -28,15 +31,16 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final MovementService movementService;
     private final InvoiceMapper invoiceMapper;
     private final KafkaTemplate<String, InvoiceDTO> kafkaInvoiceTemplate;
     private final KafkaTemplate<String, String> kafkaStringTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
+    @KafkaListener(topics = "attach-multipart-file-to-invoice", groupId = "attach_multipart_file_group", concurrency = "10", containerFactory = "attachFileRequestKafkaListenerContainerFactory")
     public void attachFileToInvoice(UUID id, MultipartFile file) throws InvoiceNotFoundException, FailedToUploadFileException {
         Invoice invoice = findById(id);
 
@@ -50,7 +54,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    @KafkaListener(topics = "attach-base64-file-to-invoice", groupId = "attach_file_group", concurrency = "10")
+    @KafkaListener(topics = "attach-base64-file-to-invoice", groupId = "attach_base64_file_group", concurrency = "10", containerFactory = "attachFileRequestKafkaListenerContainerFactory")
     public void attachBase64FileToInvoice(AttachFileRequestDTO request) throws InvoiceNotFoundException, FailedToUploadFileException {
         Invoice invoice = findById(request.getId());
 
@@ -65,7 +69,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    @KafkaListener(topics = "create-invoice", groupId = "invoice_group", concurrency = "10")
+    @KafkaListener(topics = "create-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
     public InvoiceDTO create(InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException {
         Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
 
@@ -98,14 +102,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    @KafkaListener(topics = "update-invoice", groupId = "invoice_group", concurrency = "10")
+    @KafkaListener(topics = "update-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
     public InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException {
-        Invoice existingInvoice = invoiceRepository.findById(invoiceDTO.getId())
-                .orElseThrow(() -> new InvoiceNotFoundException(invoiceDTO.getId()));
+        findById(invoiceDTO.getId());
+        Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
+        InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(invoiceRepository.save(invoice));
 
-        invoiceMapper.updateFromDTO(invoiceDTO, existingInvoice);
-        Invoice savedInvoice = invoiceRepository.save(existingInvoice);
-        InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(savedInvoice);
         kafkaInvoiceTemplate.send("invoice-response", savedInvoiceDTO);
 
         return savedInvoiceDTO;
@@ -121,16 +123,20 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-     @KafkaListener(topics = "get-all-invoices", groupId = "invoice_group", concurrency = "10")
+    @KafkaListener(topics = "get-all-invoices", groupId = "invoice_group", concurrency = "10")
     public Page<InvoiceDTO> getAll(Pageable pageable) throws JsonProcessingException {
         Page<Invoice> invoicesPage = invoiceRepository.findAll(pageable);
-      //  kafkaStringTemplate.send("invoice-response", objectMapper.writeValueAsString(invoicesPage));
+        //  kafkaStringTemplate.send("invoice-response", objectMapper.writeValueAsString(invoicesPage));
         return invoicesPage.map(invoiceMapper::toDTO);
     }
 
     @Override
-    public InvoiceDTO findInvoiceInvoiceDTOById(UUID id) throws InvoiceNotFoundException {
-        return invoiceMapper.toDTO(findById(id));
+    @KafkaListener(topics = "get-by-id-invoice", groupId = "uuid_group", concurrency = "10")
+    public InvoiceDTO findInvoiceDTOById(UUID id) throws InvoiceNotFoundException {
+        InvoiceDTO invoiceDTO = invoiceMapper.toDTO(findById(id));
+
+        kafkaInvoiceTemplate.send("invoice-response", invoiceDTO);
+        return invoiceDTO;
     }
 
     @Override

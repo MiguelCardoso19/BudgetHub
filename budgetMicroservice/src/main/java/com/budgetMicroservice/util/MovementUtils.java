@@ -107,6 +107,8 @@ public class MovementUtils {
         headerRow.createCell(9).setCellValue("Supplier");
         headerRow.createCell(10).setCellValue("Budget Subtype");
         headerRow.createCell(11).setCellValue("Budget Type");
+        headerRow.createCell(12).setCellValue("Document Number");
+        headerRow.createCell(13).setCellValue("Invoice Description");
 
         if (movements.isEmpty()) {
             Row emptyRow = sheet.createRow(rowIdx++);
@@ -128,6 +130,8 @@ public class MovementUtils {
             row.createCell(9).setCellValue(movement.getSupplier() != null ? movement.getSupplier().getCompanyName() : "N/A");
             row.createCell(10).setCellValue(movement.getBudgetSubtype() != null ? movement.getBudgetSubtype().getName() : "N/A");
             row.createCell(11).setCellValue(movement.getBudgetType() != null ? movement.getBudgetType().getName() : "N/A");
+            row.createCell(12).setCellValue(movement.getDocumentNumber() != null ? movement.getDocumentNumber() : "N/A");
+            row.createCell(13).setCellValue(movement.getInvoice() != null ? movement.getInvoice().getDescription() : "N/A");
         }
     }
 

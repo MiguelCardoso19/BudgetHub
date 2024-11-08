@@ -15,6 +15,4 @@ public interface InvoiceMapper {
     @Mapping(target = "movement.subtype.budgetType", ignore = true)
     @Mapping(target = "movement.invoice", ignore = true)
     InvoiceDTO toDTO(Invoice invoice);
-
-    void updateFromDTO(InvoiceDTO invoiceDTO, @MappingTarget Invoice invoice);
 }

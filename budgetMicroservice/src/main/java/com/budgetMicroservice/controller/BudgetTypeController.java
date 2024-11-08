@@ -34,7 +34,7 @@ public class BudgetTypeController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<BudgetTypeDTO> updateBudgetType(@Valid @RequestBody BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException {
+    public ResponseEntity<BudgetTypeDTO> updateBudgetType(@Valid @RequestBody BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException, BudgetSubtypeNotFoundException {
         return ResponseEntity.ok(budgetTypeService.updateBudgetType(budgetTypeDTO));
     }
 

@@ -1,6 +1,5 @@
 package com.budgetMicroservice.controller;
 
-import com.budgetMicroservice.dto.AttachFileRequestDTO;
 import com.budgetMicroservice.dto.InvoiceDTO;
 import com.budgetMicroservice.exception.FailedToUploadFileException;
 import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
@@ -63,6 +62,6 @@ public class InvoiceController {
 
     @GetMapping("/{id}")
     public ResponseEntity<InvoiceDTO> getById(@PathVariable UUID id) throws InvoiceNotFoundException {
-        return ResponseEntity.ok(invoiceService.findInvoiceInvoiceDTOById(id));
+        return ResponseEntity.ok(invoiceService.findInvoiceDTOById(id));
     }
 }

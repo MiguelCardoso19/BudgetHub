@@ -4,14 +4,15 @@ import com.budgetMicroservice.exception.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import static com.budgetMicroservice.exception.ErrorMessage.JSON_PARSE_ERROR;
-import static com.budgetMicroservice.exception.ErrorMessage.MAX_UPLOAD_SIZE_EXCEEDED;
+import static com.budgetMicroservice.exception.ErrorMessage.*;
+import static org.hibernate.grammars.hql.HqlParser.CONFLICT;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -151,5 +152,13 @@ public class GlobalExceptionHandler {
                                                         JSON_PARSE_ERROR.getStatus().value(),
                                                         JSON_PARSE_ERROR.getErrorCode());
         return new ResponseEntity<>(errorResponse, JSON_PARSE_ERROR.getStatus());
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(OptimisticLockingFailureException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(OPTIMISTIC_LOCKING_FAILURE.getMessage(),
+                OPTIMISTIC_LOCKING_FAILURE.getStatus().value(),
+                OPTIMISTIC_LOCKING_FAILURE.getErrorCode());
+        return new ResponseEntity<>(errorResponse, OPTIMISTIC_LOCKING_FAILURE.getStatus());
     }
 }

@@ -12,4 +12,6 @@ public interface NotificationMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "type", ignore = true)
     Notification toEntity(NotificationRequestDTO notificationRequest);
+
+    NotificationRequestDTO toDTO(Notification notification);
 }

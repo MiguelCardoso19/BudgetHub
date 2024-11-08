@@ -17,8 +17,6 @@ public interface MovementMapper {
 
     Movement toEntity(MovementDTO movementDTO);
 
-    void updateFromDTO(MovementDTO movementDTO, @MappingTarget Movement movement);
-
     @Named("toDTOWithoutBudgetType")
     @Mapping(target = "budgetType", ignore = true)
     @Mapping(target = "invoice.movement", ignore = true)

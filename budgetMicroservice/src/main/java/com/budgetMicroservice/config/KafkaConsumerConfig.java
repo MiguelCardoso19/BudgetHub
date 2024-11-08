@@ -33,10 +33,12 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "movement_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
-        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, MovementDTO.class);
-        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new JsonDeserializer<>(MovementDTO.class));
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<MovementDTO> jsonDeserializer = new JsonDeserializer<>(MovementDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
     @Bean
@@ -113,23 +115,25 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, AttachFileRequestDTO> attachFileRequestconsumerFactory() {
+    public ConsumerFactory<String, AttachFileRequestDTO> attachFileRequestConsumerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, "attach_file_group");
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "attach_base64_file_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, AttachFileRequestDTO.class.getName());
-        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        return new DefaultKafkaConsumerFactory<>(config);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+
+        JsonDeserializer<AttachFileRequestDTO> jsonDeserializer = new JsonDeserializer<>(AttachFileRequestDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, AttachFileRequestDTO> attachFileRequestKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, AttachFileRequestDTO> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(attachFileRequestconsumerFactory());
+        ConcurrentKafkaListenerContainerFactory<String, AttachFileRequestDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(attachFileRequestConsumerFactory());
         return factory;
     }
 
@@ -151,22 +155,22 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
-    @Bean
-    public ConsumerFactory<String, String> stringConsumerFactory() {
-        Map<String, Object> config = new HashMap<>();
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, "string_group");
-        return new DefaultKafkaConsumerFactory<>(config);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(stringConsumerFactory());
-        return factory;
-    }
+//    @Bean
+//    public ConsumerFactory<String, String> stringConsumerFactory() {
+//        Map<String, Object> config = new HashMap<>();
+//        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+//        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+//        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+//        config.put(ConsumerConfig.GROUP_ID_CONFIG, "string_group");
+//        return new DefaultKafkaConsumerFactory<>(config);
+//    }
+//
+//    @Bean
+//    public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactory() {
+//        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+//        factory.setConsumerFactory(stringConsumerFactory());
+//        return factory;
+//    }
 
     @Bean
     public ConsumerFactory<String, SupplierDTO> supplierConsumerFactory() {
@@ -174,18 +178,18 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "supplier_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
-        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
         JsonDeserializer<SupplierDTO> jsonDeserializer = new JsonDeserializer<>(SupplierDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
         jsonDeserializer.addTrustedPackages("*");
 
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
-
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, SupplierDTO> supplierKafkaContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, SupplierDTO> supplierKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, SupplierDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(supplierConsumerFactory());
         return factory;
@@ -201,6 +205,8 @@ public class KafkaConsumerConfig {
 
         JsonDeserializer<InvoiceDTO> jsonDeserializer = new JsonDeserializer<>(InvoiceDTO.class);
         jsonDeserializer.addTrustedPackages("*");
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
 
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
@@ -209,7 +215,6 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, InvoiceDTO> invoiceKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, InvoiceDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(invoiceConsumerFactory());
-        factory.getContainerProperties().setPollTimeout(3000);
         return factory;
     }
 
@@ -220,10 +225,10 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "budget_type_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         JsonDeserializer<BudgetTypeDTO> jsonDeserializer = new JsonDeserializer<>(BudgetTypeDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
         jsonDeserializer.addTrustedPackages("*");
-
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
@@ -231,7 +236,6 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, BudgetTypeDTO> budgetTypeKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, BudgetTypeDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(budgetTypeConsumerFactory());
-        factory.getContainerProperties().setPollTimeout(3000);
         return factory;
     }
 
@@ -242,10 +246,10 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "budget_subtype_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         JsonDeserializer<BudgetSubtypeDTO> jsonDeserializer = new JsonDeserializer<>(BudgetSubtypeDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
         jsonDeserializer.addTrustedPackages("*");
-
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
@@ -253,7 +257,6 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeDTO> budgetSubtypeKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(budgetSubtypeConsumerFactory());
-        factory.getContainerProperties().setPollTimeout(3000);
         return factory;
     }
 }
