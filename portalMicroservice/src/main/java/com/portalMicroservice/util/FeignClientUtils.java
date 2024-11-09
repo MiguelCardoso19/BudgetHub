@@ -49,7 +49,8 @@ public class FeignClientUtils {
         processDTO(body, MovementDTO.class, movement -> {
             if (movement.getId() != null) request.setAttribute("id", movement.getId());
             if (movement.getInvoiceId() != null) request.setAttribute("invoice-id", movement.getInvoiceId());
-            if (movement.getBudgetSubtypeId() != null) request.setAttribute("budget-subtype-id", movement.getBudgetSubtypeId());
+            if (movement.getBudgetSubtypeId() != null)
+                request.setAttribute("budget-subtype-id", movement.getBudgetSubtypeId());
             if (movement.getBudgetTypeId() != null) request.setAttribute("budget-type-id", movement.getBudgetTypeId());
             if (movement.getSupplierId() != null) request.setAttribute("supplier-id", movement.getSupplierId());
         });
@@ -70,8 +71,11 @@ public class FeignClientUtils {
     @SneakyThrows
     public static String extractErrorMessage(Response response) {
         JsonNode bodyJson = objectMapper.readTree(response.body().asInputStream());
-        String errorMessage = bodyJson.get("message").asText();
+        return bodyJson.get("message").asText();
+    }
 
+    public static String formatedExtractedErrorMessageList(Response response) {
+        String errorMessage = extractErrorMessage(response);
         return errorMessage.substring(errorMessage.indexOf("[") + 1, errorMessage.indexOf("]"));
     }
 }

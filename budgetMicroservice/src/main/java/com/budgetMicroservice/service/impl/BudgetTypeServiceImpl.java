@@ -1,25 +1,25 @@
 package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.BudgetTypeDTO;
-import com.budgetMicroservice.dto.InvoiceDTO;
+import com.budgetMicroservice.dto.CustomPageDTO;
+import com.budgetMicroservice.dto.CustomPageableDTO;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.mapper.BudgetMapper;
 import com.budgetMicroservice.model.BudgetType;
-import com.budgetMicroservice.model.Invoice;
 import com.budgetMicroservice.repository.BudgetTypeRepository;
 import com.budgetMicroservice.service.BudgetTypeService;
+import com.budgetMicroservice.util.PageableUtils;
 import com.budgetMicroservice.validator.BudgetValidator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,6 +28,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     private final BudgetTypeRepository budgetTypeRepository;
     private final BudgetMapper budgetMapper;
     private final KafkaTemplate<String, BudgetTypeDTO> kafkaBudgetTypeTemplate;
+    private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
 
     @Override
     @KafkaListener(topics = "create-budget-type", groupId = "budget_type_group", concurrency = "10", containerFactory = "budgetTypeKafkaListenerContainerFactory")
@@ -66,10 +67,13 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     }
 
     @Override
-    @KafkaListener(topics = "find-all-budget-type", groupId = "budget_type_group", concurrency = "10")
-    public Page<BudgetTypeDTO> findAllBudgetTypes(Pageable pageable) throws JsonProcessingException {
-        Page<BudgetType> budgetTypePage = budgetTypeRepository.findAll(pageable);
-     //   kafkaStringTemplate.send("budget-type-response", objectMapper.writeValueAsString(budgetTypePage));
+    @Transactional
+    @KafkaListener(topics = "find-all-budget-type", groupId = "pageable_group", concurrency = "10", containerFactory = "customPageableKafkaListenerContainerFactory")
+    public Page<BudgetTypeDTO> findAllBudgetTypes(CustomPageableDTO customPageableDTO) {
+        Page<BudgetType> budgetTypePage = budgetTypeRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
+        List<BudgetTypeDTO> budgetTypeDTOs = budgetMapper.toDTOTypeList(budgetTypePage);
+        kafkaCustomPageTemplate.send("budget-type-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, budgetTypeDTOs, budgetTypePage));
+
         return budgetTypePage.map(budgetMapper::toDTO);
     }
 

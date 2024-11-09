@@ -33,6 +33,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
             case 404 -> handleNotFound(methodKey, request);
             case 401 -> handleUnauthorized(methodKey);
             case 409 -> handleConflict(methodKey, response, request);
+            case 400 -> handleBadRequest(methodKey, response);
         }
 
         return new GenericException();
@@ -79,7 +80,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
 
     private void handleConflict(String methodKey, Response response, HttpServletRequest request) throws UserCredentialsValidationException, BudgetSubtypeAlreadyExistsException, BudgetTypeAlreadyExistsException, InvoiceAlreadyExistsException, SupplierValidationException, MovementValidationException, GenerateExcelException {
         if (methodKey.contains("register") || methodKey.contains("update")) {
-            throw new UserCredentialsValidationException(FeignClientUtils.extractErrorMessage(response));
+            throw new UserCredentialsValidationException(FeignClientUtils.formatedExtractedErrorMessageList(response));
         } else if (methodKey.contains("addSubtype")) {
             throw new BudgetSubtypeAlreadyExistsException((String) request.getAttribute("name"));
         } else if (methodKey.contains("createBudgetType")) {
@@ -87,11 +88,19 @@ public class CustomErrorDecoder implements ErrorDecoder {
         } else if (methodKey.contains("createInvoice")) {
             throw new InvoiceAlreadyExistsException((String) request.getAttribute("name"));
         } else if (methodKey.contains("createSupplier") || methodKey.contains("updateSupplier")) {
-            throw new SupplierValidationException(FeignClientUtils.extractErrorMessage(response));
+            throw new SupplierValidationException(FeignClientUtils.formatedExtractedErrorMessageList(response));
         } else if (methodKey.contains("createMovement") || methodKey.contains("updateMovement")) {
-            throw new MovementValidationException(FeignClientUtils.extractErrorMessage(response));
+            throw new MovementValidationException(FeignClientUtils.formatedExtractedErrorMessageList(response));
         } else if (methodKey.contains("exportMovementsReport")) {
             throw new GenerateExcelException();
+        }
+    }
+
+    private void handleBadRequest(String methodKey, Response response) throws BudgetExceededException {
+        if (methodKey.contains("createMovement") || methodKey.contains("updateMovement")) {
+            throw new BudgetExceededException(FeignClientUtils.extractErrorMessage(response));
+        } else if(methodKey.contains("addSubtype") || methodKey.contains("updateBudgeType")) {
+            throw new BudgetExceededException(FeignClientUtils.extractErrorMessage(response));
         }
     }
 }

@@ -5,6 +5,7 @@ import com.budgetMicroservice.dto.BudgetTypeDTO;
 import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.model.BudgetType;
 import org.mapstruct.*;
+import org.springframework.data.domain.Page;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +24,11 @@ public interface BudgetMapper {
 
     BudgetSubtype toEntity(BudgetSubtypeDTO budgetSubtypeDTO);
 
+    List<BudgetTypeDTO> toDTOTypeList(Page<BudgetType> budgetTypePage);
+
+    List<BudgetSubtypeDTO> toDTOSubtypeList(Page<BudgetSubtype> budgetSubtypePage);
+
+
     @Named("withoutBudgetType")
     default List<BudgetSubtypeDTO> mapSubtypesWithoutBudgetType(List<BudgetSubtype> subtypes) {
         if (subtypes == null) {
@@ -37,4 +43,5 @@ public interface BudgetMapper {
                         })
                 .collect(Collectors.toList());
     }
+
 }

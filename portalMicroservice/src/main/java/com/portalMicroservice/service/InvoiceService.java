@@ -1,15 +1,21 @@
 package com.portalMicroservice.service;
 
-import com.portalMicroservice.dto.budget.AttachFileRequestDTO;
+import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.InvoiceDTO;
 import com.portalMicroservice.exception.GenericException;
+import com.portalMicroservice.exception.budget.FailedToUploadFileException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public interface InvoiceService {
-    InvoiceDTO create(InvoiceDTO invoiceDTO) throws GenericException;
-    InvoiceDTO update(InvoiceDTO invoiceDTO) throws GenericException;
+    InvoiceDTO create(InvoiceDTO invoiceDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
+    InvoiceDTO update(InvoiceDTO invoiceDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     void delete(UUID id) throws GenericException;
-    InvoiceDTO getById(UUID id) throws GenericException;
-    void attachBase64FileToInvoice(AttachFileRequestDTO attachFileRequestDTO);
+    InvoiceDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
+    void attachBase64FileToInvoice(UUID invoiceId, MultipartFile file) throws FailedToUploadFileException;
+    CustomPageDTO getAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
 }

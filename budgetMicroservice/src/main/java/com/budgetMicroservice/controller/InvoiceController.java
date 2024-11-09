@@ -6,6 +6,7 @@ import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
 import com.budgetMicroservice.exception.InvoiceNotFoundException;
 import com.budgetMicroservice.exception.MovementNotFoundException;
 import com.budgetMicroservice.service.InvoiceService;
+import com.budgetMicroservice.util.PageableUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,11 +26,11 @@ import java.util.UUID;
 public class InvoiceController {
     private final InvoiceService invoiceService;
 
-    @PostMapping("/{invoiceId}/upload-file")
+    @PostMapping("/attach-multipart-file/{invoiceId}")
     public ResponseEntity<InvoiceDTO> uploadFileToInvoice(
             @PathVariable UUID invoiceId,
             @RequestParam("file") MultipartFile file) throws InvoiceNotFoundException, FailedToUploadFileException {
-        invoiceService.attachFileToInvoice(invoiceId, file);
+        invoiceService.attachMultipartFileToInvoice(invoiceId, file);
         return ResponseEntity.noContent().build();
     }
 
@@ -52,12 +53,7 @@ public class InvoiceController {
 
     @GetMapping("/all")
     public ResponseEntity<Page<InvoiceDTO>> getAllInvoices(@PageableDefault(size = 10, page = 0) Pageable pageable) throws JsonProcessingException {
-        return ResponseEntity.ok(invoiceService.getAll(pageable));
-    }
-
-    @PostMapping("/{invoice-id}/movement/{movement-id}")
-    public ResponseEntity<InvoiceDTO> addMovementToInvoice(@PathVariable("invoice-id") UUID invoiceId, @PathVariable("movement-id") UUID movementId) throws MovementNotFoundException, InvoiceNotFoundException {
-        return ResponseEntity.ok(invoiceService.addMovementToInvoice(invoiceId, movementId));
+        return ResponseEntity.ok(invoiceService.getAll(PageableUtils.convertToCustomPageable(pageable)));
     }
 
     @GetMapping("/{id}")

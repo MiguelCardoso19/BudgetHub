@@ -1,12 +1,12 @@
 package com.budgetMicroservice.dto;
 
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class AttachFileRequestDTO extends AbstractDTO{
 
-    @NotEmpty
-    @NotEmpty
     private String base64File;
+
+    private MultipartFile multipartFile;
 }

@@ -1,7 +1,9 @@
 package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.BudgetSubtypeDTO;
-import com.budgetMicroservice.dto.BudgetTypeDTO;
+import com.budgetMicroservice.dto.CustomPageDTO;
+import com.budgetMicroservice.dto.CustomPageableDTO;
+import com.budgetMicroservice.exception.BudgetExceededException;
 import com.budgetMicroservice.exception.BudgetSubtypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.mapper.BudgetMapper;
@@ -10,16 +12,17 @@ import com.budgetMicroservice.model.BudgetType;
 import com.budgetMicroservice.repository.BudgetSubtypeRepository;
 import com.budgetMicroservice.service.BudgetSubtypeService;
 import com.budgetMicroservice.service.BudgetTypeService;
+import com.budgetMicroservice.util.BudgetUtils;
+import com.budgetMicroservice.util.PageableUtils;
 import com.budgetMicroservice.validator.BudgetValidator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,13 +32,16 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     private final BudgetMapper budgetMapper;
     private final BudgetTypeService budgetTypeService;
     private final KafkaTemplate<String, BudgetSubtypeDTO> kafkaBudgetSubtypeTemplate;
+    private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
+
 
     @Override
     @KafkaListener(topics = "add-budget-subtype", groupId = "budget_subtype_group", concurrency = "10", containerFactory = "budgetSubtypeKafkaListenerContainerFactory")
-    public BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException {
+    public BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException, BudgetExceededException {
         BudgetType budgetType = budgetTypeService.findBudgetTypeEntityById(budgetSubtypeDTO.getBudgetTypeId());
 
         BudgetValidator.checkForExistingBudgetSubtype(budgetSubtypeDTO, budgetSubtypeRepository);
+        BudgetUtils.checkBudgetExceeded(budgetType, budgetSubtypeDTO, budgetSubtypeRepository, null);
 
         BudgetSubtype budgetSubtype = budgetMapper.toEntity(budgetSubtypeDTO);
         budgetSubtype.setBudgetType(budgetType);
@@ -48,31 +54,40 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
 
     @Override
     @KafkaListener(topics = "update-budget-subtype", groupId = "budget_subtype_group", concurrency = "10", containerFactory = "budgetSubtypeKafkaListenerContainerFactory")
-    public BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException {
-        findById(budgetSubtypeDTO.getId());
-        BudgetValidator.checkForExistingBudgetSubtypeUpdate(budgetSubtypeDTO, budgetSubtypeRepository);
+    public BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException {
+        BudgetSubtype existingBudgetSubtype = findById(budgetSubtypeDTO.getId());
 
+        BudgetUtils.checkBudgetExceeded(existingBudgetSubtype.getBudgetType(), budgetSubtypeDTO, budgetSubtypeRepository, existingBudgetSubtype);
+
+        BudgetValidator.checkForExistingBudgetSubtypeUpdate(budgetSubtypeDTO, budgetSubtypeRepository);
         BudgetSubtype budgetSubtype = budgetMapper.toEntity(budgetSubtypeDTO);
         BudgetSubtypeDTO savedBudgetSubtypeDTO = budgetMapper.toDTO(budgetSubtypeRepository.save(budgetSubtype));
 
         kafkaBudgetSubtypeTemplate.send("budget-subtype-response", savedBudgetSubtypeDTO);
+
         return savedBudgetSubtypeDTO;
     }
+
 
     @Override
     @KafkaListener(topics = "delete-budget-subtype", groupId = "uuid_group", concurrency = "10")
     public void deleteBudgetSubtype(UUID subtypeId) throws BudgetSubtypeNotFoundException {
-        if (!budgetSubtypeRepository.existsById(subtypeId)) {
-            throw new BudgetSubtypeNotFoundException(subtypeId);
-        }
+        BudgetSubtype budgetSubtype = findById(subtypeId);
+        BudgetType budgetType = budgetSubtype.getBudgetType();
+        budgetType.setTotalSpent(budgetType.getTotalSpent() - budgetSubtype.getTotalSpent());
+        budgetTypeService.save(budgetType);
+
         budgetSubtypeRepository.deleteById(subtypeId);
     }
 
     @Override
-    @KafkaListener(topics = "find-all-budget-subtype", groupId = "budget_subtype_group", concurrency = "10")
-    public Page<BudgetSubtypeDTO> findAllBudgetSubtypes(Pageable pageable) throws JsonProcessingException {
-        Page<BudgetSubtype> budgetSubtypePage = budgetSubtypeRepository.findAll(pageable);
-        //     kafkaStringTemplate.send("budget-subtype-response", objectMapper.writeValueAsString(budgetSubtypePage));
+    @Transactional
+    @KafkaListener(topics = "find-all-budget-subtype", groupId = "pageable_group", concurrency = "10", containerFactory = "customPageableKafkaListenerContainerFactory")
+    public Page<BudgetSubtypeDTO> findAllBudgetSubtypes(CustomPageableDTO customPageableDTO) {
+        Page<BudgetSubtype> budgetSubtypePage = budgetSubtypeRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
+        List<BudgetSubtypeDTO> budgetSubtypeDTOs = budgetMapper.toDTOSubtypeList(budgetSubtypePage);
+        kafkaCustomPageTemplate.send("budget-subtype-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, budgetSubtypeDTOs, budgetSubtypePage));
+
         return budgetSubtypePage.map(budgetMapper::toDTO);
     }
 

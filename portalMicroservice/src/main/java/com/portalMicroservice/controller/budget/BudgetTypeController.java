@@ -2,11 +2,11 @@ package com.portalMicroservice.controller.budget;
 
 import com.portalMicroservice.client.budget.BudgetTypeFeignClient;
 import com.portalMicroservice.dto.budget.BudgetTypeDTO;
+import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.exception.GenericException;
 import com.portalMicroservice.service.BudgetTypeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +47,9 @@ public class BudgetTypeController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<BudgetTypeDTO>> findAllBudgetTypes(Pageable pageable) {
-        return budgetTypeFeignClient.findAllBudgetTypes(pageable);
+    public ResponseEntity<CustomPageDTO> findAllBudgetTypes(Pageable pageable) throws GenericException {
+       // return budgetTypeFeignClient.findAllBudgetTypes(pageable);
+        return ResponseEntity.ok(budgetTypeService.findAll(pageable));
+
     }
 }

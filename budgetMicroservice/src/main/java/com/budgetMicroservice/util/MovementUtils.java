@@ -2,6 +2,7 @@ package com.budgetMicroservice.util;
 
 import com.budgetMicroservice.dto.MovementDTO;
 import com.budgetMicroservice.enumerator.MovementStatus;
+import com.budgetMicroservice.exception.BudgetExceededException;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.MovementValidationException;
 import com.budgetMicroservice.model.BudgetSubtype;
@@ -47,30 +48,65 @@ public class MovementUtils {
 
     public static void updateSpentAmounts(BudgetSubtypeService budgetSubtypeService,
                                           BudgetTypeService budgetTypeService,
-                                          Movement movement, Double totalValue) {
+                                          Movement movement, Double totalValue) throws BudgetExceededException {
+
         if (movement.getBudgetSubtype() != null) {
             BudgetSubtype subtype = movement.getBudgetSubtype();
-            subtype.setTotalSpent(subtype.getTotalSpent() + totalValue);
+            BudgetType type = subtype.getBudgetType();
+
+            if (totalValue > subtype.getTotalSpent()) {
+                throw new BudgetExceededException(totalValue, subtype.getTotalSpent());
+            }
+
+            subtype.setTotalSpent(subtype.getTotalSpent() - totalValue);
             budgetSubtypeService.save(subtype);
+
+            if (type != null) {
+                type.setTotalSpent(type.getTotalSpent() - totalValue);
+                budgetTypeService.save(type);
+            }
+
         } else if (movement.getBudgetType() != null) {
             BudgetType type = movement.getBudgetType();
-            type.setTotalSpent(type.getTotalSpent() + totalValue);
+
+            if (totalValue > type.getTotalSpent()) {
+                throw new BudgetExceededException(totalValue, type.getTotalSpent());
+            }
+
+            type.setTotalSpent(type.getTotalSpent() - totalValue);
             budgetTypeService.save(type);
         }
     }
 
     public static void adjustBudgetAmounts(BudgetSubtypeService budgetSubtypeService,
                                            BudgetTypeService budgetTypeService,
-                                           Movement oldMovement, MovementDTO newMovementDTO) {
+                                           Movement oldMovement, MovementDTO newMovementDTO) throws BudgetExceededException {
         double oldTotalValue = oldMovement.getTotalValue();
         double newTotalValue = newMovementDTO.getTotalValue();
+        double valueDifference = newTotalValue - oldTotalValue;
 
         if (oldMovement.getBudgetSubtype() != null) {
             BudgetSubtype subtype = oldMovement.getBudgetSubtype();
+            BudgetType type = subtype.getBudgetType();
+
+            if (valueDifference > subtype.getTotalSpent()) {
+                throw new BudgetExceededException(valueDifference, subtype.getTotalSpent());
+            }
+
             subtype.setTotalSpent(subtype.getTotalSpent() - oldTotalValue + newTotalValue);
             budgetSubtypeService.save(subtype);
+
+            if (type != null) {
+                type.setTotalSpent(type.getTotalSpent() - oldTotalValue + newTotalValue);
+                budgetTypeService.save(type);
+            }
         } else if (oldMovement.getBudgetType() != null) {
             BudgetType type = oldMovement.getBudgetType();
+
+            if (valueDifference > type.getTotalSpent()) {
+                throw new BudgetExceededException(valueDifference, type.getTotalSpent());
+            }
+
             type.setTotalSpent(type.getTotalSpent() - oldTotalValue + newTotalValue);
             budgetTypeService.save(type);
         }
@@ -82,14 +118,23 @@ public class MovementUtils {
 
         if (movement.getBudgetSubtype() != null) {
             BudgetSubtype subtype = movement.getBudgetSubtype();
-            subtype.setTotalSpent(subtype.getTotalSpent() - totalValue);
+
+            subtype.setTotalSpent(subtype.getTotalSpent() + totalValue);
             budgetSubtypeService.save(subtype);
+
+            if (subtype.getBudgetType() != null) {
+                BudgetType type = subtype.getBudgetType();
+                type.setTotalSpent(type.getTotalSpent() + totalValue);
+                budgetTypeService.save(type);
+            }
         } else if (movement.getBudgetType() != null) {
             BudgetType type = movement.getBudgetType();
-            type.setTotalSpent(type.getTotalSpent() - totalValue);
+
+            type.setTotalSpent(type.getTotalSpent() + totalValue);
             budgetTypeService.save(type);
         }
     }
+
 
     public static void populateSheetWithMovements(XSSFSheet sheet, List<Movement> movements) {
         int rowIdx = 0;
@@ -135,12 +180,7 @@ public class MovementUtils {
         }
     }
 
-    public static List<Movement> filterMovements(
-            MovementRepository movementRepository,
-            LocalDate startDate,
-            LocalDate endDate,
-            MovementStatus status) {
-
+    public static List<Movement> filterMovements(MovementRepository movementRepository, LocalDate startDate, LocalDate endDate, MovementStatus status) {
         int conditionCode = (startDate != null ? 1 : 0) + (endDate != null ? 2 : 0) + (status != null ? 4 : 0);
 
         return switch (conditionCode) {

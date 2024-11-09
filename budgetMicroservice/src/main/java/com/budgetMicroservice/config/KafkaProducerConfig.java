@@ -1,7 +1,6 @@
 package com.budgetMicroservice.config;
 
 import com.budgetMicroservice.dto.*;
-import com.budgetMicroservice.enumerator.MovementStatus;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.UUIDSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +23,20 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
+    public ProducerFactory<String, CustomPageDTO> customPageProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, CustomPageDTO> customPageKafkaTemplate() {
+        return new KafkaTemplate<>(customPageProducerFactory());
+    }
+
+    @Bean
     public ProducerFactory<String, NotificationRequestDTO> notificationRequestProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -38,62 +51,6 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, MovementUpdateStatusRequestDTO> movementUpdateStatusRequestProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<String, MovementUpdateStatusRequestDTO> movementUpdateStatusRequestKafkaTemplate() {
-        return new KafkaTemplate<>(movementUpdateStatusRequestProducerFactory());
-    }
-
-    @Bean
-    public ProducerFactory<String, PageDTO<SupplierDTO>> pageSupplierProducerFactory() {
-        Map<String, Object> config = new HashMap<>();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(config);
-    }
-
-    @Bean
-    public KafkaTemplate<String, PageDTO<SupplierDTO>> pageSupplierKafkaTemplate() {
-        return new KafkaTemplate<>(pageSupplierProducerFactory());
-    }
-
-    @Bean
-    public ProducerFactory<String, PageableDTO> pageableProducerFactory() {
-        Map<String, Object> config = new HashMap<>();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(config);
-    }
-
-    @Bean
-    public KafkaTemplate<String, PageableDTO> pageableKafkaTemplate() {
-        return new KafkaTemplate<>(pageableProducerFactory());
-    }
-
-    @Bean
-    public ProducerFactory<String, AttachFileRequestDTO> attachBase64FileRequestProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<String, AttachFileRequestDTO> attachBase64FileRequestKafkaTemplate() {
-        return new KafkaTemplate<>(attachBase64FileRequestProducerFactory());
-    }
-
-    @Bean
     public ProducerFactory<String, UUID> uuidProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -105,20 +62,6 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, UUID> uuidKafkaTemplate() {
         return new KafkaTemplate<>(uuidProducerFactory());
-    }
-
-    @Bean
-    public ProducerFactory<String, String> stringProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<String, String> stringKafkaTemplate() {
-        return new KafkaTemplate<>(stringProducerFactory());
     }
 
     @Bean
@@ -189,5 +132,19 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, BudgetTypeDTO> budgetTypekafkaTemplate() {
         return new KafkaTemplate<>(budgetTypeProducerFactory());
+    }
+
+    @Bean
+    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public ProducerFactory<String, String> producerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
     }
 }

@@ -15,7 +15,7 @@ import java.util.UUID;
 @FeignClient(name = "invoiceFeignClient", url = "${budget-microservice-invoice.url}", configuration = CustomErrorDecoder.class)
 public interface InvoiceFeignClient {
 
-    @PostMapping(value = "/{invoiceId}/upload-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/attach-multipart-file/{invoiceId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<Void> uploadFileToInvoice(@PathVariable("invoiceId") UUID invoiceId, @RequestPart("file") MultipartFile file);
 
     @PostMapping("/create")
@@ -29,9 +29,6 @@ public interface InvoiceFeignClient {
 
     @GetMapping("/all")
     ResponseEntity<Page<InvoiceDTO>> getAllInvoices(Pageable pageable);
-
-    @PostMapping("/{invoice-id}/movement/{movement-id}")
-    ResponseEntity<InvoiceDTO> addMovementToInvoice(@PathVariable("invoice-id") UUID invoiceId, @PathVariable("movement-id") UUID movementId);
 
     @GetMapping("/{id}")
     ResponseEntity<InvoiceDTO> getInvoiceById(@PathVariable UUID id);

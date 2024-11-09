@@ -1,6 +1,7 @@
 package com.budgetMicroservice.service;
 
 import com.budgetMicroservice.dto.BudgetTypeDTO;
+import com.budgetMicroservice.dto.CustomPageableDTO;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
@@ -16,7 +17,7 @@ public interface BudgetTypeService {
     BudgetTypeDTO updateBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException, BudgetSubtypeNotFoundException;
     void deleteBudgetType(UUID id) throws BudgetTypeNotFoundException;
     BudgetTypeDTO findBudgetTypeDTOById(UUID id) throws BudgetTypeNotFoundException, BudgetSubtypeNotFoundException;
-    Page<BudgetTypeDTO> findAllBudgetTypes(Pageable pageable) throws JsonProcessingException;
+    Page<BudgetTypeDTO> findAllBudgetTypes(CustomPageableDTO customPageableDTO) throws JsonProcessingException;
     BudgetType findBudgetTypeEntityById(UUID id) throws BudgetSubtypeNotFoundException;
     void save(BudgetType budgetType);
 }

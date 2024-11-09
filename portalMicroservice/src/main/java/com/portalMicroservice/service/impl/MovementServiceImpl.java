@@ -1,14 +1,18 @@
 package com.portalMicroservice.service.impl;
 
-import com.portalMicroservice.dto.budget.MovementDTO;
+import com.portalMicroservice.dto.budget.*;
+import com.portalMicroservice.enumerator.MovementStatus;
 import com.portalMicroservice.exception.GenericException;
 import com.portalMicroservice.service.MovementService;
+import com.portalMicroservice.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -17,39 +21,29 @@ import java.util.concurrent.*;
 @Slf4j
 public class MovementServiceImpl implements MovementService {
     private final ConcurrentHashMap<UUID, CompletableFuture<MovementDTO>> pendingRequests = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, CompletableFuture<CustomPageDTO>> pendingPageRequests = new ConcurrentHashMap<>();
     private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
     private final KafkaTemplate<String, MovementDTO> kafkaMovementTemplate;
+    private final KafkaTemplate<String, CustomPageableDTO> kafkaPageableTemplate;
+    private final KafkaTemplate<String, MovementsByBudgetRequestDTO> kafkaMovementsByBudgetTemplate;
+    private final KafkaTemplate<String, ExportMovementsRequestDTO> kafkaExportMovementsTemplate;
 
     private static final long TIMEOUT_DURATION = 10;
 
     @Override
-    public MovementDTO create(MovementDTO movementDTO) throws ExecutionException, InterruptedException, GenericException {
+    public MovementDTO create(MovementDTO movementDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
         CompletableFuture<MovementDTO> future = new CompletableFuture<>();
         pendingRequests.put(movementDTO.getId(), future);
-
         kafkaMovementTemplate.send("create-movement", movementDTO);
-
-        try {
-            return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            log.error("Request timed out while creating movement: {}", movementDTO.getId());
-            throw new GenericException();
-        }
+        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
     }
 
     @Override
-    public MovementDTO update(MovementDTO movementDTO) throws ExecutionException, InterruptedException, GenericException {
+    public MovementDTO update(MovementDTO movementDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
         CompletableFuture<MovementDTO> future = new CompletableFuture<>();
         pendingRequests.put(movementDTO.getId(), future);
-
         kafkaMovementTemplate.send("update-movement", movementDTO);
-
-        try {
-            return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            log.error("Request timed out while updating movement: {}", movementDTO.getId());
-            throw new GenericException();
-        }
+        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
     }
 
     @Override
@@ -58,32 +52,63 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
-    public MovementDTO getById(UUID id) throws GenericException {
+    public MovementDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<MovementDTO> future = new CompletableFuture<>();
         pendingRequests.put(id, future);
-
         kafkaUuidTemplate.send("get-movement-by-id", id);
+        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+    }
 
-        log.info("Sent request to retrieve movement by ID: {}", id);
+    @Override
+    public CustomPageDTO getAll(Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
+        pendingPageRequests.put(pageable.getPageSize(), future);
+        kafkaPageableTemplate.send("get-all-movements", PageableUtils.convertToCustomPageable(pageable));
+        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+    }
 
-        try {
-            return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
-        } catch (TimeoutException | InterruptedException | ExecutionException e) {
-            log.error("Request timed out while retrieving movement by ID: {}", id);
-            throw new GenericException();
-        }
+    @Override
+    public CustomPageDTO getByBudgetType(UUID budgetTypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
+        pendingPageRequests.put(pageable.getPageSize(), future);
+        kafkaMovementsByBudgetTemplate.send("get-movements-by-budget-type",
+                new MovementsByBudgetRequestDTO(budgetTypeId, PageableUtils.convertToCustomPageable(pageable)));
+        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public CustomPageDTO getByBudgetSubtype(UUID budgetSubtypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
+        pendingPageRequests.put(pageable.getPageSize(), future);
+        kafkaMovementsByBudgetTemplate.send("get-movements-by-budget-subtype",
+                new MovementsByBudgetRequestDTO(budgetSubtypeId, PageableUtils.convertToCustomPageable(pageable)));
+        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void exportMovementsReport(LocalDate startDate, LocalDate endDate, MovementStatus status, String emailFromRequest) {
+        kafkaExportMovementsTemplate.send("export-movements-report",
+                new ExportMovementsRequestDTO(startDate, endDate, status, emailFromRequest));
     }
 
     @KafkaListener(topics = "movement-response", groupId = "movement_response_group", concurrency = "10", containerFactory = "movementKafkaListenerContainerFactory")
     public void listen(MovementDTO movementDTO) throws GenericException {
-        log.info("Received message for Movement: {}", movementDTO.getId());
-
         CompletableFuture<MovementDTO> future = pendingRequests.remove(movementDTO.getId());
 
         if (future != null) {
             future.complete(movementDTO);
         } else {
-            log.warn("Received response for unknown or expired request ID: {}", movementDTO.getId());
+            throw new GenericException();
+        }
+    }
+
+    @KafkaListener(topics = "movement-page-response", groupId = "pageable_response_group", concurrency = "10", containerFactory = "customPageKafkaListenerContainerFactory")
+    public void listenToPageResponse(CustomPageDTO customPageDTO) throws GenericException {
+        CompletableFuture<CustomPageDTO> future = pendingPageRequests.remove(customPageDTO.getPageable().getPageSize());
+
+        if (future != null) {
+            future.complete(customPageDTO);
+        } else {
             throw new GenericException();
         }
     }

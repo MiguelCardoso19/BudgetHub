@@ -7,13 +7,13 @@ import com.portalMicroservice.exception.budget.*;
 import com.portalMicroservice.exception.notification.FailedToSendEmailException;
 import com.portalMicroservice.exception.portal.InvalidAuthorizationHeaderException;
 import com.portalMicroservice.exception.portal.InvalidTokenException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import static com.portalMicroservice.exception.ErrorMessage.JSON_PARSE_ERROR;
-import static com.portalMicroservice.exception.ErrorMessage.MAX_UPLOAD_SIZE_EXCEEDED;
+import static com.portalMicroservice.exception.ErrorMessage.*;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -177,5 +177,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMovementsNotFoundForBudgetTypeException(FailedToSendEmailException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
         return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(BudgetExceededException.class)
+    public ResponseEntity<ErrorResponse> handleBudgetExceededException(BudgetExceededException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(OptimisticLockingFailureException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(OPTIMISTIC_LOCKING_FAILURE.getMessage(),
+                OPTIMISTIC_LOCKING_FAILURE.getStatus().value(),
+                OPTIMISTIC_LOCKING_FAILURE.getErrorCode());
+        return new ResponseEntity<>(errorResponse, OPTIMISTIC_LOCKING_FAILURE.getStatus());
     }
 }

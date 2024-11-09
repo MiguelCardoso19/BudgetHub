@@ -1,12 +1,13 @@
 package com.portalMicroservice.dto.budget;
 
-import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Data
-public class AttachFileRequestDTO extends AbstractDTO{
+import java.util.UUID;
 
-    @NotEmpty
-    @NotEmpty
+@Data
+@AllArgsConstructor
+public class AttachFileRequestDTO{
+    private UUID id;
     private String base64File;
 }

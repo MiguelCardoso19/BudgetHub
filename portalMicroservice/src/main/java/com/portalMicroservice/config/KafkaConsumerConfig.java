@@ -23,6 +23,27 @@ public class KafkaConsumerConfig {
     private String bootstrapServers;
 
     @Bean
+    public ConsumerFactory<String, CustomPageDTO> customPageConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "pageable_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<CustomPageDTO> jsonDeserializer = new JsonDeserializer<>(CustomPageDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, CustomPageDTO> customPageKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, CustomPageDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(customPageConsumerFactory());
+        return factory;
+    }
+
+    @Bean
     public ConsumerFactory<String, SupplierDTO> supplierConsumerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);

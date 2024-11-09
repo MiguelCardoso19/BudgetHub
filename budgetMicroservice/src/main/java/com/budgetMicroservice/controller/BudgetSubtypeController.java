@@ -1,10 +1,12 @@
 package com.budgetMicroservice.controller;
 
 import com.budgetMicroservice.dto.BudgetSubtypeDTO;
+import com.budgetMicroservice.exception.BudgetExceededException;
 import com.budgetMicroservice.exception.BudgetSubtypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
 import com.budgetMicroservice.service.BudgetSubtypeService;
+import com.budgetMicroservice.util.PageableUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +25,12 @@ public class BudgetSubtypeController {
     private final BudgetSubtypeService budgetSubtypeService;
 
     @PostMapping("/create")
-    public ResponseEntity<BudgetSubtypeDTO> addSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException {
+    public ResponseEntity<BudgetSubtypeDTO> addSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException, BudgetExceededException {
         return ResponseEntity.ok(budgetSubtypeService.addSubtypeToBudget(budgetSubtypeDTO));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<BudgetSubtypeDTO> updateSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException {
+    public ResponseEntity<BudgetSubtypeDTO> updateSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException {
         return ResponseEntity.ok(budgetSubtypeService.updateBudgetSubtype(budgetSubtypeDTO));
     }
 
@@ -46,6 +48,6 @@ public class BudgetSubtypeController {
     @GetMapping("/all")
     public ResponseEntity<Page<BudgetSubtypeDTO>> findAllSubtypes(
             @PageableDefault(size = 10, page = 0) Pageable pageable) throws JsonProcessingException {
-        return ResponseEntity.ok(budgetSubtypeService.findAllBudgetSubtypes(pageable));
+        return ResponseEntity.ok(budgetSubtypeService.findAllBudgetSubtypes(PageableUtils.convertToCustomPageable(pageable)));
     }
 }

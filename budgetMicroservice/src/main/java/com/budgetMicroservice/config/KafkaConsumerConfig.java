@@ -1,6 +1,7 @@
 package com.budgetMicroservice.config;
 
 import com.budgetMicroservice.dto.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.UUIDDeserializer;
@@ -11,21 +12,41 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.support.mapping.DefaultJackson2JavaTypeMapper;
-import org.springframework.kafka.support.mapping.Jackson2JavaTypeMapper;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+
 @EnableKafka
 @Configuration
+@Slf4j
 public class KafkaConsumerConfig {
 
     @Value("${kafka-bootstrap-servers}")
     private String bootstrapServers;
+
+    @Bean
+    public ConsumerFactory<String, CustomPageableDTO> customPageableConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "pageable_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<CustomPageableDTO> jsonDeserializer = new JsonDeserializer<>(CustomPageableDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, CustomPageableDTO> customPageableKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, CustomPageableDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(customPageableConsumerFactory());
+        return factory;
+    }
 
     @Bean
     public ConsumerFactory<String, MovementDTO> movementConsumerFactory() {
@@ -57,7 +78,6 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, MovementUpdateStatusRequestDTO.class);
-
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new JsonDeserializer<>(MovementUpdateStatusRequestDTO.class));
     }
 
@@ -69,64 +89,16 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, PageDTO<SupplierDTO>> pageSupplierConsumerFactory() {
-        Map<String, Object> config = new HashMap<>();
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, "pageable_response_group");
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
-        JsonDeserializer<PageDTO<SupplierDTO>> jsonDeserializer = new JsonDeserializer<>(PageDTO.class);
-        jsonDeserializer.addTrustedPackages("*");
-        jsonDeserializer.setTypeMapper(new DefaultJackson2JavaTypeMapper() {{
-            setTypePrecedence(Jackson2JavaTypeMapper.TypePrecedence.TYPE_ID);
-        }});
-
-        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PageDTO<SupplierDTO>> pageSupplierKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, PageDTO<SupplierDTO>> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(pageSupplierConsumerFactory());
-        return factory;
-    }
-
-    @Bean
-    public ConsumerFactory<String, PageableDTO> pageableConsumerFactory() {
-        Map<String, Object> config = new HashMap<>();
-
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, "pageable_group");
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
-        JsonDeserializer<PageableDTO> jsonDeserializer = new JsonDeserializer<>(PageableDTO.class);
-        jsonDeserializer.addTrustedPackages("*");
-
-        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PageableDTO> pageableKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, PageableDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(pageableConsumerFactory());
-        return factory;
-    }
-
-    @Bean
     public ConsumerFactory<String, AttachFileRequestDTO> attachFileRequestConsumerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, "attach_base64_file_group");
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "attach_file_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         JsonDeserializer<AttachFileRequestDTO> jsonDeserializer = new JsonDeserializer<>(AttachFileRequestDTO.class);
         jsonDeserializer.setRemoveTypeHeaders(false);
         jsonDeserializer.setUseTypeMapperForKey(true);
         jsonDeserializer.addTrustedPackages("*");
-
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
@@ -155,23 +127,6 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
-//    @Bean
-//    public ConsumerFactory<String, String> stringConsumerFactory() {
-//        Map<String, Object> config = new HashMap<>();
-//        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-//        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-//        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-//        config.put(ConsumerConfig.GROUP_ID_CONFIG, "string_group");
-//        return new DefaultKafkaConsumerFactory<>(config);
-//    }
-//
-//    @Bean
-//    public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactory() {
-//        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-//        factory.setConsumerFactory(stringConsumerFactory());
-//        return factory;
-//    }
-
     @Bean
     public ConsumerFactory<String, SupplierDTO> supplierConsumerFactory() {
         Map<String, Object> config = new HashMap<>();
@@ -179,12 +134,10 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "supplier_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         JsonDeserializer<SupplierDTO> jsonDeserializer = new JsonDeserializer<>(SupplierDTO.class);
         jsonDeserializer.setRemoveTypeHeaders(false);
         jsonDeserializer.setUseTypeMapperForKey(true);
         jsonDeserializer.addTrustedPackages("*");
-
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
@@ -202,12 +155,10 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "invoice_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         JsonDeserializer<InvoiceDTO> jsonDeserializer = new JsonDeserializer<>(InvoiceDTO.class);
         jsonDeserializer.addTrustedPackages("*");
         jsonDeserializer.setRemoveTypeHeaders(false);
         jsonDeserializer.setUseTypeMapperForKey(true);
-
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
@@ -257,6 +208,48 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeDTO> budgetSubtypeKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(budgetSubtypeConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, MovementsByBudgetRequestDTO> movementsByBudgetConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "movements_by_budget_request_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<MovementsByBudgetRequestDTO> jsonDeserializer = new JsonDeserializer<>(MovementsByBudgetRequestDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MovementsByBudgetRequestDTO> movementsByBudgetDTOKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MovementsByBudgetRequestDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(movementsByBudgetConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, ExportMovementsRequestDTO> exportMovementsConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "movements_by_budget_request_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<ExportMovementsRequestDTO> jsonDeserializer = new JsonDeserializer<>(ExportMovementsRequestDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ExportMovementsRequestDTO> exportMovementsKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ExportMovementsRequestDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(exportMovementsConsumerFactory());
         return factory;
     }
 }

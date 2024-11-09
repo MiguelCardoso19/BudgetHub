@@ -6,6 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MovementMapper {
@@ -26,4 +29,6 @@ public interface MovementMapper {
     @Mapping(target = "budgetSubtype", ignore = true)
     @Mapping(target = "invoice.movement", ignore = true)
     MovementDTO toDTOWithoutBudgetSubtype(Movement movement);
+
+    List<MovementDTO> toDTOList(Page<Movement> movementPage);
 }

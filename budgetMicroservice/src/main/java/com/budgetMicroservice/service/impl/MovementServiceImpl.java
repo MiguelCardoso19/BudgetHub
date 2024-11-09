@@ -1,9 +1,6 @@
 package com.budgetMicroservice.service.impl;
 
-import com.budgetMicroservice.dto.MovementUpdateStatusRequestDTO;
-import com.budgetMicroservice.dto.NotificationRequestDTO;
-import com.budgetMicroservice.dto.MovementDTO;
-import com.budgetMicroservice.dto.SupplierDTO;
+import com.budgetMicroservice.dto.*;
 import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.mapper.MovementMapper;
@@ -11,9 +8,9 @@ import com.budgetMicroservice.model.*;
 import com.budgetMicroservice.repository.MovementRepository;
 import com.budgetMicroservice.service.*;
 import com.budgetMicroservice.util.MovementUtils;
+import com.budgetMicroservice.util.PageableUtils;
 import com.budgetMicroservice.validator.MovementValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.*;
 
 import static com.budgetMicroservice.enumerator.MovementStatus.PAID;
@@ -44,24 +40,19 @@ public class MovementServiceImpl implements MovementService {
     private final MovementMapper movementMapper;
     private final MovementRepository movementRepository;
     private final KafkaTemplate<String, MovementDTO> kafkaMovementTemplate;
-    private final KafkaTemplate<String, Page<MovementDTO>> kafkaPageableTemplate;
+    private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
     private final KafkaTemplate<String, NotificationRequestDTO> kafkaNotificationRequestTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     @Transactional
     @KafkaListener(topics = "create-movement", groupId = "movement_group", concurrency = "10", containerFactory = "movementKafkaListenerContainerFactory")
-    public MovementDTO create(MovementDTO movementDTO) throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException {
-        MovementValidator.validateDocumentNumberForExistingMovement(movementDTO, movementRepository);
-        Supplier supplier = supplierService.findSupplierEntityById(movementDTO.getSupplierId());
-        Invoice invoice = invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId());
-
+    public MovementDTO create(MovementDTO movementDTO) throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException {
+        MovementValidator.validateMovement(movementDTO, movementRepository, supplierService, invoiceService);
         MovementUtils.calculateIvaAndTotal(movementDTO);
 
         Movement movement = movementMapper.toEntity(movementDTO);
-        movement.setSupplier(supplier);
-        movement.setInvoice(invoice);
-
+        movement.setSupplier(supplierService.findSupplierEntityById(movementDTO.getSupplierId()));
+        movement.setInvoice(invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId()));
         MovementUtils.setBudget(movement, movementDTO, budgetSubtypeService, budgetTypeService);
 
         if (movement.getStatus().equals(PAID)) {
@@ -78,12 +69,9 @@ public class MovementServiceImpl implements MovementService {
     @Override
     @Transactional
     @KafkaListener(topics = "update-movement", groupId = "movement_group", concurrency = "10", containerFactory = "movementKafkaListenerContainerFactory")
-    public MovementDTO update(MovementDTO movementDTO) throws MovementNotFoundException, SupplierNotFoundException, BudgetSubtypeNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException {
+    public MovementDTO update(MovementDTO movementDTO) throws MovementNotFoundException, SupplierNotFoundException, BudgetSubtypeNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException {
         Movement previousMovement = findById(movementDTO.getId());
-        MovementValidator.validateDocumentNumberForExistingMovementUpdate(movementDTO, movementRepository);
-        Supplier existingSupplier = supplierService.findSupplierEntityById(movementDTO.getSupplierId());
-        Invoice invoice = invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId());
-
+        MovementValidator.validateMovementUpdate(movementDTO, movementRepository, supplierService, invoiceService);
         MovementUtils.calculateIvaAndTotal(movementDTO);
 
         if (movementDTO.getStatus().equals(PAID)) {
@@ -91,8 +79,8 @@ public class MovementServiceImpl implements MovementService {
         }
 
         Movement existingMovement = movementMapper.toEntity(movementDTO);
-        existingMovement.setSupplier(existingSupplier);
-        existingMovement.setInvoice(invoice);
+        existingMovement.setSupplier(supplierService.findSupplierEntityById(movementDTO.getSupplierId()));
+        existingMovement.setInvoice(invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId()));
         MovementUtils.setBudget(existingMovement, movementDTO, budgetSubtypeService, budgetTypeService);
 
         MovementDTO exisitingMovementDTO = movementMapper.toDTO(movementRepository.save(existingMovement));
@@ -127,42 +115,33 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
-    @KafkaListener(topics = "get-all-movements", groupId = "movement_group", concurrency = "10")
-    public Page<MovementDTO> getAll(Pageable pageable) {
-        Page<MovementDTO> movements = movementRepository.findAll(pageable).map(movementMapper::toDTO);
+    @Transactional
+    @KafkaListener(topics = "get-all-movements", groupId = "pageable_group", concurrency = "10", containerFactory = "customPageableKafkaListenerContainerFactory")
+    public Page<MovementDTO> getAll(CustomPageableDTO customPageableDTO) {
+        Page<Movement> movementPage = movementRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
+        List<MovementDTO> movementDTOs = movementMapper.toDTOList(movementPage);
+        kafkaCustomPageTemplate.send("movement-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, movementDTOs, movementPage));
 
-        //  kafkaPageableTemplate.send("movement-page-response", movements);
-        return movements;
+        return movementPage.map(movementMapper::toDTO);
     }
 
+    @Transactional
     @Override
-    @KafkaListener(topics = "get-movements-by-budget-type", groupId = "movement_group", concurrency = "10")
-    public Page<MovementDTO> getMovementsByBudgetType(UUID budgetTypeId, Pageable pageable) throws MovementsNotFoundForBudgetTypeException, JsonProcessingException {
-        Page<Movement> movements = movementRepository.findByBudgetTypeId(budgetTypeId, pageable);
-        if (movements.isEmpty()) {
-            throw new MovementsNotFoundForBudgetTypeException(budgetTypeId);
-        }
-
-        //    kafkaStringTemplate.send("movement-response", objectMapper.writeValueAsString(movements));
-        return movements.map(movementMapper::toDTOWithoutBudgetType);
+    @KafkaListener(topics = "get-movements-by-budget-type", groupId = "movement_group", concurrency = "10", containerFactory = "movementsByBudgetDTOKafkaListenerContainerFactory")
+    public Page<MovementDTO> getMovementsByBudgetType(MovementsByBudgetRequestDTO movementsByBudgetRequestDTO) throws Exception {
+        return getMovementsByBudgetId(movementsByBudgetRequestDTO, true, "MovementsNotFoundForBudgetTypeException");
     }
 
+    @Transactional
     @Override
-    @KafkaListener(topics = "get-movements-by-budget-subtype", groupId = "movement_group", concurrency = "10")
-    public Page<MovementDTO> getMovementsByBudgetSubtype(UUID budgetSubtypeId, Pageable pageable) throws MovementsNotFoundForBudgetSubtypeException {
-        Page<Movement> movements = movementRepository.findByBudgetSubtypeId(budgetSubtypeId, pageable);
-
-        if (movements.isEmpty()) {
-            throw new MovementsNotFoundForBudgetSubtypeException(budgetSubtypeId);
-        }
-
-        //    kafkaStringTemplate.send("movement-response", objectMapper.writeValueAsString(movements));
-        return movements.map(movementMapper::toDTOWithoutBudgetSubtype);
+    @KafkaListener(topics = "get-movements-by-budget-subtype", groupId = "movements_by_budget_request_group", concurrency = "10", containerFactory = "movementsByBudgetDTOKafkaListenerContainerFactory")
+    public Page<MovementDTO> getMovementsByBudgetSubtype(MovementsByBudgetRequestDTO movementsByBudgetRequestDTO) throws Exception {
+        return getMovementsByBudgetId(movementsByBudgetRequestDTO, false, "MovementsNotFoundForBudgetSubtypeException");
     }
 
     @Override
     @KafkaListener(topics = "update-movement-status", groupId = "movement_update_status_group", concurrency = "10", containerFactory = "movementUpdateStatusRequestKafkaContainerFactory")
-    public MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException {
+    public MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException, MovementValidationException, BudgetExceededException {
         Movement movement = findById(movementUpdateStatusRequestDTO.getId());
         movement.setStatus(movementUpdateStatusRequestDTO.getStatus());
 
@@ -177,9 +156,14 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
-    @KafkaListener(topics = "export-movements-report", groupId = "movement_group", concurrency = "10")
-    public void exportAndSendMovements(LocalDate startDate, LocalDate endDate, MovementStatus status, String userEmail) throws GenerateExcelException {
-        List<Movement> movements = MovementUtils.filterMovements(movementRepository, startDate, endDate, status);
+    @KafkaListener(topics = "export-movements-report", groupId = "movement_group", concurrency = "10", containerFactory = "exportMovementsKafkaListenerContainerFactory")
+    public void exportMovements(ExportMovementsRequestDTO request) throws GenerateExcelException {
+        List<Movement> movements = MovementUtils.filterMovements(
+                movementRepository,
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getStatus()
+        );
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Movements Report");
@@ -188,13 +172,14 @@ public class MovementServiceImpl implements MovementService {
 
             String attachmentBase64 = Base64.getEncoder().encodeToString(outStream.toByteArray());
 
-            kafkaNotificationRequestTemplate.send("notification-topic",  new NotificationRequestDTO(userEmail, attachmentBase64));
-            log.info("Movements report sent successfully to Kafka for user: {}", userEmail);
+            kafkaNotificationRequestTemplate.send("notification-topic", new NotificationRequestDTO(request.getUserEmail(), attachmentBase64));
+            log.info("Movements report sent successfully to Kafka for user: {}", request.getUserEmail());
         } catch (IOException e) {
             log.error("Error generating Excel file", e);
             throw new GenerateExcelException();
         }
     }
+
 
     @Override
     @KafkaListener(topics = "movement-status-request", groupId = "uuid_group", concurrency = "10")
@@ -202,6 +187,28 @@ public class MovementServiceImpl implements MovementService {
         Movement movement = findById(id);
         //  kafkaStringTemplate.send("movement-response", String.format("{\"id\":\"%s\", \"status\":\"%s\"}", id.toString(), movement.getStatus()));
         return movement.getStatus();
+    }
+
+    private Page<MovementDTO> getMovementsByBudgetId(MovementsByBudgetRequestDTO requestDTO, boolean isBudgetType, String exceptionType) throws Exception {
+        Pageable pageable = PageableUtils.convertToPageable(requestDTO.getPageable());
+        Page<Movement> movementPage;
+
+        if (isBudgetType) {
+            movementPage = movementRepository.findByBudgetTypeId(requestDTO.getId(), pageable);
+        } else {
+            movementPage = movementRepository.findByBudgetSubtypeId(requestDTO.getId(), pageable);
+        }
+
+        if (movementPage.isEmpty()) {
+            throw (exceptionType.equals("MovementsNotFoundForBudgetTypeException") ?
+                    new MovementsNotFoundForBudgetTypeException(requestDTO.getId()) :
+                    new MovementsNotFoundForBudgetSubtypeException(requestDTO.getId()));
+        }
+
+        List<MovementDTO> movementDTOs = movementMapper.toDTOList(movementPage);
+        kafkaCustomPageTemplate.send("movement-page-response", PageableUtils.buildCustomPageDTO(requestDTO.getPageable(), movementDTOs, movementPage));
+
+        return movementPage.map(isBudgetType ? movementMapper::toDTOWithoutBudgetType : movementMapper::toDTOWithoutBudgetSubtype);
     }
 
     private Movement findById(UUID id) throws MovementNotFoundException {

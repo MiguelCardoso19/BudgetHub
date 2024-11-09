@@ -1,5 +1,7 @@
 package com.budgetMicroservice.service.impl;
 
+import com.budgetMicroservice.dto.CustomPageDTO;
+import com.budgetMicroservice.dto.CustomPageableDTO;
 import com.budgetMicroservice.dto.SupplierDTO;
 import com.budgetMicroservice.exception.SupplierNotFoundException;
 import com.budgetMicroservice.exception.SupplierValidationException;
@@ -7,15 +9,16 @@ import com.budgetMicroservice.mapper.SupplierMapper;
 import com.budgetMicroservice.model.Supplier;
 import com.budgetMicroservice.repository.SupplierRepository;
 import com.budgetMicroservice.service.SupplierService;
+import com.budgetMicroservice.util.PageableUtils;
 import com.budgetMicroservice.validator.SupplierValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,6 +28,7 @@ public class SupplierServiceImpl implements SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
     private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
+    private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
 
     @Override
     @KafkaListener(topics = "create-supplier", groupId = "supplier_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
@@ -49,7 +53,6 @@ public class SupplierServiceImpl implements SupplierService {
         kafkaSupplierTemplate.send("supplier-response", updatedSupplierDTO);
 
         return updatedSupplierDTO;
-
     }
 
     @Override
@@ -64,10 +67,11 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    @KafkaListener(topics = "find-all-suppliers", groupId = "pageable_group", concurrency = "10")
-    public Page<SupplierDTO> findAll(Pageable pageable) {
-        log.info(pageable.toString());
-        Page<Supplier> supplierPage = supplierRepository.findAll(pageable);
+    @KafkaListener(topics = "find-all-suppliers", groupId = "pageable_group", concurrency = "10", containerFactory = "customPageableKafkaListenerContainerFactory")
+    public Page<SupplierDTO> findAll(CustomPageableDTO customPageableDTO) {
+        Page<Supplier> supplierPage = supplierRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
+        List<SupplierDTO> supplierDTOs = supplierMapper.toDTOList(supplierPage);
+        kafkaCustomPageTemplate.send("page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, supplierDTOs, supplierPage));
 
         return supplierPage.map(supplierMapper::toDTO);
     }
@@ -76,9 +80,13 @@ public class SupplierServiceImpl implements SupplierService {
     @KafkaListener(topics = "find-by-id-supplier", groupId = "uuid_group", concurrency = "10")
     public SupplierDTO findSupplierDTOById(UUID id) throws SupplierNotFoundException {
         SupplierDTO supplierDTO = supplierMapper.toDTO(findById(id));
-
         kafkaSupplierTemplate.send("supplier-response", supplierDTO);
         return supplierDTO;
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return supplierRepository.existsById(id);
     }
 
     @Override

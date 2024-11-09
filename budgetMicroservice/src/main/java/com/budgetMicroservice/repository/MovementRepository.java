@@ -22,4 +22,6 @@ public interface MovementRepository extends JpaRepository<Movement, UUID> {
     List<Movement> findByStatus(MovementStatus status);
     boolean existsByDocumentNumber(String documentNumber);
     boolean existsByDocumentNumberAndIdNot(String documentNumber, UUID id);
+    boolean existsByInvoiceId(UUID invoiceId);
+    boolean existsByInvoiceIdAndIdNot(UUID invoiceId, UUID id);
 }
