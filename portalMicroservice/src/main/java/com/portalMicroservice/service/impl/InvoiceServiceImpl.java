@@ -7,8 +7,8 @@ import com.portalMicroservice.service.InvoiceService;
 import com.portalMicroservice.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +18,8 @@ import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.*;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,25 +28,28 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final KafkaTemplate<String, InvoiceDTO> kafkaInvoiceTemplate;
     private final KafkaTemplate<String, AttachFileRequestDTO> kafkaAttachFileRequestTemplate;
     private final KafkaTemplate<String, CustomPageableDTO> kafkaPageableTemplate;
-    private final ConcurrentHashMap<UUID, CompletableFuture<InvoiceDTO>> pendingRequests = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, CompletableFuture<CustomPageDTO>> pendingPageRequests = new ConcurrentHashMap<>();
 
-    private static final long TIMEOUT_DURATION = 10;
+    private final ConcurrentHashMap<UUID, CompletableFuture<InvoiceDTO>> pendingRequests = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, CompletableFuture<CustomPageDTO>> pendingPageRequests = new ConcurrentHashMap<>();
+
+    @Value("${kafka-timeout-duration}")
+    private long TIMEOUT_DURATION;
 
     @Override
     public InvoiceDTO create(InvoiceDTO invoiceDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
+        invoiceDTO.setCorrelationId(UUID.randomUUID());
         CompletableFuture<InvoiceDTO> future = new CompletableFuture<>();
-        pendingRequests.put(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"), future);
+        pendingRequests.put(invoiceDTO.getCorrelationId(), future);
         kafkaInvoiceTemplate.send("create-invoice", invoiceDTO);
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
     public InvoiceDTO update(InvoiceDTO invoiceDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<InvoiceDTO> future = new CompletableFuture<>();
-        pendingRequests.put(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"), future);
+        pendingRequests.put(invoiceDTO.getId(), future);
         kafkaInvoiceTemplate.send("update-invoice", invoiceDTO);
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
@@ -55,16 +60,18 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<InvoiceDTO> future = new CompletableFuture<>();
-        pendingRequests.put(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"), future);
+        pendingRequests.put(id, future);
         kafkaUuidTemplate.send("get-by-id-invoice", id);
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
+
     @Override
     public CustomPageDTO getAll(Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
-        pendingPageRequests.put(pageable.getPageSize(), future);
-        kafkaPageableTemplate.send("get-all-invoices", PageableUtils.convertToCustomPageable(pageable));
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        CustomPageableDTO customPageableDTO = PageableUtils.convertToCustomPageable(pageable);
+        pendingPageRequests.put(customPageableDTO.getCorrelationId(), future);
+        kafkaPageableTemplate.send("get-all-invoices", customPageableDTO);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
@@ -78,26 +85,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
     }
 
-    @KafkaListener(topics = "invoice-response", groupId = "invoice_response_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
-    public void listen(InvoiceDTO invoiceDTO) throws GenericException {
-        CompletableFuture<InvoiceDTO> future = pendingRequests.remove(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"));
-
-        if (future != null) {
-            future.complete(invoiceDTO);
-        } else {
-            throw new GenericException();
-
-        }
+    public CompletableFuture<InvoiceDTO> getPendingRequest(UUID correlationId, UUID id) {
+        return pendingRequests.remove(correlationId != null ? correlationId : id);
     }
 
-    @KafkaListener(topics = "invoice-page-response", groupId = "pageable_response_group", concurrency = "10", containerFactory = "customPageKafkaListenerContainerFactory")
-    public void listenToPageResponse(CustomPageDTO customPageDTO) throws GenericException {
-        CompletableFuture<CustomPageDTO> future = pendingPageRequests.remove(customPageDTO.getPageable().getPageSize());
-
-        if (future != null) {
-            future.complete(customPageDTO);
-        } else {
-            throw new GenericException();
-        }
+    public CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId) {
+        return pendingPageRequests.remove(correlationId);
     }
 }

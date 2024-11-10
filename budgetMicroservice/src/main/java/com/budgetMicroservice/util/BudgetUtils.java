@@ -10,15 +10,15 @@ public class BudgetUtils {
 
     public static void checkBudgetExceeded(BudgetType budgetType, BudgetSubtypeDTO budgetSubtypeDTO, BudgetSubtypeRepository budgetSubtypeRepository, BudgetSubtype existingBudgetSubtype) throws BudgetExceededException {
         double totalSpentForType = budgetSubtypeRepository.findByBudgetType(budgetType).stream()
-                .mapToDouble(BudgetSubtype::getTotalSpent)
+                .mapToDouble(BudgetSubtype::getAvailableFunds)
                 .sum();
 
         if (existingBudgetSubtype != null) {
-            totalSpentForType -= existingBudgetSubtype.getTotalSpent();
+            totalSpentForType -= existingBudgetSubtype.getAvailableFunds();
         }
 
-        if (totalSpentForType + budgetSubtypeDTO.getTotalSpent() > budgetType.getTotalSpent()) {
-            throw new BudgetExceededException(budgetSubtypeDTO.getTotalSpent(), totalSpentForType);
+        if (totalSpentForType + budgetSubtypeDTO.getAvailableFunds() > budgetType.getAvailableFunds()) {
+            throw new BudgetExceededException(budgetSubtypeDTO.getAvailableFunds(), totalSpentForType);
         }
     }
 }

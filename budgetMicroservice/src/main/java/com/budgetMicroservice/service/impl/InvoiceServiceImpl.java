@@ -12,6 +12,7 @@ import com.budgetMicroservice.repository.InvoiceRepository;
 import com.budgetMicroservice.service.InvoiceService;
 import com.budgetMicroservice.service.MovementService;
 import com.budgetMicroservice.util.PageableUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,60 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceMapper invoiceMapper;
     private final KafkaTemplate<String, InvoiceDTO> kafkaInvoiceTemplate;
     private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
+
+    @Override
+    @KafkaListener(topics = "create-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
+    public InvoiceDTO create(InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException {
+        Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
+
+        if (invoiceDTO.getMovementId() != null) {
+            Movement movement = movementService.getMovementEntityById(invoiceDTO.getMovementId());
+            invoice.setMovement(movement);
+        }
+
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+        InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(savedInvoice);
+        savedInvoiceDTO.setCorrelationId(invoiceDTO.getCorrelationId());
+        kafkaInvoiceTemplate.send("invoice-response", savedInvoiceDTO);
+        return savedInvoiceDTO;
+    }
+
+    @Override
+    @KafkaListener(topics = "update-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
+    public InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException {
+        findById(invoiceDTO.getId());
+        Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
+        InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(invoiceRepository.save(invoice));
+        kafkaInvoiceTemplate.send("invoice-response", savedInvoiceDTO);
+        return savedInvoiceDTO;
+    }
+
+    @Override
+    @KafkaListener(topics = "delete-invoice", groupId = "uuid_group", concurrency = "10")
+    public void delete(UUID id) throws InvoiceNotFoundException {
+        if (!invoiceRepository.existsById(id)) {
+            throw new InvoiceNotFoundException(id);
+        }
+        invoiceRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    @KafkaListener(topics = "get-all-invoices", groupId = "pageable_group", concurrency = "10", containerFactory = "customPageableKafkaListenerContainerFactory")
+    public Page<InvoiceDTO> getAll(CustomPageableDTO customPageableDTO) {
+        Page<Invoice> invoicePage = invoiceRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
+        List<MovementDTO> invoiceDTOs = invoiceMapper.toDTOList(invoicePage);
+        kafkaCustomPageTemplate.send("invoice-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, invoiceDTOs, invoicePage));
+        return invoicePage.map(invoiceMapper::toDTO);
+    }
+
+    @Override
+    @KafkaListener(topics = "get-by-id-invoice", groupId = "uuid_group", concurrency = "10")
+    public InvoiceDTO findInvoiceDTOById(UUID id) throws InvoiceNotFoundException {
+        InvoiceDTO invoiceDTO = invoiceMapper.toDTO(findById(id));
+        kafkaInvoiceTemplate.send("invoice-response", invoiceDTO);
+        return invoiceDTO;
+    }
 
     public void attachMultipartFileToInvoice(UUID id, MultipartFile file) throws InvoiceNotFoundException, FailedToUploadFileException {
         Invoice invoice = findById(id);
@@ -60,63 +115,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         invoiceRepository.save(invoice);
-    }
-
-    @Override
-    @KafkaListener(topics = "create-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
-    public InvoiceDTO create(InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException {
-        Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
-
-        if (invoiceDTO.getMovementId() != null) {
-            Movement movement = movementService.getMovementEntityById(invoiceDTO.getMovementId());
-            invoice.setMovement(movement);
-        }
-
-        Invoice savedInvoice = invoiceRepository.save(invoice);
-        InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(savedInvoice);
-        kafkaInvoiceTemplate.send("invoice-response", savedInvoiceDTO);
-
-        return savedInvoiceDTO;
-    }
-
-    @Override
-    @KafkaListener(topics = "update-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
-    public InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException {
-        findById(invoiceDTO.getId());
-        Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
-        InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(invoiceRepository.save(invoice));
-
-        kafkaInvoiceTemplate.send("invoice-response", savedInvoiceDTO);
-
-        return savedInvoiceDTO;
-    }
-
-    @Override
-    @KafkaListener(topics = "delete-invoice", groupId = "uuid_group", concurrency = "10")
-    public void delete(UUID id) throws InvoiceNotFoundException {
-        if (!invoiceRepository.existsById(id)) {
-            throw new InvoiceNotFoundException(id);
-        }
-        invoiceRepository.deleteById(id);
-    }
-
-    @Override
-    @KafkaListener(topics = "get-all-invoices", groupId = "pageable_group", concurrency = "10", containerFactory = "customPageableKafkaListenerContainerFactory")
-    public Page<InvoiceDTO> getAll(CustomPageableDTO customPageableDTO) {
-        Page<Invoice> invoicePage = invoiceRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
-        List<MovementDTO> invoiceDTOs = invoiceMapper.toDTOList(invoicePage);
-        kafkaCustomPageTemplate.send("invoice-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, invoiceDTOs, invoicePage));
-
-        return invoicePage.map(invoiceMapper::toDTO);
-    }
-
-    @Override
-    @KafkaListener(topics = "get-by-id-invoice", groupId = "uuid_group", concurrency = "10")
-    public InvoiceDTO findInvoiceDTOById(UUID id) throws InvoiceNotFoundException {
-        InvoiceDTO invoiceDTO = invoiceMapper.toDTO(findById(id));
-
-        kafkaInvoiceTemplate.send("invoice-response", invoiceDTO);
-        return invoiceDTO;
     }
 
     @Override

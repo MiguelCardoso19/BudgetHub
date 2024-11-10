@@ -49,7 +49,6 @@ public class MovementServiceImpl implements MovementService {
     public MovementDTO create(MovementDTO movementDTO) throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException {
         MovementValidator.validateMovement(movementDTO, movementRepository, supplierService, invoiceService);
         MovementUtils.calculateIvaAndTotal(movementDTO);
-
         Movement movement = movementMapper.toEntity(movementDTO);
         movement.setSupplier(supplierService.findSupplierEntityById(movementDTO.getSupplierId()));
         movement.setInvoice(invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId()));
@@ -61,8 +60,8 @@ public class MovementServiceImpl implements MovementService {
 
         Movement savedMovement = movementRepository.save(movement);
         MovementDTO savedMovementDTO = movementMapper.toDTO(savedMovement);
+        savedMovementDTO.setCorrelationId(movementDTO.getCorrelationId());
         kafkaMovementTemplate.send("movement-response", savedMovementDTO);
-
         return savedMovementDTO;
     }
 

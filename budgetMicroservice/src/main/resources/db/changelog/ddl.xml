@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <property name="uuid.type" value="UUID" dbms="postgresql"/>
+    <property name="uuid.type" value="VARCHAR(36)" dbms="mysql, oracle"/>
+
+    <property name="varchar.type" value="VARCHAR(255)" dbms="postgresql, mysql"/>
+    <property name="varchar.type" value="CLOB" dbms="oracle"/>
+
+    <property name="integer.type" value="INTEGER" dbms="postgresql, mysql"/>
+    <property name="integer.type" value="NUMBER(10)" dbms="oracle"/>
+
+    <property name="boolean.type" value="BOOLEAN" dbms="postgresql, mysql"/>
+    <property name="boolean.type" value="NUMBER(1)" dbms="oracle"/>
+
+    <property name="date.type" value="DATE" dbms="postgresql, mysql, oracle"/>
+
+    <property name="timestamp.type" value="TIMESTAMP" dbms="postgresql, mysql"/>
+    <property name="timestamp.type" value="TIMESTAMP" dbms="oracle"/>
+
+    <property name="double.type" value="DOUBLE PRECISION" dbms="postgresql, mysql"/>
+    <property name="double.type" value="NUMBER(10,2)" dbms="oracle"/>
+
+    <property name="text.type" value="TEXT" dbms="postgresql, mysql"/>
+    <property name="text.type" value="CLOB" dbms="oracle"/>
+
+    <changeSet id="1" author="MiguelCardoso">
+        <createTable tableName="budget_type">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_date" type="${timestamp.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_date" type="${timestamp.type}"/>
+            <column name="created_by" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="${varchar.type}"/>
+            <column name="version" type="${integer.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="available_funds" type="${double.type}"/>
+            <column name="description" type="${text.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="MiguelCardoso">
+        <createTable tableName="budget_subtype">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_date" type="${timestamp.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_date" type="${timestamp.type}"/>
+            <column name="created_by" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="${varchar.type}"/>
+            <column name="version" type="${integer.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="available_funds" type="${double.type}"/>
+            <column name="description" type="${text.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="budget_type_id" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="budget_subtype"
+                baseColumnNames="budget_type_id"
+                referencedTableName="budget_type"
+                referencedColumnNames="id"
+                constraintName="fk_budget_subtype_budget_type"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="3" author="MiguelCardoso">
+        <createTable tableName="supplier">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_date" type="${timestamp.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_date" type="${timestamp.type}"/>
+            <column name="created_by" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="${varchar.type}"/>
+            <column name="version" type="${integer.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_name" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="responsible_name" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nif" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="${varchar.type}"/>
+            <column name="email" type="${varchar.type}"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="5" author="MiguelCardoso">
+        <createTable tableName="invoice">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_date" type="${timestamp.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_date" type="${timestamp.type}"/>
+            <column name="created_by" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="${varchar.type}"/>
+            <column name="version" type="${integer.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_emission" type="${date.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="${text.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file" type="oid"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="MiguelCardoso">
+        <createTable tableName="movement">
+            <column name="id" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_date" type="${timestamp.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_date" type="${timestamp.type}"/>
+            <column name="created_by" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="${varchar.type}"/>
+            <column name="version" type="${integer.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_number" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_emission" type="${date.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="${text.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_without_iva" type="${double.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="iva_value" type="${double.type}"/>
+            <column name="iva_rate" type="${double.type}"/>
+            <column name="total_value" type="${double.type}"/>
+            <column name="status" type="${varchar.type}"/>
+
+            <column name="invoice_id" type="${uuid.type}"/>
+            <column name="budget_subtype_id" type="${uuid.type}"/>
+            <column name="budget_type_id" type="${uuid.type}"/>
+            <column name="supplier_id" type="${uuid.type}"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="movement"
+                baseColumnNames="invoice_id"
+                referencedTableName="invoice"
+                referencedColumnNames="id"
+                constraintName="fk_movement_invoice"
+                onDelete="SET NULL"/>
+
+        <addForeignKeyConstraint
+                baseTableName="movement"
+                baseColumnNames="budget_subtype_id"
+                referencedTableName="budget_subtype"
+                referencedColumnNames="id"
+                constraintName="fk_movement_budget_subtype"
+                onDelete="SET NULL"/>
+
+        <addForeignKeyConstraint
+                baseTableName="movement"
+                baseColumnNames="budget_type_id"
+                referencedTableName="budget_type"
+                referencedColumnNames="id"
+                constraintName="fk_movement_budget_type"
+                onDelete="SET NULL"/>
+
+        <addForeignKeyConstraint
+                baseTableName="movement"
+                baseColumnNames="supplier_id"
+                referencedTableName="supplier"
+                referencedColumnNames="id"
+                constraintName="fk_movement_supplier"
+                onDelete="SET NULL"/>
+
+    </changeSet>
+
+</databaseChangeLog>

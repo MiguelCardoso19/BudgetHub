@@ -36,18 +36,17 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
 
 
     @Override
+@Transactional
     @KafkaListener(topics = "add-budget-subtype", groupId = "budget_subtype_group", concurrency = "10", containerFactory = "budgetSubtypeKafkaListenerContainerFactory")
     public BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException, BudgetExceededException {
         BudgetType budgetType = budgetTypeService.findBudgetTypeEntityById(budgetSubtypeDTO.getBudgetTypeId());
-
         BudgetValidator.checkForExistingBudgetSubtype(budgetSubtypeDTO, budgetSubtypeRepository);
         BudgetUtils.checkBudgetExceeded(budgetType, budgetSubtypeDTO, budgetSubtypeRepository, null);
-
         BudgetSubtype budgetSubtype = budgetMapper.toEntity(budgetSubtypeDTO);
         budgetSubtype.setBudgetType(budgetType);
         budgetSubtypeRepository.save(budgetSubtype);
-
         BudgetSubtypeDTO savedBudgetSubtypeDTO = budgetMapper.toDTO(budgetSubtype);
+        savedBudgetSubtypeDTO.setCorrelationId(budgetSubtypeDTO.getCorrelationId());
         kafkaBudgetSubtypeTemplate.send("budget-subtype-response", savedBudgetSubtypeDTO);
         return savedBudgetSubtypeDTO;
     }
@@ -74,9 +73,8 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     public void deleteBudgetSubtype(UUID subtypeId) throws BudgetSubtypeNotFoundException {
         BudgetSubtype budgetSubtype = findById(subtypeId);
         BudgetType budgetType = budgetSubtype.getBudgetType();
-        budgetType.setTotalSpent(budgetType.getTotalSpent() - budgetSubtype.getTotalSpent());
+        budgetType.setAvailableFunds(budgetType.getAvailableFunds() - budgetSubtype.getAvailableFunds());
         budgetTypeService.save(budgetType);
-
         budgetSubtypeRepository.deleteById(subtypeId);
     }
 
@@ -87,7 +85,6 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
         Page<BudgetSubtype> budgetSubtypePage = budgetSubtypeRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
         List<BudgetSubtypeDTO> budgetSubtypeDTOs = budgetMapper.toDTOSubtypeList(budgetSubtypePage);
         kafkaCustomPageTemplate.send("budget-subtype-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, budgetSubtypeDTOs, budgetSubtypePage));
-
         return budgetSubtypePage.map(budgetMapper::toDTO);
     }
 

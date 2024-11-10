@@ -1,13 +1,11 @@
 package com.portalMicroservice.util;
 
-import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.CustomPageableDTO;
 import com.portalMicroservice.dto.budget.SortDTO;
 import com.portalMicroservice.enumerator.SortDirection;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.util.UUID;
 
 public class PageableUtils {
 
@@ -27,6 +25,6 @@ public class PageableUtils {
         sortDTO.setField(sortField);
         sortDTO.setDirection(SortDirection.valueOf(sortOrder));
 
-        return new CustomPageableDTO(pageable.getPageNumber(), pageable.getPageSize(), (int) pageable.getOffset(), pageable.isPaged(), pageable.isUnpaged(), sortDTO);
+        return new CustomPageableDTO(UUID.randomUUID() ,pageable.getPageNumber(), pageable.getPageSize(), (int) pageable.getOffset(), pageable.isPaged(), pageable.isUnpaged(), sortDTO);
     }
 }

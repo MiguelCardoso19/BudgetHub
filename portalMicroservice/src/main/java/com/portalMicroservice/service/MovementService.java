@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -20,4 +21,6 @@ public interface MovementService {
     CustomPageDTO getByBudgetType(UUID budgetTypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO getByBudgetSubtype(UUID budgetSubtypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException;
     void exportMovementsReport(LocalDate startDate, LocalDate endDate, MovementStatus status, String emailFromRequest);
+    CompletableFuture<MovementDTO> getPendingRequest(UUID correlationId, UUID id);
+    CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
 }

@@ -34,9 +34,9 @@ public class SupplierServiceImpl implements SupplierService {
     @KafkaListener(topics = "create-supplier", groupId = "supplier_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
     public SupplierDTO create(SupplierDTO supplierDTO) throws SupplierValidationException {
         SupplierValidator.validateSupplierCreation(supplierDTO, supplierRepository);
-
         Supplier savedSupplier = supplierRepository.save(supplierMapper.toEntity(supplierDTO));
         SupplierDTO savedSupplierDTO = supplierMapper.toDTO(savedSupplier);
+        savedSupplierDTO.setCorrelationId(supplierDTO.getCorrelationId());
 
         kafkaSupplierTemplate.send("supplier-response", savedSupplierDTO);
         return savedSupplierDTO;
@@ -72,7 +72,6 @@ public class SupplierServiceImpl implements SupplierService {
         Page<Supplier> supplierPage = supplierRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
         List<SupplierDTO> supplierDTOs = supplierMapper.toDTOList(supplierPage);
         kafkaCustomPageTemplate.send("page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, supplierDTOs, supplierPage));
-
         return supplierPage.map(supplierMapper::toDTO);
     }
 

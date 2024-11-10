@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -18,4 +19,6 @@ public interface InvoiceService {
     InvoiceDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     void attachBase64FileToInvoice(UUID invoiceId, MultipartFile file) throws FailedToUploadFileException;
     CustomPageDTO getAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
+    CompletableFuture<InvoiceDTO> getPendingRequest(UUID correlationId, UUID id);
+    CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
 }

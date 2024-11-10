@@ -1,10 +1,10 @@
 package com.portalMicroservice.service.impl;
 
-import com.portalMicroservice.dto.budget.BudgetTypeDTO;
+import com.portalMicroservice.dto.budget.BudgetSubtypeDTO;
 import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.CustomPageableDTO;
 import com.portalMicroservice.exception.GenericException;
-import com.portalMicroservice.service.BudgetTypeService;
+import com.portalMicroservice.service.BudgetSubtypeService;
 import com.portalMicroservice.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,44 +24,44 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BudgetTypeServiceImpl implements BudgetTypeService {
+public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
-    private final KafkaTemplate<String, BudgetTypeDTO> kafkaBudgetTypeTemplate;
+    private final KafkaTemplate<String, BudgetSubtypeDTO> kafkaBudgetSubTypeTemplate;
     private final KafkaTemplate<String, CustomPageableDTO> kafkaPageableTemplate;
 
-    private final ConcurrentHashMap<UUID, CompletableFuture<BudgetTypeDTO>> pendingRequests = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, CompletableFuture<CustomPageDTO>> pendingPageRequests = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, CompletableFuture<BudgetSubtypeDTO>> pendingRequests = new ConcurrentHashMap<>();
 
     @Value("${kafka-timeout-duration}")
     private long TIMEOUT_DURATION;
 
     @Override
-    public BudgetTypeDTO create(BudgetTypeDTO budgetTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
-        budgetTypeDTO.setCorrelationId(UUID.randomUUID());
-        CompletableFuture<BudgetTypeDTO> future = new CompletableFuture<>();
-        pendingRequests.put(budgetTypeDTO.getCorrelationId(), future);
-        kafkaBudgetTypeTemplate.send("create-budget-type", budgetTypeDTO);
+    public BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubTypeDTO) throws ExecutionException, InterruptedException, TimeoutException {
+        budgetSubTypeDTO.setCorrelationId(UUID.randomUUID());
+        CompletableFuture<BudgetSubtypeDTO> future = new CompletableFuture<>();
+        pendingRequests.put(budgetSubTypeDTO.getCorrelationId(), future);
+        kafkaBudgetSubTypeTemplate.send("add-budget-subtype", budgetSubTypeDTO);
         return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
-    public BudgetTypeDTO update(BudgetTypeDTO budgetTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
-        CompletableFuture<BudgetTypeDTO> future = new CompletableFuture<>();
-        pendingRequests.put(budgetTypeDTO.getCorrelationId(), future);
-        kafkaBudgetTypeTemplate.send("update-budget-type", budgetTypeDTO);
+    public BudgetSubtypeDTO update(BudgetSubtypeDTO budgetSubTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
+        CompletableFuture<BudgetSubtypeDTO> future = new CompletableFuture<>();
+        pendingRequests.put(budgetSubTypeDTO.getId(), future);
+        kafkaBudgetSubTypeTemplate.send("update-budget-subtype", budgetSubTypeDTO);
         return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
     public void delete(UUID id) {
-        kafkaUuidTemplate.send("delete-budget-type", id);
+        kafkaUuidTemplate.send("delete-budget-subtype", id);
     }
 
     @Override
-    public BudgetTypeDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
-        CompletableFuture<BudgetTypeDTO> future = new CompletableFuture<>();
+    public BudgetSubtypeDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<BudgetSubtypeDTO> future = new CompletableFuture<>();
         pendingRequests.put(id, future);
-        kafkaUuidTemplate.send("find-budget-type-by-id", id);
+        kafkaUuidTemplate.send("find-budget-subtype-by-id", id);
         return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
@@ -70,11 +70,11 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
         CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
         CustomPageableDTO customPageableDTO = PageableUtils.convertToCustomPageable(pageable);
         pendingPageRequests.put(customPageableDTO.getCorrelationId(), future);
-        kafkaPageableTemplate.send("find-all-budget-type", customPageableDTO);
+        kafkaPageableTemplate.send("find-all-budget-subtype", customPageableDTO);
         return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
-    public CompletableFuture<BudgetTypeDTO> getPendingRequest(UUID correlationId, UUID id) {
+    public CompletableFuture<BudgetSubtypeDTO> getPendingRequest(UUID correlationId, UUID id) {
         return pendingRequests.remove(correlationId != null ? correlationId : id);
     }
 

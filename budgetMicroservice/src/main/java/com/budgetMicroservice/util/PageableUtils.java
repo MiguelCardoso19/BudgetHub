@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PageableUtils {
 
@@ -29,7 +30,7 @@ public class PageableUtils {
         sortDTO.setField(sortField);
         sortDTO.setDirection(SortDirection.valueOf(sortOrder));
 
-        return new CustomPageableDTO(pageable.getPageNumber(), pageable.getPageSize(), (int) pageable.getOffset(), pageable.isPaged(), pageable.isUnpaged(), sortDTO);
+        return new CustomPageableDTO(UUID.randomUUID(), pageable.getPageNumber(), pageable.getPageSize(), (int) pageable.getOffset(), pageable.isPaged(), pageable.isUnpaged(), sortDTO);
     }
 
 
@@ -50,6 +51,7 @@ public class PageableUtils {
     public static <T> CustomPageDTO<T> buildCustomPageDTO(CustomPageableDTO customPageableDTO, List<T> dtoList, Page<?> entityPage) {
 
         CustomPageableDTO pageableDTO = new CustomPageableDTO(
+                customPageableDTO.getCorrelationId(),
                 customPageableDTO.getPageNumber(),
                 customPageableDTO.getPageSize(),
                 customPageableDTO.getOffset(),

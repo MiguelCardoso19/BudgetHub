@@ -6,6 +6,7 @@ import com.portalMicroservice.exception.GenericException;
 import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -15,4 +16,6 @@ public interface BudgetSubtypeService {
     void delete(UUID id);
     BudgetSubtypeDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO findAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
+    CompletableFuture<BudgetSubtypeDTO> getPendingRequest(UUID correlationId, UUID id);
+    CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
 }

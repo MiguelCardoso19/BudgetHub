@@ -11,9 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NotificationRequestDTO {
 
-    @Schema(description = "Email address of the notification recipient", example = "recipient@example.com", required = true)
+    @Schema(description = "Email address of the notification recipient",
+            example = "recipient@example.com", required = true)
     private String recipient;
 
-    @Schema(description = "Base64 encoded attachment of the report (optional)", example = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64, ...")
+    @Schema(description = "Base64 encoded attachment of the report (optional)",
+            example = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64, ...",
+            nullable = true)
     private String attachment;
 }

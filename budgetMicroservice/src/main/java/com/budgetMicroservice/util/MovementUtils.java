@@ -54,26 +54,26 @@ public class MovementUtils {
             BudgetSubtype subtype = movement.getBudgetSubtype();
             BudgetType type = subtype.getBudgetType();
 
-            if (totalValue > subtype.getTotalSpent()) {
-                throw new BudgetExceededException(totalValue, subtype.getTotalSpent());
+            if (totalValue > subtype.getAvailableFunds()) {
+                throw new BudgetExceededException(totalValue, subtype.getAvailableFunds());
             }
 
-            subtype.setTotalSpent(subtype.getTotalSpent() - totalValue);
+            subtype.setAvailableFunds(subtype.getAvailableFunds() - totalValue);
             budgetSubtypeService.save(subtype);
 
             if (type != null) {
-                type.setTotalSpent(type.getTotalSpent() - totalValue);
+                type.setAvailableFunds(type.getAvailableFunds() - totalValue);
                 budgetTypeService.save(type);
             }
 
         } else if (movement.getBudgetType() != null) {
             BudgetType type = movement.getBudgetType();
 
-            if (totalValue > type.getTotalSpent()) {
-                throw new BudgetExceededException(totalValue, type.getTotalSpent());
+            if (totalValue > type.getAvailableFunds()) {
+                throw new BudgetExceededException(totalValue, type.getAvailableFunds());
             }
 
-            type.setTotalSpent(type.getTotalSpent() - totalValue);
+            type.setAvailableFunds(type.getAvailableFunds() - totalValue);
             budgetTypeService.save(type);
         }
     }
@@ -89,25 +89,25 @@ public class MovementUtils {
             BudgetSubtype subtype = oldMovement.getBudgetSubtype();
             BudgetType type = subtype.getBudgetType();
 
-            if (valueDifference > subtype.getTotalSpent()) {
-                throw new BudgetExceededException(valueDifference, subtype.getTotalSpent());
+            if (valueDifference > subtype.getAvailableFunds()) {
+                throw new BudgetExceededException(valueDifference, subtype.getAvailableFunds());
             }
 
-            subtype.setTotalSpent(subtype.getTotalSpent() - oldTotalValue + newTotalValue);
+            subtype.setAvailableFunds(subtype.getAvailableFunds() - oldTotalValue + newTotalValue);
             budgetSubtypeService.save(subtype);
 
             if (type != null) {
-                type.setTotalSpent(type.getTotalSpent() - oldTotalValue + newTotalValue);
+                type.setAvailableFunds(type.getAvailableFunds() - oldTotalValue + newTotalValue);
                 budgetTypeService.save(type);
             }
         } else if (oldMovement.getBudgetType() != null) {
             BudgetType type = oldMovement.getBudgetType();
 
-            if (valueDifference > type.getTotalSpent()) {
-                throw new BudgetExceededException(valueDifference, type.getTotalSpent());
+            if (valueDifference > type.getAvailableFunds()) {
+                throw new BudgetExceededException(valueDifference, type.getAvailableFunds());
             }
 
-            type.setTotalSpent(type.getTotalSpent() - oldTotalValue + newTotalValue);
+            type.setAvailableFunds(type.getAvailableFunds() - oldTotalValue + newTotalValue);
             budgetTypeService.save(type);
         }
     }
@@ -119,18 +119,18 @@ public class MovementUtils {
         if (movement.getBudgetSubtype() != null) {
             BudgetSubtype subtype = movement.getBudgetSubtype();
 
-            subtype.setTotalSpent(subtype.getTotalSpent() + totalValue);
+            subtype.setAvailableFunds(subtype.getAvailableFunds() + totalValue);
             budgetSubtypeService.save(subtype);
 
             if (subtype.getBudgetType() != null) {
                 BudgetType type = subtype.getBudgetType();
-                type.setTotalSpent(type.getTotalSpent() + totalValue);
+                type.setAvailableFunds(type.getAvailableFunds() + totalValue);
                 budgetTypeService.save(type);
             }
         } else if (movement.getBudgetType() != null) {
             BudgetType type = movement.getBudgetType();
 
-            type.setTotalSpent(type.getTotalSpent() + totalValue);
+            type.setAvailableFunds(type.getAvailableFunds() + totalValue);
             budgetTypeService.save(type);
         }
     }

@@ -34,12 +34,11 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     @KafkaListener(topics = "create-budget-type", groupId = "budget_type_group", concurrency = "10", containerFactory = "budgetTypeKafkaListenerContainerFactory")
     public BudgetTypeDTO createBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeAlreadyExistsException {
         BudgetValidator.checkForExistingBudgetType(budgetTypeDTO, budgetTypeRepository);
-
         BudgetType budgetType = budgetMapper.toEntity(budgetTypeDTO);
         budgetTypeRepository.save(budgetType);
         BudgetTypeDTO savedBudgetTypeDTO = budgetMapper.toDTO(budgetType);
+        savedBudgetTypeDTO.setCorrelationId(budgetTypeDTO.getCorrelationId());
         kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
-
         return savedBudgetTypeDTO;
     }
 
@@ -48,10 +47,8 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     public BudgetTypeDTO updateBudgetType(BudgetTypeDTO budgetTypeDTO) throws BudgetTypeNotFoundException, BudgetTypeAlreadyExistsException, BudgetSubtypeNotFoundException {
         findById(budgetTypeDTO.getId());
         BudgetValidator.checkForExistingBudgetTypeUpdate(budgetTypeDTO, budgetTypeRepository);
-
         BudgetType budgetType = budgetMapper.toEntity(budgetTypeDTO);
         BudgetTypeDTO savedBudgetTypeDTO = budgetMapper.toDTO(budgetTypeRepository.save(budgetType));
-
         kafkaBudgetTypeTemplate.send("budget-type-response", savedBudgetTypeDTO);
         return savedBudgetTypeDTO;
     }

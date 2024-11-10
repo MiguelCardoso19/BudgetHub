@@ -15,7 +15,7 @@ public class BudgetSubtype extends AbstractEntity {
     @Column(nullable = false)
     private String name;
 
-    private Double totalSpent;
+    private Double availableFunds;
 
     @Column(nullable = false)
     private String description;

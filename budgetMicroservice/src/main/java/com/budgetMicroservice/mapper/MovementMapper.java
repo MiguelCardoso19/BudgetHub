@@ -4,7 +4,6 @@ import com.budgetMicroservice.dto.MovementDTO;
 import com.budgetMicroservice.model.Movement;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.springframework.data.domain.Page;
 

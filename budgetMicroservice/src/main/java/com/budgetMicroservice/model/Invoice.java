@@ -26,5 +26,6 @@ public class Invoice extends AbstractEntity {
     private Movement movement;
 
     @Lob
+    @Column(name = "file", columnDefinition = "oid")
     private byte[] file;
 }

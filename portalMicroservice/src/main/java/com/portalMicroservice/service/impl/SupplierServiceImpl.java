@@ -8,8 +8,8 @@ import com.portalMicroservice.service.SupplierService;
 import com.portalMicroservice.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,35 +17,39 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SupplierServiceImpl implements SupplierService {
-    private final ConcurrentHashMap<UUID, CompletableFuture<SupplierDTO>> pendingRequests = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, CompletableFuture<CustomPageDTO>> pendingPageRequests = new ConcurrentHashMap<>();
     private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
     private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
     private final KafkaTemplate<String, CustomPageableDTO> kafkaPageableTemplate;
 
-    private static final long TIMEOUT_DURATION = 10;
+    private final ConcurrentHashMap<UUID, CompletableFuture<SupplierDTO>> pendingRequests = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, CompletableFuture<CustomPageDTO>> pendingPageRequests = new ConcurrentHashMap<>();
+
+    @Value("${kafka-timeout-duration}")
+    private long TIMEOUT_DURATION;
 
     @Override
     public SupplierDTO create(SupplierDTO supplierDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
+        supplierDTO.setCorrelationId(UUID.randomUUID());
         CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
-        pendingRequests.put(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"), future);
+        pendingRequests.put(supplierDTO.getCorrelationId(), future);
         kafkaSupplierTemplate.send("create-supplier", supplierDTO);
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
     public SupplierDTO update(SupplierDTO supplierDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
         CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
-        pendingRequests.put(UUID.fromString("08301b71-15ac-4569-86dc-a0350208e77d"), future);
+        pendingRequests.put(supplierDTO.getId(), future);
         kafkaSupplierTemplate.send("update-supplier", supplierDTO);
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
@@ -58,36 +62,23 @@ public class SupplierServiceImpl implements SupplierService {
         CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
         pendingRequests.put(id, future);
         kafkaUuidTemplate.send("find-by-id-supplier", id);
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
     public CustomPageDTO getAll(Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
-        pendingPageRequests.put(pageable.getPageSize(), future);
-        kafkaPageableTemplate.send("find-all-suppliers", PageableUtils.convertToCustomPageable(pageable));
-        return future.get(TIMEOUT_DURATION, TimeUnit.SECONDS);
+        CustomPageableDTO customPageableDTO = PageableUtils.convertToCustomPageable(pageable);
+        pendingPageRequests.put(customPageableDTO.getCorrelationId(), future);
+        kafkaPageableTemplate.send("find-all-suppliers", customPageableDTO);
+        return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
-    @KafkaListener(topics = "supplier-response", groupId = "supplier_response_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
-    public void listen(SupplierDTO supplierDTO) throws GenericException {
-        CompletableFuture<SupplierDTO> future = pendingRequests.remove(supplierDTO.getId());
-
-        if (future != null) {
-            future.complete(supplierDTO);
-        } else {
-            throw new GenericException();
-        }
+    public CompletableFuture<SupplierDTO> getPendingRequest(UUID correlationId, UUID id) {
+        return pendingRequests.remove(correlationId != null ? correlationId : id);
     }
 
-    @KafkaListener(topics = "page-response", groupId = "pageable_response_group", concurrency = "10", containerFactory = "customPageKafkaListenerContainerFactory")
-    public void listen(CustomPageDTO customPageDTO) throws GenericException {
-        CompletableFuture<CustomPageDTO> future = pendingPageRequests.remove(customPageDTO.getPageSize());
-
-        if (future != null) {
-            future.complete(customPageDTO);
-        } else {
-            throw new GenericException();
-        }
+    public CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId) {
+        return pendingPageRequests.remove(correlationId);
     }
 }
