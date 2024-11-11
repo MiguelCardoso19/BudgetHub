@@ -1,6 +1,7 @@
 package com.portalMicroservice.config;
 
 import com.portalMicroservice.dto.budget.*;
+import com.portalMicroservice.exception.budget.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -145,6 +146,321 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, MovementDTO> movementKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, MovementDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(movementConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, SupplierNotFoundException> supplierNotFoundExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "supplier_not_found_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<SupplierNotFoundException> jsonDeserializer = new JsonDeserializer<>(SupplierNotFoundException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, SupplierNotFoundException> supplierNotFoundExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, SupplierNotFoundException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(supplierNotFoundExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, SupplierValidationException> supplierValidationExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "supplier_validation_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<SupplierValidationException> jsonDeserializer = new JsonDeserializer<>(SupplierValidationException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, SupplierValidationException> supplierValidationExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, SupplierValidationException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(supplierValidationExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, BudgetTypeNotFoundException> budgetTypeNotFoundExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "budget_type_not_found_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<BudgetTypeNotFoundException> jsonDeserializer = new JsonDeserializer<>(BudgetTypeNotFoundException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BudgetTypeNotFoundException> budgetTypeNotFoundExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BudgetTypeNotFoundException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(budgetTypeNotFoundExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, BudgetTypeAlreadyExistsException> budgetTypeAlreadyExistsExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "budget_type_already_exists_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<BudgetTypeAlreadyExistsException> jsonDeserializer = new JsonDeserializer<>(BudgetTypeAlreadyExistsException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BudgetTypeAlreadyExistsException> budgetTypeAlreadyExistsExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BudgetTypeAlreadyExistsException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(budgetTypeAlreadyExistsExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, BudgetSubtypeNotFoundException> budgetSubtypeNotFoundExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "budget_subtype_not_found_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<BudgetSubtypeNotFoundException> jsonDeserializer = new JsonDeserializer<>(BudgetSubtypeNotFoundException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeNotFoundException> budgetSubtypeNotFoundExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeNotFoundException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(budgetSubtypeNotFoundExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, BudgetSubtypeAlreadyExistsException> budgetSubtypeAlreadyExistsExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "budget_subtype_already_exists_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<BudgetSubtypeAlreadyExistsException> jsonDeserializer = new JsonDeserializer<>(BudgetSubtypeAlreadyExistsException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeAlreadyExistsException> budgetSubtypeAlreadyExistsExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BudgetSubtypeAlreadyExistsException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(budgetSubtypeAlreadyExistsExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, BudgetExceededException> budgetExceededExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "budget_subtype_budget_exceeded_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<BudgetExceededException> jsonDeserializer = new JsonDeserializer<>(BudgetExceededException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BudgetExceededException> budgetExceededExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BudgetExceededException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(budgetExceededExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, InvoiceNotFoundException> invoiceNotFoundExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "invoice_not_found_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<InvoiceNotFoundException> jsonDeserializer = new JsonDeserializer<>(InvoiceNotFoundException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, InvoiceNotFoundException> invoiceNotFoundExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, InvoiceNotFoundException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(invoiceNotFoundExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, FailedToUploadFileException> failedToUploadFileExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "failed_to_upload_file_exception_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<FailedToUploadFileException> jsonDeserializer = new JsonDeserializer<>(FailedToUploadFileException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, FailedToUploadFileException> failedToUploadFileExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, FailedToUploadFileException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(failedToUploadFileExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, MovementNotFoundException> movementNotFoundExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "movement_not_found_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<MovementNotFoundException> jsonDeserializer = new JsonDeserializer<>(MovementNotFoundException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MovementNotFoundException> movementNotFoundExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MovementNotFoundException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(movementNotFoundExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, MovementValidationException> movementValidationExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "movement_not_found_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<MovementValidationException> jsonDeserializer = new JsonDeserializer<>(MovementValidationException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MovementValidationException> movementValidationExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MovementValidationException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(movementValidationExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, BudgetExceededException> movementBudgetExceededExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "movement_budget_exceeded_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<BudgetExceededException> jsonDeserializer = new JsonDeserializer<>(BudgetExceededException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BudgetExceededException> movementBudgetExceededExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BudgetExceededException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(movementBudgetExceededExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, MovementsNotFoundForBudgetTypeException> movementsNotFoundForBudgetTypeExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "movement_not_found_for_budget_type_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<MovementsNotFoundForBudgetTypeException> jsonDeserializer = new JsonDeserializer<>(MovementsNotFoundForBudgetTypeException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MovementsNotFoundForBudgetTypeException> movementsNotFoundForBudgetTypeExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MovementsNotFoundForBudgetTypeException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(movementsNotFoundForBudgetTypeExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, MovementsNotFoundForBudgetSubtypeException> movementsNotFoundForBudgetSubtypeExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "movement_not_found_for_budget_subtype_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<MovementsNotFoundForBudgetSubtypeException> jsonDeserializer = new JsonDeserializer<>(MovementsNotFoundForBudgetSubtypeException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MovementsNotFoundForBudgetSubtypeException> movementsNotFoundForBudgetSubtypeExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MovementsNotFoundForBudgetSubtypeException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(movementsNotFoundForBudgetSubtypeExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, GenerateExcelException> generateExcelExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "generate_excel_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<GenerateExcelException> jsonDeserializer = new JsonDeserializer<>(GenerateExcelException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, GenerateExcelException> generateExcelExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, GenerateExcelException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(generateExcelExceptionConsumerFactory());
         return factory;
     }
 }

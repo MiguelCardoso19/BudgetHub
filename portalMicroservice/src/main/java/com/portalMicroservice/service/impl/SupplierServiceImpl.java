@@ -4,6 +4,7 @@ import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.CustomPageableDTO;
 import com.portalMicroservice.dto.budget.SupplierDTO;
 import com.portalMicroservice.exception.GenericException;
+import com.portalMicroservice.exception.budget.SupplierNotFoundException;
 import com.portalMicroservice.service.SupplierService;
 import com.portalMicroservice.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
@@ -53,12 +54,15 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id) throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
+        pendingRequests.put(id, future);
         kafkaUuidTemplate.send("delete-supplier", id);
+        future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
-    public SupplierDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
+    public SupplierDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException, SupplierNotFoundException {
         CompletableFuture<SupplierDTO> future = new CompletableFuture<>();
         pendingRequests.put(id, future);
         kafkaUuidTemplate.send("find-by-id-supplier", id);

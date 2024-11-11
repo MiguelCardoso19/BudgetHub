@@ -9,12 +9,14 @@ import static com.portalMicroservice.exception.ErrorMessage.FAILED_TO_UPLOAD_FIL
 
 @Getter
 public class FailedToUploadFileException extends Exception {
+    private UUID id;
     private final String message;
     private final HttpStatus status;
     private final String errorCode;
 
     public FailedToUploadFileException(UUID id) {
         super(FAILED_TO_UPLOAD_FILE.getMessage(id));
+        this.id = id;
         this.message = FAILED_TO_UPLOAD_FILE.getMessage(id);
         this.status = FAILED_TO_UPLOAD_FILE.getStatus();
         this.errorCode = FAILED_TO_UPLOAD_FILE.getErrorCode();

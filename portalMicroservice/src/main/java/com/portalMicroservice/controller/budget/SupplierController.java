@@ -4,6 +4,7 @@ import com.portalMicroservice.client.budget.SupplierFeignClient;
 import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.SupplierDTO;
 import com.portalMicroservice.exception.GenericException;
+import com.portalMicroservice.exception.budget.SupplierNotFoundException;
 import com.portalMicroservice.service.SupplierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,7 +62,7 @@ public class SupplierController {
             @ApiResponse(responseCode = "404", description = "Supplier not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) throws ExecutionException, InterruptedException, TimeoutException {
         supplierService.delete(id);
         // supplierFeignClient.deleteSupplier(id);
         return ResponseEntity.noContent().build();
@@ -75,7 +76,7 @@ public class SupplierController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<SupplierDTO> getById(@PathVariable UUID id)
-            throws GenericException, ExecutionException, InterruptedException, TimeoutException {
+            throws GenericException, ExecutionException, InterruptedException, TimeoutException, SupplierNotFoundException {
         return ResponseEntity.ok(supplierService.getById(id));
         // return supplierFeignClient.getSupplierById(id);
     }

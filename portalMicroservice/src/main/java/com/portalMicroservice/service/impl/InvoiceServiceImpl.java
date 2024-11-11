@@ -53,8 +53,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public void delete(UUID id) throws GenericException {
+    public void delete(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<InvoiceDTO> future = new CompletableFuture<>();
+        pendingRequests.put(id, future);
         kafkaUuidTemplate.send("delete-invoice", id);
+        future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
@@ -75,7 +78,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public void attachBase64FileToInvoice(UUID invoiceId, MultipartFile file) throws FailedToUploadFileException {
+    public void attachBase64FileToInvoice(UUID invoiceId, MultipartFile file) throws FailedToUploadFileException, ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<InvoiceDTO> future = new CompletableFuture<>();
+        pendingRequests.put(invoiceId, future);
         try {
             byte[] fileBytes = file.getBytes();
             String base64File = Base64.getEncoder().encodeToString(fileBytes);
@@ -83,6 +88,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         } catch (IOException e) {
             throw new FailedToUploadFileException(invoiceId);
         }
+        future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     public CompletableFuture<InvoiceDTO> getPendingRequest(UUID correlationId, UUID id) {

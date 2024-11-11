@@ -19,6 +19,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,13 +28,16 @@ import java.util.UUID;
 public class SupplierServiceImpl implements SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
+    private final SupplierValidator supplierValidator;
     private final KafkaTemplate<String, SupplierDTO> kafkaSupplierTemplate;
     private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
+    private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
+    private final KafkaTemplate<String, SupplierNotFoundException> kafkaSupplierNotFoundExceptionTemplate;
 
     @Override
     @KafkaListener(topics = "create-supplier", groupId = "supplier_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
     public SupplierDTO create(SupplierDTO supplierDTO) throws SupplierValidationException {
-        SupplierValidator.validateSupplierCreation(supplierDTO, supplierRepository);
+        supplierValidator.validateSupplierCreation(supplierDTO, supplierRepository);
         Supplier savedSupplier = supplierRepository.save(supplierMapper.toEntity(supplierDTO));
         SupplierDTO savedSupplierDTO = supplierMapper.toDTO(savedSupplier);
         savedSupplierDTO.setCorrelationId(supplierDTO.getCorrelationId());
@@ -45,8 +49,8 @@ public class SupplierServiceImpl implements SupplierService {
     @Override
     @KafkaListener(topics = "update-supplier", groupId = "supplier_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
     public SupplierDTO update(SupplierDTO supplierDTO) throws SupplierNotFoundException, SupplierValidationException {
-        SupplierValidator.validateSupplierUpdate(supplierDTO, supplierRepository);
         findById(supplierDTO.getId());
+        supplierValidator.validateSupplierUpdate(supplierDTO, supplierRepository);
         Supplier existingSupplier = supplierMapper.toEntity(supplierDTO);
         SupplierDTO updatedSupplierDTO = supplierMapper.toDTO(supplierRepository.save(existingSupplier));
 
@@ -60,9 +64,11 @@ public class SupplierServiceImpl implements SupplierService {
     public void delete(UUID id) throws SupplierNotFoundException {
         if (supplierRepository.existsById(id)) {
             supplierRepository.delete(findById(id));
+            kafkaUuidTemplate.send("supplier-delete-success-response", id);
             return;
         }
 
+        kafkaSupplierNotFoundExceptionTemplate.send("supplier-not-found-exception-response", new SupplierNotFoundException(id));
         throw new SupplierNotFoundException(id);
     }
 
@@ -94,6 +100,13 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     private Supplier findById(UUID id) throws SupplierNotFoundException {
-        return supplierRepository.findById(id).orElseThrow(() -> new SupplierNotFoundException(id));
+        Optional<Supplier> supplier = supplierRepository.findById(id);
+
+        if (supplier.isPresent()) {
+            return supplier.get();
+        }
+
+        kafkaSupplierNotFoundExceptionTemplate.send("supplier-not-found-exception-response", new SupplierNotFoundException(id));
+        throw new SupplierNotFoundException(id);
     }
 }

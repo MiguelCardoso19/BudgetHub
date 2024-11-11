@@ -15,12 +15,12 @@ import java.util.concurrent.TimeoutException;
 public interface MovementService {
     MovementDTO create(MovementDTO movementDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException;
     MovementDTO update(MovementDTO movementDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException;
-    void delete(UUID id);
+    void delete(UUID id) throws ExecutionException, InterruptedException, TimeoutException;
     MovementDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO getAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO getByBudgetType(UUID budgetTypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO getByBudgetSubtype(UUID budgetSubtypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException;
-    void exportMovementsReport(LocalDate startDate, LocalDate endDate, MovementStatus status, String emailFromRequest);
+    void exportMovementsReport(LocalDate startDate, LocalDate endDate, MovementStatus status, String emailFromRequest) throws ExecutionException, InterruptedException, TimeoutException;
     CompletableFuture<MovementDTO> getPendingRequest(UUID correlationId, UUID id);
     CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
 }

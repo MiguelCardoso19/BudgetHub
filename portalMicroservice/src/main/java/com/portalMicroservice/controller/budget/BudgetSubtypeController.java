@@ -64,7 +64,7 @@ public class BudgetSubtypeController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteSubtype(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteSubtype(@PathVariable UUID id) throws ExecutionException, InterruptedException, TimeoutException {
         // return budgetSubtypeFeignClient.deleteSubtype(id);
         budgetSubtypeService.delete(id);
         return ResponseEntity.noContent().build();

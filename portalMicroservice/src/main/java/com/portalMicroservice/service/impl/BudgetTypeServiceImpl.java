@@ -3,6 +3,7 @@ package com.portalMicroservice.service.impl;
 import com.portalMicroservice.dto.budget.BudgetTypeDTO;
 import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.CustomPageableDTO;
+import com.portalMicroservice.dto.budget.SupplierDTO;
 import com.portalMicroservice.exception.GenericException;
 import com.portalMicroservice.service.BudgetTypeService;
 import com.portalMicroservice.util.PageableUtils;
@@ -53,8 +54,11 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id) throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<BudgetTypeDTO> future = new CompletableFuture<>();
+        pendingRequests.put(id, future);
         kafkaUuidTemplate.send("delete-budget-type", id);
+        future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override

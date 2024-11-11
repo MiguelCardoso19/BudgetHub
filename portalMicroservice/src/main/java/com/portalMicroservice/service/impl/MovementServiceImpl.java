@@ -52,8 +52,11 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id) throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<MovementDTO> future = new CompletableFuture<>();
+        pendingRequests.put(id, future);
         kafkaUuidTemplate.send("delete-movement", id);
+        future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
@@ -78,7 +81,7 @@ public class MovementServiceImpl implements MovementService {
         CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
         CustomPageableDTO customPageableDTO = PageableUtils.convertToCustomPageable(pageable);
         pendingPageRequests.put(customPageableDTO.getCorrelationId(), future);
-        kafkaMovementsByBudgetTemplate.send("get-movements-by-budget-type", new MovementsByBudgetRequestDTO(budgetTypeId, customPageableDTO));
+        kafkaMovementsByBudgetTemplate.send("get-movements-by-budget-type", new MovementsByBudgetRequestDTO(customPageableDTO.getCorrelationId(), budgetTypeId, customPageableDTO));
         return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
@@ -87,15 +90,17 @@ public class MovementServiceImpl implements MovementService {
         CompletableFuture<CustomPageDTO> future = new CompletableFuture<>();
         CustomPageableDTO customPageableDTO = PageableUtils.convertToCustomPageable(pageable);
         pendingPageRequests.put(customPageableDTO.getCorrelationId(), future);
-        log.info("sent {}", customPageableDTO.getCorrelationId());
-        kafkaMovementsByBudgetTemplate.send("get-movements-by-budget-subtype", new MovementsByBudgetRequestDTO(budgetSubtypeId, customPageableDTO));
+        kafkaMovementsByBudgetTemplate.send("get-movements-by-budget-subtype", new MovementsByBudgetRequestDTO(customPageableDTO.getCorrelationId(), budgetSubtypeId, customPageableDTO));
         return future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     @Override
-    public void exportMovementsReport(LocalDate startDate, LocalDate endDate, MovementStatus status, String emailFromRequest) {
-        kafkaExportMovementsTemplate.send("export-movements-report",
-                new ExportMovementsRequestDTO(startDate, endDate, status, emailFromRequest));
+    public void exportMovementsReport(LocalDate startDate, LocalDate endDate, MovementStatus status, String emailFromRequest) throws ExecutionException, InterruptedException, TimeoutException {
+        CompletableFuture<MovementDTO> future = new CompletableFuture<>();
+        ExportMovementsRequestDTO requestDTO = new ExportMovementsRequestDTO(UUID.randomUUID(), startDate, endDate, status, emailFromRequest);
+        pendingRequests.put(requestDTO.getCorrelationId(), future);
+        kafkaExportMovementsTemplate.send("export-movements-report", requestDTO);
+        future.get(TIMEOUT_DURATION, SECONDS);
     }
 
     public CompletableFuture<MovementDTO> getPendingRequest(UUID correlationId, UUID id) {

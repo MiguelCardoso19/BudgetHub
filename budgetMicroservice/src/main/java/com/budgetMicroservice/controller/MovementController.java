@@ -44,7 +44,7 @@ public class MovementController {
     })
     @PostMapping("/create")
     public ResponseEntity<MovementDTO> createMovement(@Valid @RequestBody MovementDTO movementDTO)
-            throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException {
+            throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException, BudgetTypeNotFoundException {
         return ResponseEntity.ok(movementService.create(movementDTO));
     }
 
@@ -57,7 +57,7 @@ public class MovementController {
     })
     @PutMapping("/update")
     public ResponseEntity<MovementDTO> updateMovement(@Valid @RequestBody MovementDTO movementDTO)
-            throws MovementNotFoundException, SupplierNotFoundException, BudgetSubtypeNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException {
+            throws MovementNotFoundException, SupplierNotFoundException, BudgetSubtypeNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException, BudgetTypeNotFoundException {
         return ResponseEntity.ok(movementService.update(movementDTO));
     }
 
@@ -123,7 +123,7 @@ public class MovementController {
             @PageableDefault(size = 10, page = 0) Pageable pageable)
             throws Exception {
         return ResponseEntity.ok(movementService.getMovementsByBudgetType(
-                new MovementsByBudgetRequestDTO(budgetTypeId, PageableUtils.convertToCustomPageable(pageable))));
+                new MovementsByBudgetRequestDTO(null, budgetTypeId, PageableUtils.convertToCustomPageable(pageable))));
     }
 
     @Operation(summary = "Get movements by budget subtype",
@@ -138,7 +138,7 @@ public class MovementController {
             @PageableDefault(size = 10, page = 0) Pageable pageable)
             throws Exception {
         return ResponseEntity.ok(movementService.getMovementsByBudgetSubtype(
-                new MovementsByBudgetRequestDTO(budgetSubtypeId, PageableUtils.convertToCustomPageable(pageable))));
+                new MovementsByBudgetRequestDTO(null, budgetSubtypeId, PageableUtils.convertToCustomPageable(pageable))));
     }
 
     @Operation(summary = "Export movements report",
@@ -155,7 +155,7 @@ public class MovementController {
             @RequestParam(required = false) MovementStatus status,
             @RequestParam("userEmail") String userEmail)
             throws IOException, MovementNotFoundException, GenerateExcelException {
-        movementService.exportMovements(new ExportMovementsRequestDTO(startDate, endDate, status, userEmail));
+        movementService.exportMovements(new ExportMovementsRequestDTO(null, startDate, endDate, status, userEmail));
         return ResponseEntity.ok().build();
     }
 }

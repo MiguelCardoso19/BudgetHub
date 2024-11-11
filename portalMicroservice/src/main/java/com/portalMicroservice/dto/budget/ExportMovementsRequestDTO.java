@@ -7,12 +7,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "DTO representing a request to export movement data for a specific date range and status, associated with a user.")
 public class ExportMovementsRequestDTO {
+
+    @Schema(description = "Correlation ID to track the request.",
+            example = "123e4567-e89b-12d3-a456-426614174001")
+    private UUID correlationId;
 
     @Schema(description = "Start date of the movement data export period.",
             example = "2024-01-01", required = true)

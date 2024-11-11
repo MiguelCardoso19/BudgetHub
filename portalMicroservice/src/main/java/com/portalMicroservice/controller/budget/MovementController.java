@@ -76,7 +76,7 @@ public class MovementController {
             @ApiResponse(responseCode = "404", description = "Movement not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) throws ExecutionException, InterruptedException, TimeoutException {
         // movementFeignClient.deleteMovement(id);
         movementService.delete(id);
         return ResponseEntity.noContent().build();
@@ -132,7 +132,7 @@ public class MovementController {
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) MovementStatus status
-    ) {
+    ) throws ExecutionException, InterruptedException, TimeoutException {
         // movementFeignClient.exportMovementsReport(startDate, endDate, status, jwtService.getEmailFromRequest());
         movementService.exportMovementsReport(startDate, endDate, status, jwtService.getEmailFromRequest());
         return ResponseEntity.ok().build();

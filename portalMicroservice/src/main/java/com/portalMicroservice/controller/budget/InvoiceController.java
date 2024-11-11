@@ -46,7 +46,7 @@ public class InvoiceController {
             @ApiResponse(responseCode = "400", description = "Failed to upload file")
     })
     @PostMapping("/attach-base64-file/{invoiceId}")
-    public ResponseEntity<Void> attachBase64FileToInvoice(@PathVariable UUID invoiceId, @RequestParam("file") MultipartFile file) throws FailedToUploadFileException {
+    public ResponseEntity<Void> attachBase64FileToInvoice(@PathVariable UUID invoiceId, @RequestParam("file") MultipartFile file) throws FailedToUploadFileException, ExecutionException, InterruptedException, TimeoutException {
         invoiceService.attachBase64FileToInvoice(invoiceId, file);
         return ResponseEntity.noContent().build();
     }
@@ -81,7 +81,7 @@ public class InvoiceController {
             @ApiResponse(responseCode = "404", description = "Invoice not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteInvoice(@PathVariable UUID id) throws GenericException {
+    public ResponseEntity<Void> deleteInvoice(@PathVariable UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         invoiceService.delete(id);
         // invoiceFeignClient.deleteInvoice(id);
         return ResponseEntity.noContent().build();

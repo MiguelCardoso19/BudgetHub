@@ -14,7 +14,7 @@ import java.util.concurrent.TimeoutException;
 public interface BudgetTypeService {
     BudgetTypeDTO create(BudgetTypeDTO budgetTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException;
     BudgetTypeDTO update(BudgetTypeDTO budgetTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException;
-    void delete(UUID id);
+    void delete(UUID id) throws ExecutionException, InterruptedException, TimeoutException;
     BudgetTypeDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO findAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     CompletableFuture<BudgetTypeDTO> getPendingRequest(UUID correlationId, UUID id);

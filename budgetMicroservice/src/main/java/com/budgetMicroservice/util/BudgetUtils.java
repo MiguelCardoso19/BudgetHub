@@ -5,10 +5,16 @@ import com.budgetMicroservice.exception.BudgetExceededException;
 import com.budgetMicroservice.model.BudgetType;
 import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.repository.BudgetSubtypeRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
+@RequiredArgsConstructor
 public class BudgetUtils {
+    private final KafkaTemplate<String, BudgetExceededException> kafkaBudgetExceededExceptionTemplate;
 
-    public static void checkBudgetExceeded(BudgetType budgetType, BudgetSubtypeDTO budgetSubtypeDTO, BudgetSubtypeRepository budgetSubtypeRepository, BudgetSubtype existingBudgetSubtype) throws BudgetExceededException {
+    public void checkBudgetExceeded(BudgetType budgetType, BudgetSubtypeDTO budgetSubtypeDTO, BudgetSubtypeRepository budgetSubtypeRepository, BudgetSubtype existingBudgetSubtype) throws BudgetExceededException {
         double totalSpentForType = budgetSubtypeRepository.findByBudgetType(budgetType).stream()
                 .mapToDouble(BudgetSubtype::getAvailableFunds)
                 .sum();
@@ -18,6 +24,7 @@ public class BudgetUtils {
         }
 
         if (totalSpentForType + budgetSubtypeDTO.getAvailableFunds() > budgetType.getAvailableFunds()) {
+            kafkaBudgetExceededExceptionTemplate.send("budget-subtype-budget-exceeded-exception-response", new BudgetExceededException(budgetSubtypeDTO.getCorrelationId(), budgetSubtypeDTO.getAvailableFunds(), totalSpentForType));
             throw new BudgetExceededException(budgetSubtypeDTO.getAvailableFunds(), totalSpentForType);
         }
     }

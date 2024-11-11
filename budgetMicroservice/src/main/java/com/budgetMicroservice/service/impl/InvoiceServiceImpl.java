@@ -1,13 +1,11 @@
 package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.*;
-import com.budgetMicroservice.exception.FailedToUploadFileException;
-import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
-import com.budgetMicroservice.exception.InvoiceNotFoundException;
-import com.budgetMicroservice.exception.MovementNotFoundException;
+import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.mapper.InvoiceMapper;
 import com.budgetMicroservice.model.Invoice;
 import com.budgetMicroservice.model.Movement;
+import com.budgetMicroservice.model.Supplier;
 import com.budgetMicroservice.repository.InvoiceRepository;
 import com.budgetMicroservice.service.InvoiceService;
 import com.budgetMicroservice.service.MovementService;
@@ -24,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,6 +34,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceMapper invoiceMapper;
     private final KafkaTemplate<String, InvoiceDTO> kafkaInvoiceTemplate;
     private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
+    private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
+    private final KafkaTemplate<String, InvoiceNotFoundException> kafkaInvoiceNotFoundExceptionTemplate;
+    private final KafkaTemplate<String, FailedToUploadFileException> kafkaFailedToUploadFileExceptionTemplate;
 
     @Override
     @KafkaListener(topics = "create-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
@@ -67,9 +69,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     @KafkaListener(topics = "delete-invoice", groupId = "uuid_group", concurrency = "10")
     public void delete(UUID id) throws InvoiceNotFoundException {
         if (!invoiceRepository.existsById(id)) {
+            kafkaInvoiceNotFoundExceptionTemplate.send("invoice-not-found-exception-response", new InvoiceNotFoundException(id));
             throw new InvoiceNotFoundException(id);
         }
         invoiceRepository.deleteById(id);
+        kafkaUuidTemplate.send("invoice-delete-success-response", id);
     }
 
     @Override
@@ -111,9 +115,11 @@ public class InvoiceServiceImpl implements InvoiceService {
             byte[] fileBytes = Base64.getDecoder().decode(request.getBase64File());
             invoice.setFile(fileBytes);
         } catch (IllegalArgumentException e) {
+            kafkaFailedToUploadFileExceptionTemplate.send("failed-to-upload-file-exception-response", new FailedToUploadFileException(request.getId()));
             throw new FailedToUploadFileException(request.getId());
         }
 
+        kafkaUuidTemplate.send("upload-file-success-response", request.getId());
         invoiceRepository.save(invoice);
     }
 
@@ -128,7 +134,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private Invoice findById(UUID id) throws InvoiceNotFoundException {
-        return invoiceRepository.findById(id)
-                .orElseThrow(() -> new InvoiceNotFoundException(id));
+        Optional<Invoice> invoice = invoiceRepository.findById(id);
+
+        if (invoice.isPresent()) {
+            return invoice.get();
+        }
+
+        kafkaInvoiceNotFoundExceptionTemplate.send("invoice-not-found-exception-response", new InvoiceNotFoundException(id));
+        throw new InvoiceNotFoundException(id);
     }
 }

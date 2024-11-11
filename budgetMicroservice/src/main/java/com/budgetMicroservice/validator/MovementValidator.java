@@ -1,22 +1,29 @@
 package com.budgetMicroservice.validator;
 
 import com.budgetMicroservice.dto.MovementDTO;
+import com.budgetMicroservice.exception.MovementNotFoundException;
 import com.budgetMicroservice.exception.MovementValidationException;
 import com.budgetMicroservice.repository.MovementRepository;
 import com.budgetMicroservice.service.InvoiceService;
 import com.budgetMicroservice.service.SupplierService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class MovementValidator {
+    private final KafkaTemplate<String, MovementValidationException> kafkaMovementValidationExceptionTemplate;
 
-  public static void validateMovement(MovementDTO movementDTO,
-                                      MovementRepository repository,
-                                      SupplierService supplierService,
-                                      InvoiceService invoiceService)
+    public void validateMovement(MovementDTO movementDTO,
+                                 MovementRepository repository,
+                                 SupplierService supplierService,
+                                 InvoiceService invoiceService)
             throws MovementValidationException {
 
         List<String> errorMessages = new ArrayList<>();
@@ -47,15 +54,16 @@ public class MovementValidator {
 
         if (!errorMessages.isEmpty()) {
             log.error("Movement validation failed with errors: {}", errorMessages);
+            kafkaMovementValidationExceptionTemplate.send("movement-validation-exception-response", new MovementValidationException(errorMessages, movementDTO.getCorrelationId()));
             throw new MovementValidationException(errorMessages);
         }
     }
 
 
-    public static void validateMovementUpdate(MovementDTO movementDTO,
-                                              MovementRepository repository,
-                                              SupplierService supplierService,
-                                              InvoiceService invoiceService)
+    public void validateMovementUpdate(MovementDTO movementDTO,
+                                       MovementRepository repository,
+                                       SupplierService supplierService,
+                                       InvoiceService invoiceService)
             throws MovementValidationException {
 
         List<String> errorMessages = new ArrayList<>();
@@ -86,11 +94,12 @@ public class MovementValidator {
 
         if (!errorMessages.isEmpty()) {
             log.error("Movement validation failed with errors: {}", errorMessages);
+            kafkaMovementValidationExceptionTemplate.send("movement-validation-exception-response", new MovementValidationException(errorMessages, movementDTO.getCorrelationId()));
             throw new MovementValidationException(errorMessages);
         }
     }
 
-    public static void validateMovementValues(MovementDTO movementDTO) throws MovementValidationException {
+    public void validateMovementValues(MovementDTO movementDTO) throws MovementValidationException {
         List<String> errorMessages = new ArrayList<>();
 
         if (movementDTO.getValueWithoutIva() <= 0) {
@@ -103,6 +112,7 @@ public class MovementValidator {
 
         if (!errorMessages.isEmpty()) {
             log.error("Movement validation failed with errors: {}", errorMessages);
+            kafkaMovementValidationExceptionTemplate.send("movement-validation-exception-response", new MovementValidationException(errorMessages, movementDTO.getCorrelationId()));
             throw new MovementValidationException(errorMessages);
         }
     }

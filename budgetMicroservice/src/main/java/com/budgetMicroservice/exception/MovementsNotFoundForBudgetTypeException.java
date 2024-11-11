@@ -9,6 +9,8 @@ import static com.budgetMicroservice.exception.ErrorMessage.MOVEMENTS_NOT_FOUND_
 
 @Getter
 public class MovementsNotFoundForBudgetTypeException extends Exception {
+    private UUID correlationId;
+    private UUID budgetId;
     private final String message;
     private final HttpStatus status;
     private final String errorCode;
@@ -16,6 +18,15 @@ public class MovementsNotFoundForBudgetTypeException extends Exception {
     public MovementsNotFoundForBudgetTypeException(UUID id) {
         super(MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getMessage(id));
         this.message = MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getMessage(id);
+        this.status = MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getStatus();
+        this.errorCode = MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getErrorCode();
+    }
+
+    public MovementsNotFoundForBudgetTypeException(UUID correlationId, UUID budgetId) {
+        super(MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getMessage(budgetId));
+        this.correlationId = correlationId;
+        this.budgetId = budgetId;
+        this.message = MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getMessage(budgetId);
         this.status = MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getStatus();
         this.errorCode = MOVEMENTS_NOT_FOUND_FOR_BUDGET_TYPE.getErrorCode();
     }

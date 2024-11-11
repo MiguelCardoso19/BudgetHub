@@ -2,9 +2,7 @@ package com.budgetMicroservice.util;
 
 import com.budgetMicroservice.dto.MovementDTO;
 import com.budgetMicroservice.enumerator.MovementStatus;
-import com.budgetMicroservice.exception.BudgetExceededException;
-import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
-import com.budgetMicroservice.exception.MovementValidationException;
+import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.model.BudgetType;
 import com.budgetMicroservice.model.Movement;
@@ -12,18 +10,26 @@ import com.budgetMicroservice.repository.MovementRepository;
 import com.budgetMicroservice.service.BudgetSubtypeService;
 import com.budgetMicroservice.service.BudgetTypeService;
 import com.budgetMicroservice.validator.MovementValidator;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class MovementUtils {
+    private final MovementValidator movementValidator;
+    private final KafkaTemplate<String, BudgetExceededException> kafkaBudgetExceededExceptionTemplate;
 
-    public static void calculateIvaAndTotal(MovementDTO movementDTO) throws MovementValidationException {
-        MovementValidator.validateMovementValues(movementDTO);
+
+    public void calculateIvaAndTotal(MovementDTO movementDTO) throws MovementValidationException {
+        movementValidator.validateMovementValues(movementDTO);
 
         Double ivaValue = (movementDTO.getValueWithoutIva() * (movementDTO.getIvaRate() != null ? movementDTO.getIvaRate() : 0)) / 100;
         Double totalValue = movementDTO.getValueWithoutIva() + ivaValue;
@@ -34,7 +40,7 @@ public class MovementUtils {
 
     public static void setBudget(Movement movement, MovementDTO movementDTO,
                                  BudgetSubtypeService budgetSubtypeService,
-                                 BudgetTypeService budgetTypeService) throws BudgetSubtypeNotFoundException {
+                                 BudgetTypeService budgetTypeService) throws BudgetSubtypeNotFoundException, BudgetTypeNotFoundException {
         if (movementDTO.getBudgetSubtypeId() != null) {
             BudgetSubtype budgetSubtype = budgetSubtypeService.findBudgetSubtypeEntityById(movementDTO.getBudgetSubtypeId());
             movement.setBudgetSubtype(budgetSubtype);
@@ -46,7 +52,7 @@ public class MovementUtils {
         }
     }
 
-    public static void updateSpentAmounts(BudgetSubtypeService budgetSubtypeService,
+    public void updateSpentAmounts(MovementDTO movementDTO, BudgetSubtypeService budgetSubtypeService,
                                           BudgetTypeService budgetTypeService,
                                           Movement movement, Double totalValue) throws BudgetExceededException {
 
@@ -55,6 +61,7 @@ public class MovementUtils {
             BudgetType type = subtype.getBudgetType();
 
             if (totalValue > subtype.getAvailableFunds()) {
+                kafkaBudgetExceededExceptionTemplate.send("movement-budget-exceeded-exception-response", new BudgetExceededException(movementDTO.getCorrelationId(), totalValue, subtype.getAvailableFunds()));
                 throw new BudgetExceededException(totalValue, subtype.getAvailableFunds());
             }
 
@@ -70,6 +77,7 @@ public class MovementUtils {
             BudgetType type = movement.getBudgetType();
 
             if (totalValue > type.getAvailableFunds()) {
+                kafkaBudgetExceededExceptionTemplate.send("movement-budget-exceeded-exception-response", new BudgetExceededException(movementDTO.getCorrelationId(), totalValue, type.getAvailableFunds()));
                 throw new BudgetExceededException(totalValue, type.getAvailableFunds());
             }
 

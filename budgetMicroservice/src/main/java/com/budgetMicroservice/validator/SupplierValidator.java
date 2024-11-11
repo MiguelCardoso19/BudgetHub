@@ -1,17 +1,25 @@
 package com.budgetMicroservice.validator;
 
 import com.budgetMicroservice.dto.SupplierDTO;
+import com.budgetMicroservice.exception.SupplierNotFoundException;
 import com.budgetMicroservice.exception.SupplierValidationException;
 import com.budgetMicroservice.repository.SupplierRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class SupplierValidator {
+    private final KafkaTemplate<String, SupplierValidationException> kafkaSupplierValidationExceptionTemplate;
 
-    public static void validateSupplierCreation(SupplierDTO supplierDTO, SupplierRepository repository)
+    public void validateSupplierCreation(SupplierDTO supplierDTO, SupplierRepository repository)
             throws SupplierValidationException {
 
         List<String> errorMessages = new ArrayList<>();
@@ -22,11 +30,12 @@ public class SupplierValidator {
         validateCompanyNameForExistingSupplier(supplierDTO, repository, errorMessages);
 
         if (!errorMessages.isEmpty()) {
+            kafkaSupplierValidationExceptionTemplate.send("supplier-validation-exception-response", new SupplierValidationException(errorMessages, supplierDTO.getCorrelationId()));
             throw new SupplierValidationException(errorMessages);
         }
     }
 
-    public static void validateSupplierUpdate(SupplierDTO supplierDTO, SupplierRepository repository)
+    public void validateSupplierUpdate(SupplierDTO supplierDTO, SupplierRepository repository)
             throws SupplierValidationException {
 
         List<String> errorMessages = new ArrayList<>();
@@ -37,6 +46,7 @@ public class SupplierValidator {
         validateCompanyNameForExistingSupplierUpdate(supplierDTO, repository, errorMessages);
 
         if (!errorMessages.isEmpty()) {
+            kafkaSupplierValidationExceptionTemplate.send("supplier-validation-exception-response", new SupplierValidationException(errorMessages, supplierDTO.getCorrelationId()));
             throw new SupplierValidationException(errorMessages);
         }
     }

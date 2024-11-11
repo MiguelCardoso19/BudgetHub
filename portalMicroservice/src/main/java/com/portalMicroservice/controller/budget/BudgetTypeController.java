@@ -49,7 +49,7 @@ public class BudgetTypeController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteBudgetType(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteBudgetType(@PathVariable UUID id) throws ExecutionException, InterruptedException, TimeoutException {
         // return budgetTypeFeignClient.deleteBudgetType(id);
         budgetTypeService.delete(id);
         return ResponseEntity.noContent().build();

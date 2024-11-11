@@ -15,9 +15,9 @@ import java.util.concurrent.TimeoutException;
 public interface InvoiceService {
     InvoiceDTO create(InvoiceDTO invoiceDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     InvoiceDTO update(InvoiceDTO invoiceDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
-    void delete(UUID id) throws GenericException;
+    void delete(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     InvoiceDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
-    void attachBase64FileToInvoice(UUID invoiceId, MultipartFile file) throws FailedToUploadFileException;
+    void attachBase64FileToInvoice(UUID invoiceId, MultipartFile file) throws FailedToUploadFileException, ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO getAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     CompletableFuture<InvoiceDTO> getPendingRequest(UUID correlationId, UUID id);
     CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
