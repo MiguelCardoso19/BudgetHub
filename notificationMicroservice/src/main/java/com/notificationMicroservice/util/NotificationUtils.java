@@ -19,11 +19,27 @@ public class NotificationUtils {
                 notificationMapper.toEntity(notificationRequestDTO);
     }
 
-    public static void prepareNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
+    public static void prepareExportReportNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
         notification.setType(EMAIL);
         notification.setSender(senderEmail);
         notification.setRecipient(notificationRequestDTO.getRecipient());
         notification.setSubject("Movements Report");
         notification.setBody("Please find attached the movements report for the specified period.");
+    }
+
+    public static void prepareResetPasswordNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
+        notification.setType(EMAIL);
+        notification.setSender(senderEmail);
+        notification.setRecipient(notificationRequestDTO.getRecipient());
+        notification.setSubject("Password Reset Request");
+
+        String htmlContent = "<html>"
+                + "<body style='font-family: Arial, sans-serif;'>"
+                + "<p>We received a request to reset your password. Please click the link below to reset your password:</p>"
+                + "<p><a href='" + notificationRequestDTO.getResetLink() + "' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Reset Password</a></p>"
+                + "</body>"
+                + "</html>";
+
+        notification.setBody(htmlContent);
     }
 }

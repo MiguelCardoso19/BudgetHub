@@ -21,8 +21,15 @@ public class JwtService {
     @Value("${app.security.jwt.expiration}")
     private long JWT_EXPIRATION;
 
+    @Value("${app.security.jwt.reset.password.expiration}")
+    private long JWT_RESET_PASSWORD_EXPIRATION;
+
     @Value("${app.security.jwt.refresh-token.expiration}")
     private long JWT_REFRESH_TOKEN_EXPIRATION;
+
+    public String generateResetPasswordToken(UserCredentials user) {
+        return createToken(user, JWT_RESET_PASSWORD_EXPIRATION);
+    }
 
     public String generateToken(UserCredentials user) {
         return createToken(user, JWT_EXPIRATION);

@@ -1,5 +1,6 @@
 package com.authenticationMicroservice.config;
 
+import com.authenticationMicroservice.enumerator.UserStatus;
 import com.authenticationMicroservice.exception.NifNotFoundException;
 import com.authenticationMicroservice.model.UserCredentials;
 import com.authenticationMicroservice.service.JwtService;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -45,6 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (nif != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserCredentials user = userCredentialsService.findByNif(nif)
                         .orElseThrow(() -> new NifNotFoundException(nif));
+
+                if (user.getStatus() == UserStatus.LOGGED_OUT) {
+                    response.setStatus(SC_UNAUTHORIZED);
+                    return;
+                }
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());

@@ -1,22 +1,22 @@
 package com.authenticationMicroservice.service.impl;
 
 
-import com.authenticationMicroservice.dto.AuthenticationResponseDTO;
-import com.authenticationMicroservice.dto.DeleteRequestDTO;
-import com.authenticationMicroservice.dto.UserCredentialsDTO;
-import com.authenticationMicroservice.exception.InvalidPasswordException;
-import com.authenticationMicroservice.exception.UserCredentialsValidationException;
-import com.authenticationMicroservice.exception.UserNotFoundException;
+import com.authenticationMicroservice.dto.*;
+import com.authenticationMicroservice.exception.*;
 import com.authenticationMicroservice.mapper.DTOMapper;
+import com.authenticationMicroservice.model.PasswordResetToken;
 import com.authenticationMicroservice.model.UserCredentials;
+import com.authenticationMicroservice.repository.PasswordResetTokenRepository;
 import com.authenticationMicroservice.repository.UserCredentialsRepository;
 import com.authenticationMicroservice.service.JwtService;
 import com.authenticationMicroservice.service.UserCredentialsService;
 import com.authenticationMicroservice.validator.UserCredentialsValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -26,6 +26,8 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     private final DTOMapper dtoMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final KafkaTemplate<String, NotificationRequestDTO> kafkaNotificationRequestTemplate;
 
     @Override
     public AuthenticationResponseDTO register(UserCredentialsDTO userCredentialsDTO) throws UserCredentialsValidationException {
@@ -36,7 +38,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
 
         String token = jwtService.generateToken(newUser);
         String refreshToken = jwtService.generateRefreshToken(newUser);
-        return dtoMapper.toDTO(refreshToken, token, newUser.getId());
+        return dtoMapper.toDTO(token,refreshToken, newUser.getId());
     }
 
     @Override
@@ -68,6 +70,37 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     }
 
     @Override
+    public void recoverPassword(String email) throws EmailNotFoundException {
+        UserCredentials user = userCredentialsRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailNotFoundException(email));
+
+        String resetToken = jwtService.generateResetPasswordToken(user);
+        PasswordResetToken tokenEntity = new PasswordResetToken();
+        tokenEntity.setToken(resetToken);
+        tokenEntity.setExpiryDate(LocalDateTime.now().plusHours(1));
+        tokenEntity.setUser(user);
+        passwordResetTokenRepository.save(tokenEntity);
+
+        String resetLink = "http://localhost:8080/api/v1/auth/reset-password?token=" + resetToken;
+        kafkaNotificationRequestTemplate.send("notification-reset-password-topic", new NotificationRequestDTO(user.getEmail(), resetLink));
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequestDTO resetPasswordRequestDTO) throws InvalidTokenException {
+        PasswordResetToken tokenEntity = passwordResetTokenRepository.findByToken(resetPasswordRequestDTO.getToken())
+                .orElseThrow(() -> new InvalidTokenException());
+
+        if (tokenEntity.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new InvalidTokenException();
+        }
+
+        UserCredentials user = tokenEntity.getUser();
+        user.setPassword(passwordEncoder.encode(resetPasswordRequestDTO.getNewPassword()));
+        userCredentialsRepository.save(user);
+        passwordResetTokenRepository.delete(tokenEntity);
+    }
+
+    @Override
     public Optional<UserCredentials> findByNif(String nif) {
         return userCredentialsRepository.findByNif(nif);
     }
@@ -75,5 +108,10 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     @Override
     public Optional<UserCredentials> findByEmail(String email) {
         return userCredentialsRepository.findByEmail(email);
+    }
+
+    @Override
+    public void save(UserCredentials userCredentials) {
+        userCredentialsRepository.save(userCredentials);
     }
 }

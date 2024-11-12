@@ -41,31 +41,19 @@ public class NotificationServiceImpl implements NotificationService {
     @Value("${email.retry.lock.key}")
     private String EMAIL_RETRY_LOCK_KEY;
 
+    @Override
     @KafkaListener(topics = "notification-topic", groupId = "notification_group", containerFactory = "notificationRequestKafkaListenerContainerFactory")
-    public void handleEmailNotificationRequest(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException {
-        Notification notification = NotificationUtils.findOrInitializeNotification(notificationRequestDTO, notificationRepository, notificationMapper);
-
-        try {
-            log.info("Preparing to send notification to: {}", notificationRequestDTO.getRecipient());
-
-            NotificationUtils.prepareNotification(notification, notificationRequestDTO);
-            sendEmail(notification, notificationRequestDTO);
-
-            notification.setStatus(SENT);
-            log.info("Notification sent to: {}", notification.getRecipient());
-
-        } catch (MessagingException e) {
-            notification.setStatus(FAILED);
-            log.error("Failed to send notification to: {}", notification.getRecipient(), e);
-            throw new FailedToSendEmailException(notification.getRecipient());
-
-        } finally {
-            notificationRepository.save(notification);
-            log.info("Notification status saved for: {}", notification.getRecipient());
-        }
+    public void handleEmailNotificationWithAttachmentRequest(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException {
+        handleEmailNotification(notificationRequestDTO, "export-report");
     }
 
-    @Scheduled(cron = "0 * * * * ?")
+    @Override
+    @KafkaListener(topics = "notification-reset-password-topic", groupId = "notification_group", containerFactory = "notificationRequestKafkaListenerContainerFactory")
+    public void handleEmailNotificationResetPassword(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException {
+        handleEmailNotification(notificationRequestDTO, "reset-password");
+    }
+
+    @Scheduled(cron = "30 * * * * ?")
     @Transactional
     @Override
     public void retryFailedEmails() {
@@ -77,7 +65,7 @@ public class NotificationServiceImpl implements NotificationService {
 
                     for (Notification notification : failedNotifications) {
                         log.info("Retrying notification: {}", notification.getRecipient());
-                        handleEmailNotificationRequest(notificationMapper.toDTO(notification));
+                        handleEmailNotificationWithAttachmentRequest(notificationMapper.toDTO(notification));
                     }
                 } finally {
                     lock.unlock();
@@ -93,16 +81,49 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
+    private void handleEmailNotification(NotificationRequestDTO notificationRequestDTO, String notificationType) throws FailedToSendEmailException {
+        Notification notification = NotificationUtils.findOrInitializeNotification(notificationRequestDTO, notificationRepository, notificationMapper);
+
+        try {
+            log.info("Preparing to send {} notification to: {}", notificationType, notificationRequestDTO.getRecipient());
+
+            if ("export-report".equals(notificationType)) {
+                NotificationUtils.prepareExportReportNotification(notification, notificationRequestDTO);
+            } else if ("reset-password".equals(notificationType)) {
+                NotificationUtils.prepareResetPasswordNotification(notification, notificationRequestDTO);
+            }
+
+            sendEmail(notification, notificationRequestDTO);
+
+            notification.setStatus(SENT);
+            log.info("Notification sent to: {}", notification.getRecipient());
+
+        } catch (MessagingException e) {
+            notification.setStatus(FAILED);
+            log.error("Failed to send notification to: {}", notification.getRecipient(), e);
+            throw new FailedToSendEmailException(notification.getRecipient());
+
+        } finally {
+            if(notification.getAttachment() == null) {
+                notification.setBody("We received a request to reset your password...");
+            }
+            notificationRepository.save(notification);
+            log.info("Notification status saved for: {}", notification.getRecipient());
+        }
+    }
+
     private void sendEmail(Notification notification, NotificationRequestDTO notificationRequestDTO) throws MessagingException {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
         helper.setTo(notification.getRecipient());
         helper.setSubject(notification.getSubject());
-        helper.setText(notification.getBody());
+        helper.setText(notification.getBody(), true);
 
-        byte[] attachmentBytes = Base64.getDecoder().decode(notificationRequestDTO.getAttachment());
-        helper.addAttachment("Movements_Report.xlsx", new ByteArrayResource(attachmentBytes));
+        if(notification.getAttachment() != null) {
+            byte[] attachmentBytes = Base64.getDecoder().decode(notificationRequestDTO.getAttachment());
+            helper.addAttachment("Movements_Report.xlsx", new ByteArrayResource(attachmentBytes));
+        }
 
         emailSender.send(mimeMessage);
     }

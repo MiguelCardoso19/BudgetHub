@@ -55,4 +55,19 @@ public class AuthenticationController {
     ) throws IOException, UserNotFoundException, NifNotFoundException {
         return ResponseEntity.ok(authenticationService.refreshToken(request));
     }
+
+    @Operation(summary = "Sign out the user",
+            description = "Logs out the user by clearing the security context and updating the user status to LOGGED_OUT.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully signed out"),
+            @ApiResponse(responseCode = "400", description = "Bad Request, missing or invalid Authorization header"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, token invalid or user not found")
+    })
+    @PostMapping("/sign-out")
+    public ResponseEntity<Void> signOut( @Parameter(description = "HTTP request containing the JWT for sign-out verification")
+                                          HttpServletRequest request) throws NifNotFoundException {
+        authenticationService.signOut(request);
+        return ResponseEntity.noContent().build();
+    }
 }

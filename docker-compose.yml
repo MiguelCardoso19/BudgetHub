@@ -95,7 +95,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://budget-db:5432/budget-db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: user
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
     depends_on:
       - budget-db
 
@@ -126,7 +126,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment-db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: user
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
     depends_on:
       - payment-db
 
@@ -140,6 +140,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://authentication-db:5432/authentication-db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: user
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
     depends_on:
       - authentication-db
 

@@ -13,4 +13,5 @@ import java.io.IOException;
 public interface AuthenticationService {
     AuthenticationResponseDTO signIn(SignInRequestDTO signInRequestDTO) throws InvalidPasswordException, UserNotFoundException, EmailNotFoundException;
     AuthenticationResponseDTO refreshToken(HttpServletRequest request) throws IOException, UserNotFoundException, NifNotFoundException;
+    void signOut(HttpServletRequest request) throws NifNotFoundException;
 }

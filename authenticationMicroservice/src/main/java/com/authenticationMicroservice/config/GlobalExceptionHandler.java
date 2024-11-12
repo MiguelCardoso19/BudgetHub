@@ -42,4 +42,10 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
 }

@@ -17,4 +17,7 @@ public class NotificationRequestDTO {
 
     @Schema(description = "Base64 encoded attachment of the report (optional)", example = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64, ...")
     private String attachment;
+
+    private String resetLink;
+
 }

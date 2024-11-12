@@ -2,10 +2,9 @@ package com.authenticationMicroservice.controller;
 
 import com.authenticationMicroservice.dto.AuthenticationResponseDTO;
 import com.authenticationMicroservice.dto.DeleteRequestDTO;
+import com.authenticationMicroservice.dto.ResetPasswordRequestDTO;
 import com.authenticationMicroservice.dto.UserCredentialsDTO;
-import com.authenticationMicroservice.exception.InvalidPasswordException;
-import com.authenticationMicroservice.exception.UserCredentialsValidationException;
-import com.authenticationMicroservice.exception.UserNotFoundException;
+import com.authenticationMicroservice.exception.*;
 import com.authenticationMicroservice.service.impl.UserCredentialsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,6 +64,40 @@ public class UserCredentialsController {
             @Valid @RequestBody @Parameter(description = "User credentials to delete the account")
             DeleteRequestDTO deleteRequestDTO) throws InvalidPasswordException, UserNotFoundException {
         userCredentialsService.delete(deleteRequestDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "Recover password by sending a reset link to the user's email",
+            description = "This method sends a password recovery email to the user with a reset token.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Password recovery email sent successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid email format"),
+                    @ApiResponse(responseCode = "404", description = "Email not found in the system")
+            })
+    @PostMapping("/recover-password")
+    public ResponseEntity<Void> recoverPassword(
+            @RequestParam
+            @Parameter(description = "The user's email address to send the password recovery link", required = true)
+            String email) throws EmailNotFoundException {
+        userCredentialsService.recoverPassword(email);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "Reset the user's password using the provided reset token",
+            description = "This method resets the user's password after validating the reset token and setting the new password.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid password format or request data"),
+                    @ApiResponse(responseCode = "404", description = "Invalid or expired token")
+            })
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody
+            @Parameter(description = "Reset password request containing the reset token and the new password", required = true)
+            ResetPasswordRequestDTO resetPasswordRequestDTO) throws InvalidTokenException {
+        userCredentialsService.resetPassword(resetPasswordRequestDTO);
         return ResponseEntity.ok().build();
     }
 }
