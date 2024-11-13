@@ -3,10 +3,8 @@ package com.budgetMicroservice.service.impl;
 import com.budgetMicroservice.dto.BudgetTypeDTO;
 import com.budgetMicroservice.dto.CustomPageDTO;
 import com.budgetMicroservice.dto.CustomPageableDTO;
-import com.budgetMicroservice.exception.BudgetSubtypeNotFoundException;
 import com.budgetMicroservice.exception.BudgetTypeAlreadyExistsException;
 import com.budgetMicroservice.exception.BudgetTypeNotFoundException;
-import com.budgetMicroservice.exception.SupplierNotFoundException;
 import com.budgetMicroservice.mapper.BudgetMapper;
 import com.budgetMicroservice.model.BudgetType;
 import com.budgetMicroservice.repository.BudgetTypeRepository;
@@ -67,7 +65,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
         }
 
         budgetTypeRepository.deleteById(id);
-        kafkaUuidTemplate.send("budget-type-delete-success-response",id);
+        kafkaUuidTemplate.send("budget-type-delete-success-response", id);
     }
 
     @Override
@@ -77,7 +75,6 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
         Page<BudgetType> budgetTypePage = budgetTypeRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
         List<BudgetTypeDTO> budgetTypeDTOs = budgetMapper.toDTOTypeList(budgetTypePage);
         kafkaCustomPageTemplate.send("budget-type-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, budgetTypeDTOs, budgetTypePage));
-
         return budgetTypePage.map(budgetMapper::toDTO);
     }
 
@@ -104,7 +101,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     public BudgetType findById(UUID id) throws BudgetTypeNotFoundException {
         Optional<BudgetType> budgetType = budgetTypeRepository.findById(id);
 
-        if(budgetType.isPresent()){
+        if (budgetType.isPresent()) {
             return budgetType.get();
         }
 

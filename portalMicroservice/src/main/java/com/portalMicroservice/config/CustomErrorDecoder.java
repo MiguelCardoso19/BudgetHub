@@ -7,12 +7,12 @@ import com.portalMicroservice.exception.authentication.InvalidPasswordException;
 import com.portalMicroservice.exception.authentication.InvalidRefreshTokenException;
 import com.portalMicroservice.exception.authentication.UserCredentialsValidationException;
 import com.portalMicroservice.exception.budget.*;
+import com.portalMicroservice.exception.portal.InvalidTokenException;
 import com.portalMicroservice.util.FeignClientUtils;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-@Slf4j
 public class CustomErrorDecoder implements ErrorDecoder {
 
     @SneakyThrows
@@ -67,14 +66,18 @@ public class CustomErrorDecoder implements ErrorDecoder {
             throw new MovementsNotFoundForBudgetSubtypeException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
         } else if (methodKey.contains("deleteMovement") || methodKey.contains("updateMovement")) {
             throw new MovementNotFoundException(optionalId.orElseGet(() -> (String) request.getAttribute("id")));
+        } else if (methodKey.contains("recoverPassword")) {
+            throw new EmailNotFoundException((String) request.getAttribute("email"));
         }
     }
 
-    private void handleUnauthorized(String methodKey) throws InvalidPasswordException, InvalidRefreshTokenException {
+    private void handleUnauthorized(String methodKey) throws InvalidPasswordException, InvalidRefreshTokenException, InvalidTokenException {
         if (methodKey.contains("signIn") || methodKey.contains("delete") || methodKey.contains("update")) {
             throw new InvalidPasswordException();
         } else if (methodKey.contains("refreshToken")) {
             throw new InvalidRefreshTokenException();
+        } else if (methodKey.contains("resetPassword")) {
+            throw new InvalidTokenException();
         }
     }
 
@@ -99,7 +102,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
     private void handleBadRequest(String methodKey, Response response) throws BudgetExceededException {
         if (methodKey.contains("createMovement") || methodKey.contains("updateMovement")) {
             throw new BudgetExceededException(FeignClientUtils.extractErrorMessage(response));
-        } else if(methodKey.contains("addSubtype") || methodKey.contains("updateBudgeType")) {
+        } else if (methodKey.contains("addSubtype") || methodKey.contains("updateBudgeType")) {
             throw new BudgetExceededException(FeignClientUtils.extractErrorMessage(response));
         }
     }

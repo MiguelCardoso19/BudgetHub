@@ -1,6 +1,5 @@
 package com.budgetMicroservice.repository;
 
-import com.budgetMicroservice.dto.MovementDTO;
 import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.model.Movement;
 import org.springframework.data.domain.Page;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository

@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 
 import static com.authenticationMicroservice.exception.ErrorMessage.INVALID_PASSWORD;
 
-
 @Getter
 public class InvalidPasswordException extends Exception {
     private final String message;

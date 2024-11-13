@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Schema(description = "Base Data Transfer Object class that contains common fields like correlation ID, unique ID, and version.")
-public class AbstractDTO {
+public abstract class AbstractDTO {
 
     @Schema(description = "Unique correlation ID to trace and associate requests/responses.",
             example = "f47ac10b-58cc-4372-a567-0e02b2c3d479", required = true)

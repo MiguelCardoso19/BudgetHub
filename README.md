@@ -2,8 +2,6 @@
 
 **BudgetHub** is a microservice-based financial management system designed to simplify expenses tracking, budgeting, and payments. This project provides a central portal for users to register, log in, and securely manage company financial activities, with easy integrations to manage expenses, process payments, and manage notifications.
 
-**Note:** This project is currently under development. Not all features are fully implemented yet.
-
 ## Key Features
 
 - **User Authentication**: Secure login and registration for users with JWT token authentication.

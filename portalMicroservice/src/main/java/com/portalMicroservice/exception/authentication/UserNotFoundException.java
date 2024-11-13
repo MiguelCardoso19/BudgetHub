@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import java.util.UUID;
 
 import static com.portalMicroservice.exception.ErrorMessage.USER_ID_NOT_FOUND;
-import static com.portalMicroservice.exception.ErrorMessage.USER_NAME_NOT_FOUND;
 
 @Getter
 public class UserNotFoundException extends Exception {
@@ -19,12 +18,5 @@ public class UserNotFoundException extends Exception {
         this.message = USER_ID_NOT_FOUND.getMessage(id);
         this.errorCode = USER_ID_NOT_FOUND.getErrorCode();
         this.status = USER_ID_NOT_FOUND.getStatus();
-    }
-
-    public UserNotFoundException(String name) {
-        super(USER_NAME_NOT_FOUND.getMessage(name));
-        this.message = USER_NAME_NOT_FOUND.getMessage(name);
-        this.errorCode = USER_NAME_NOT_FOUND.getErrorCode();
-        this.status = USER_NAME_NOT_FOUND.getStatus();
     }
 }

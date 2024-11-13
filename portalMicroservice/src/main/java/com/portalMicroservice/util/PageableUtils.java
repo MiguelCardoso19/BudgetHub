@@ -25,6 +25,6 @@ public class PageableUtils {
         sortDTO.setField(sortField);
         sortDTO.setDirection(SortDirection.valueOf(sortOrder));
 
-        return new CustomPageableDTO(UUID.randomUUID() ,pageable.getPageNumber(), pageable.getPageSize(), (int) pageable.getOffset(), pageable.isPaged(), pageable.isUnpaged(), sortDTO);
+        return new CustomPageableDTO(UUID.randomUUID(), pageable.getPageNumber(), pageable.getPageSize(), (int) pageable.getOffset(), pageable.isPaged(), pageable.isUnpaged(), sortDTO);
     }
 }

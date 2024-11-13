@@ -27,12 +27,10 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "notification_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         JsonDeserializer<NotificationRequestDTO> jsonDeserializer = new JsonDeserializer<>(NotificationRequestDTO.class);
         jsonDeserializer.addTrustedPackages("*");
         jsonDeserializer.setRemoveTypeHeaders(false);
         jsonDeserializer.setUseTypeMapperForKey(true);
-
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 

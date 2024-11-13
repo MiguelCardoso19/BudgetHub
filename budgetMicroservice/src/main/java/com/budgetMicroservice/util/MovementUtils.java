@@ -11,7 +11,6 @@ import com.budgetMicroservice.service.BudgetSubtypeService;
 import com.budgetMicroservice.service.BudgetTypeService;
 import com.budgetMicroservice.validator.MovementValidator;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,20 +19,16 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MovementUtils {
     private final MovementValidator movementValidator;
     private final KafkaTemplate<String, BudgetExceededException> kafkaBudgetExceededExceptionTemplate;
 
-
     public void calculateIvaAndTotal(MovementDTO movementDTO) throws MovementValidationException {
         movementValidator.validateMovementValues(movementDTO);
-
         Double ivaValue = (movementDTO.getValueWithoutIva() * (movementDTO.getIvaRate() != null ? movementDTO.getIvaRate() : 0)) / 100;
         Double totalValue = movementDTO.getValueWithoutIva() + ivaValue;
-
         movementDTO.setIvaValue(ivaValue);
         movementDTO.setTotalValue(totalValue);
     }
@@ -53,8 +48,8 @@ public class MovementUtils {
     }
 
     public void updateSpentAmounts(MovementDTO movementDTO, BudgetSubtypeService budgetSubtypeService,
-                                          BudgetTypeService budgetTypeService,
-                                          Movement movement, Double totalValue) throws BudgetExceededException {
+                                   BudgetTypeService budgetTypeService,
+                                   Movement movement, Double totalValue) throws BudgetExceededException {
 
         if (movement.getBudgetSubtype() != null) {
             BudgetSubtype subtype = movement.getBudgetSubtype();

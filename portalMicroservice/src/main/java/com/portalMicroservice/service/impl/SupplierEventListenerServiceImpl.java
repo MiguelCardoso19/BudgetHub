@@ -71,7 +71,7 @@ public class SupplierEventListenerServiceImpl implements SupplierEventListenerSe
         CompletableFuture<SupplierDTO> future = supplierService.getPendingRequest(errorPayload.getId(), null);
 
         if (future != null) {
-           String formatedErrorMessage = errorPayload.getMessage().substring(errorPayload.getMessage().indexOf("[") + 1, errorPayload.getMessage().indexOf("]"));
+            String formatedErrorMessage = errorPayload.getMessage().substring(errorPayload.getMessage().indexOf("[") + 1, errorPayload.getMessage().indexOf("]"));
             future.completeExceptionally(new SupplierValidationException(formatedErrorMessage));
         }
     }

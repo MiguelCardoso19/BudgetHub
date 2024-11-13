@@ -7,7 +7,6 @@ import com.budgetMicroservice.exception.SupplierValidationException;
 import com.budgetMicroservice.model.Supplier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 

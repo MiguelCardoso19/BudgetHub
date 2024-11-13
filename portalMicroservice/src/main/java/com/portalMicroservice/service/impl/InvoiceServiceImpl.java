@@ -6,7 +6,6 @@ import com.portalMicroservice.exception.budget.FailedToUploadFileException;
 import com.portalMicroservice.service.InvoiceService;
 import com.portalMicroservice.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -22,7 +21,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class InvoiceServiceImpl implements InvoiceService {
     private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
     private final KafkaTemplate<String, InvoiceDTO> kafkaInvoiceTemplate;

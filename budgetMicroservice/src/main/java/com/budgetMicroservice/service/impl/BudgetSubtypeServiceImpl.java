@@ -64,9 +64,7 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
         budgetValidator.checkForExistingBudgetSubtypeUpdate(budgetSubtypeDTO, budgetSubtypeRepository);
         BudgetSubtype budgetSubtype = budgetMapper.toEntity(budgetSubtypeDTO);
         BudgetSubtypeDTO savedBudgetSubtypeDTO = budgetMapper.toDTO(budgetSubtypeRepository.save(budgetSubtype));
-
         kafkaBudgetSubtypeTemplate.send("budget-subtype-response", savedBudgetSubtypeDTO);
-
         return savedBudgetSubtypeDTO;
     }
 
@@ -76,10 +74,7 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
         Optional<BudgetSubtype> budgetSubtype = budgetSubtypeRepository.findById(subtypeId);
 
         if (budgetSubtype.isPresent()) {
-            BudgetType budgetType = budgetSubtype.get().getBudgetType();
-            budgetType.setAvailableFunds(budgetType.getAvailableFunds() - budgetSubtype.get().getAvailableFunds());
-            budgetTypeService.save(budgetType);
-            budgetSubtypeRepository.deleteById(subtypeId);
+            budgetUtils.handleDeleteBudgetSubtypeAvailableFunds(budgetSubtype.get(), budgetTypeService, budgetSubtypeRepository);
             kafkaUuidTemplate.send("budget-subtype-delete-success-response", subtypeId);
             return;
         }
@@ -124,6 +119,7 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
         if (budgetSubtype.isPresent()) {
             return budgetSubtype.get();
         }
+
         kafkaBudgetSubtypeNotFoundExceptionTemplate.send("budget-subtype-not-found-exception-response", new BudgetSubtypeNotFoundException(id));
         throw new BudgetSubtypeNotFoundException(id);
     }

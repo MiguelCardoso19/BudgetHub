@@ -1,14 +1,12 @@
 package com.portalMicroservice.service.impl;
 
 import com.portalMicroservice.dto.budget.BudgetSubtypeDTO;
-import com.portalMicroservice.dto.budget.BudgetTypeDTO;
 import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.CustomPageableDTO;
 import com.portalMicroservice.exception.GenericException;
 import com.portalMicroservice.service.BudgetSubtypeService;
 import com.portalMicroservice.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -24,7 +22,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
     private final KafkaTemplate<String, BudgetSubtypeDTO> kafkaBudgetSubTypeTemplate;

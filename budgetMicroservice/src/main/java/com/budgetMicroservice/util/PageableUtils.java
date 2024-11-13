@@ -33,7 +33,6 @@ public class PageableUtils {
         return new CustomPageableDTO(UUID.randomUUID(), pageable.getPageNumber(), pageable.getPageSize(), (int) pageable.getOffset(), pageable.isPaged(), pageable.isUnpaged(), sortDTO);
     }
 
-
     public static Pageable convertToPageable(CustomPageableDTO customPageableDTO) {
         Sort.Direction direction = "desc".equalsIgnoreCase(customPageableDTO.getSortOrder())
                 ? Sort.Direction.DESC

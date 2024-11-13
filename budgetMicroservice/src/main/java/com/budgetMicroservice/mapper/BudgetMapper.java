@@ -28,7 +28,6 @@ public interface BudgetMapper {
 
     List<BudgetSubtypeDTO> toDTOSubtypeList(Page<BudgetSubtype> budgetSubtypePage);
 
-
     @Named("withoutBudgetType")
     default List<BudgetSubtypeDTO> mapSubtypesWithoutBudgetType(List<BudgetSubtype> subtypes) {
         if (subtypes == null) {
@@ -43,5 +42,4 @@ public interface BudgetMapper {
                         })
                 .collect(Collectors.toList());
     }
-
 }

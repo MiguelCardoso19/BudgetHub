@@ -23,16 +23,13 @@ public class AuthenticationController {
     private final AuthenticationFeignClient authenticationFeignClient;
 
     /**
-     *
-     *  TO DELETE LATER
-     *
+     * TO DELETE LATER
      */
 //    @PreAuthorize("hasRole('ADMIN')")
 //    @GetMapping("/test-role")
 //    public ResponseEntity<String> testRoleEndpoint() {
 //        return ResponseEntity.ok("Access granted to users with ADMIN role.");
 //    }
-
     @Operation(
             summary = "Sign in using user credentials",
             description = "Authenticate a user through the proxy and return a JWT token if successful."
@@ -63,5 +60,22 @@ public class AuthenticationController {
             @Parameter(description = "Authorization header containing the Bearer token") HttpServletRequest request
     ) {
         return authenticationFeignClient.refreshToken(request.getHeader("Authorization"));
+    }
+
+    @Operation(
+            summary = "Sign out and invalidate the user",
+            description = "Invalidates the current user by communicating with the Authentication microservice.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Sign-out successful, token invalidated"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Token is missing or invalid")
+    })
+    @PostMapping("/sign-out")
+    public ResponseEntity<Void> signOut(
+            @Parameter(description = "Authorization header containing the Bearer token") HttpServletRequest request
+    ) {
+        authenticationFeignClient.signOut(request.getHeader("Authorization"));
+        return ResponseEntity.noContent().build();
     }
 }

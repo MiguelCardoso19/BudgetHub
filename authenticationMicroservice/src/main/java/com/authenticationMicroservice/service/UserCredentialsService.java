@@ -4,6 +4,7 @@ import com.authenticationMicroservice.dto.AuthenticationResponseDTO;
 import com.authenticationMicroservice.dto.DeleteRequestDTO;
 import com.authenticationMicroservice.dto.ResetPasswordRequestDTO;
 import com.authenticationMicroservice.dto.UserCredentialsDTO;
+import com.authenticationMicroservice.enumerator.UserStatus;
 import com.authenticationMicroservice.exception.*;
 import com.authenticationMicroservice.model.UserCredentials;
 
@@ -18,4 +19,5 @@ public interface UserCredentialsService {
     void save(UserCredentials userCredentials);
     void recoverPassword(String email) throws EmailNotFoundException;
     void resetPassword(ResetPasswordRequestDTO resetPasswordRequestDTO) throws InvalidTokenException;
+    UserStatus getUserStatus(String nif);
 }

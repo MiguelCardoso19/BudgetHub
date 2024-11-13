@@ -12,7 +12,6 @@ import com.budgetMicroservice.service.SupplierService;
 import com.budgetMicroservice.util.PageableUtils;
 import com.budgetMicroservice.validator.SupplierValidator;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -24,7 +23,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SupplierServiceImpl implements SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
@@ -41,7 +39,6 @@ public class SupplierServiceImpl implements SupplierService {
         Supplier savedSupplier = supplierRepository.save(supplierMapper.toEntity(supplierDTO));
         SupplierDTO savedSupplierDTO = supplierMapper.toDTO(savedSupplier);
         savedSupplierDTO.setCorrelationId(supplierDTO.getCorrelationId());
-
         kafkaSupplierTemplate.send("supplier-response", savedSupplierDTO);
         return savedSupplierDTO;
     }
@@ -53,9 +50,7 @@ public class SupplierServiceImpl implements SupplierService {
         supplierValidator.validateSupplierUpdate(supplierDTO, supplierRepository);
         Supplier existingSupplier = supplierMapper.toEntity(supplierDTO);
         SupplierDTO updatedSupplierDTO = supplierMapper.toDTO(supplierRepository.save(existingSupplier));
-
         kafkaSupplierTemplate.send("supplier-response", updatedSupplierDTO);
-
         return updatedSupplierDTO;
     }
 

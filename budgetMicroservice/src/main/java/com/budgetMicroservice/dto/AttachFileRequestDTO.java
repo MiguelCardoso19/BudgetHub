@@ -14,6 +14,6 @@ public class AttachFileRequestDTO extends AbstractDTO {
     private String base64File;
 
     @Schema(description = "Multipart file for uploading, typically used for larger files or when direct file upload is needed.",
-            required = false)
+            nullable = true)
     private MultipartFile multipartFile;
 }

@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import static com.portalMicroservice.exception.ErrorMessage.MOVEMENTS_NOT_FOUND_BETWEEN_DATES;
 import static com.portalMicroservice.exception.ErrorMessage.MOVEMENT_NOT_FOUND;
 
-
 @Getter
 public class MovementNotFoundException extends Exception {
     private String id;

@@ -28,8 +28,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponseDTO signIn(SignInRequestDTO signInRequestDTO) throws InvalidPasswordException, EmailNotFoundException {
-        UserCredentials user = userCredentialsService.findByEmail(signInRequestDTO.getEmail())
-                .orElseThrow(() -> new EmailNotFoundException(signInRequestDTO.getEmail()));
+        UserCredentials user = userCredentialsService.findByEmail(signInRequestDTO.getEmail()).orElseThrow(() -> new EmailNotFoundException(signInRequestDTO.getEmail()));
 
         if (!passwordEncoder.matches(signInRequestDTO.getPassword(), user.getPassword())) {
             throw new InvalidPasswordException();
@@ -44,27 +43,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationResponseDTO refreshToken(HttpServletRequest request) throws NifNotFoundException {
         String refreshToken = request.getHeader("Authorization").replace("Bearer ", "");
         String nif = jwtService.extractNif(refreshToken);
-        AuthenticationResponseDTO authenticationResponseDTO = null;
 
-        UserCredentials user = userCredentialsService.findByNif(nif)
-                .orElseThrow(() -> new NifNotFoundException(nif));
+        UserCredentials user = userCredentialsService.findByNif(nif).orElseThrow(() -> new NifNotFoundException(nif));
 
-        if (jwtService.isTokenValid(refreshToken, nif)) {
-
-            authenticationResponseDTO = dtoMapper.toDTOWithoutUserID(
-                    jwtService.generateToken(user), refreshToken);
-
-        }
-
-        return authenticationResponseDTO;
+        return dtoMapper.toDTOWithoutUserID(jwtService.generateToken(user), refreshToken);
     }
 
     @Override
     public void signOut(HttpServletRequest request) throws NifNotFoundException {
         String nif = jwtService.extractNif(request.getHeader("Authorization").replace("Bearer ", ""));
 
-        UserCredentials user = userCredentialsService.findByNif(nif)
-                .orElseThrow(() -> new NifNotFoundException(nif));
+        UserCredentials user = userCredentialsService.findByNif(nif).orElseThrow(() -> new NifNotFoundException(nif));
 
         user.setStatus(LOGGED_OUT);
         userCredentialsService.save(user);

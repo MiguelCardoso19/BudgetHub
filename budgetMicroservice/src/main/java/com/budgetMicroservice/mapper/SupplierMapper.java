@@ -3,7 +3,6 @@ package com.budgetMicroservice.mapper;
 import com.budgetMicroservice.dto.SupplierDTO;
 import com.budgetMicroservice.model.Supplier;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

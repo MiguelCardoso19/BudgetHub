@@ -5,7 +5,6 @@ import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.mapper.InvoiceMapper;
 import com.budgetMicroservice.model.Invoice;
 import com.budgetMicroservice.model.Movement;
-import com.budgetMicroservice.model.Supplier;
 import com.budgetMicroservice.repository.InvoiceRepository;
 import com.budgetMicroservice.service.InvoiceService;
 import com.budgetMicroservice.service.MovementService;
@@ -27,7 +26,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final MovementService movementService;

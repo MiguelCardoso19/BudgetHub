@@ -5,7 +5,6 @@ import com.budgetMicroservice.dto.MovementDTO;
 import com.budgetMicroservice.model.Invoice;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -19,5 +18,6 @@ public interface InvoiceMapper {
     @Mapping(target = "movement.subtype.budgetType", ignore = true)
     @Mapping(target = "movement.invoice", ignore = true)
     InvoiceDTO toDTO(Invoice invoice);
+
     List<MovementDTO> toDTOList(Page<Invoice> invoicesPage);
 }

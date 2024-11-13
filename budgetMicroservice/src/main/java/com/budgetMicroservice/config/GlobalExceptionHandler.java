@@ -124,16 +124,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleMaxSizeException(MaxUploadSizeExceededException ex) {
         ErrorResponse errorResponse = new ErrorResponse(MAX_UPLOAD_SIZE_EXCEEDED.getMessage(),
-                                                        MAX_UPLOAD_SIZE_EXCEEDED.getStatus().value(),
-                                                        MAX_UPLOAD_SIZE_EXCEEDED.getErrorCode());
+                MAX_UPLOAD_SIZE_EXCEEDED.getStatus().value(),
+                MAX_UPLOAD_SIZE_EXCEEDED.getErrorCode());
         return new ResponseEntity<>(errorResponse, MAX_UPLOAD_SIZE_EXCEEDED.getStatus());
     }
 
     @ExceptionHandler(JsonProcessingException.class)
     public ResponseEntity<ErrorResponse> handleJsonProcessingException(JsonProcessingException ex) {
         ErrorResponse errorResponse = new ErrorResponse(JSON_PARSE_ERROR.getMessage(),
-                                                        JSON_PARSE_ERROR.getStatus().value(),
-                                                        JSON_PARSE_ERROR.getErrorCode());
+                JSON_PARSE_ERROR.getStatus().value(),
+                JSON_PARSE_ERROR.getErrorCode());
         return new ResponseEntity<>(errorResponse, JSON_PARSE_ERROR.getStatus());
     }
 

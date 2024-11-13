@@ -4,6 +4,7 @@ import com.authenticationMicroservice.dto.AuthenticationResponseDTO;
 import com.authenticationMicroservice.dto.DeleteRequestDTO;
 import com.authenticationMicroservice.dto.ResetPasswordRequestDTO;
 import com.authenticationMicroservice.dto.UserCredentialsDTO;
+import com.authenticationMicroservice.enumerator.UserStatus;
 import com.authenticationMicroservice.exception.*;
 import com.authenticationMicroservice.service.impl.UserCredentialsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -99,5 +100,19 @@ public class UserCredentialsController {
             ResetPasswordRequestDTO resetPasswordRequestDTO) throws InvalidTokenException {
         userCredentialsService.resetPassword(resetPasswordRequestDTO);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "Retrieve the user's status (logged in or logged out)",
+            description = "This method checks the current status of the user, whether they are logged in or logged out based on their nif.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User status fetched successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            })
+    @GetMapping("/status")
+    public ResponseEntity<UserStatus> getUserStatus(
+            @RequestParam("nif")
+            @Parameter(description = "The user's NIF to check their current login status", required = true) String nif) {
+        return ResponseEntity.ok(userCredentialsService.getUserStatus(nif));
     }
 }

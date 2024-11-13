@@ -15,4 +15,7 @@ public interface AuthenticationFeignClient {
 
     @PostMapping("/refresh-token")
     ResponseEntity<AuthenticationResponseDTO> refreshToken(@RequestHeader("Authorization") String authHeader);
+
+    @PostMapping("/sign-out")
+    ResponseEntity<Void> signOut(@RequestHeader("Authorization") String authHeader);
 }

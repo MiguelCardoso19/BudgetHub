@@ -118,7 +118,8 @@
                                  baseColumnNames="user_id"
                                  referencedTableName="user_credentials"
                                  referencedColumnNames="id"
-                                 constraintName="fk_password_reset_token_user_id"/>
+                                 constraintName="fk_password_reset_token_user_id"
+                                 onDelete="CASCADE"/>
     </changeSet>
 
 </databaseChangeLog>

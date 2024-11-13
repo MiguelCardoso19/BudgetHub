@@ -65,19 +65,18 @@ public class NotificationServiceImpl implements NotificationService {
 
                     for (Notification notification : failedNotifications) {
                         log.info("Retrying notification: {}", notification.getRecipient());
-                        handleEmailNotificationWithAttachmentRequest(notificationMapper.toDTO(notification));
+                        if (notification.getAttachment() != null) {
+                            handleEmailNotificationWithAttachmentRequest(notificationMapper.toDTO(notification));
+                        }
+                        handleEmailNotificationResetPassword(notificationMapper.toDTO(notification));
                     }
                 } finally {
                     lock.unlock();
                 }
-            } else {
-                log.info("Another instance is already processing failed emails.");
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | FailedToSendEmailException e) {
             Thread.currentThread().interrupt();
             log.error("Failed to acquire lock for retrying failed emails");
-        } catch (FailedToSendEmailException e) {
-            log.error("Failed to resend email");
         }
     }
 
@@ -85,8 +84,6 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = NotificationUtils.findOrInitializeNotification(notificationRequestDTO, notificationRepository, notificationMapper);
 
         try {
-            log.info("Preparing to send {} notification to: {}", notificationType, notificationRequestDTO.getRecipient());
-
             if ("export-report".equals(notificationType)) {
                 NotificationUtils.prepareExportReportNotification(notification, notificationRequestDTO);
             } else if ("reset-password".equals(notificationType)) {
@@ -94,33 +91,28 @@ public class NotificationServiceImpl implements NotificationService {
             }
 
             sendEmail(notification, notificationRequestDTO);
-
             notification.setStatus(SENT);
-            log.info("Notification sent to: {}", notification.getRecipient());
 
         } catch (MessagingException e) {
             notification.setStatus(FAILED);
-            log.error("Failed to send notification to: {}", notification.getRecipient(), e);
             throw new FailedToSendEmailException(notification.getRecipient());
 
         } finally {
-            if(notification.getAttachment() == null) {
+            if (notification.getAttachment() == null) {
                 notification.setBody("We received a request to reset your password...");
             }
             notificationRepository.save(notification);
-            log.info("Notification status saved for: {}", notification.getRecipient());
         }
     }
 
     private void sendEmail(Notification notification, NotificationRequestDTO notificationRequestDTO) throws MessagingException {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-
         helper.setTo(notification.getRecipient());
         helper.setSubject(notification.getSubject());
         helper.setText(notification.getBody(), true);
 
-        if(notification.getAttachment() != null) {
+        if (notification.getAttachment() != null) {
             byte[] attachmentBytes = Base64.getDecoder().decode(notificationRequestDTO.getAttachment());
             helper.addAttachment("Movements_Report.xlsx", new ByteArrayResource(attachmentBytes));
         }

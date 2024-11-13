@@ -3,7 +3,9 @@ package com.portalMicroservice.client.authentication;
 import com.portalMicroservice.config.CustomErrorDecoder;
 import com.portalMicroservice.dto.authentication.AuthenticationResponseDTO;
 import com.portalMicroservice.dto.authentication.DeleteRequestDTO;
+import com.portalMicroservice.dto.authentication.ResetPasswordRequestDTO;
 import com.portalMicroservice.dto.authentication.UserCredentialsDTO;
+import com.portalMicroservice.enumerator.UserStatus;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,4 +21,13 @@ public interface UserCredentialsFeignClient {
 
     @DeleteMapping("/delete")
     ResponseEntity<Void> delete(@RequestBody DeleteRequestDTO deleteRequestDTO);
+
+    @PostMapping("/recover-password")
+    ResponseEntity<Void> recoverPassword(@RequestParam("email") String email);
+
+    @PostMapping("/reset-password")
+    ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequestDTO resetPasswordRequestDTO);
+
+    @GetMapping("/status")
+    UserStatus getUserStatus(@RequestParam("nif") String nif);
 }

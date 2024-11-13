@@ -5,6 +5,7 @@ import com.budgetMicroservice.exception.BudgetExceededException;
 import com.budgetMicroservice.model.BudgetType;
 import com.budgetMicroservice.model.BudgetSubtype;
 import com.budgetMicroservice.repository.BudgetSubtypeRepository;
+import com.budgetMicroservice.service.BudgetTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -27,5 +28,12 @@ public class BudgetUtils {
             kafkaBudgetExceededExceptionTemplate.send("budget-subtype-budget-exceeded-exception-response", new BudgetExceededException(budgetSubtypeDTO.getCorrelationId(), budgetSubtypeDTO.getAvailableFunds(), totalSpentForType));
             throw new BudgetExceededException(budgetSubtypeDTO.getAvailableFunds(), totalSpentForType);
         }
+    }
+
+    public void handleDeleteBudgetSubtypeAvailableFunds(BudgetSubtype budgetSubtype, BudgetTypeService budgetTypeService, BudgetSubtypeRepository budgetSubtypeRepository) {
+        BudgetType budgetType = budgetSubtype.getBudgetType();
+        budgetType.setAvailableFunds(budgetType.getAvailableFunds() - budgetSubtype.getAvailableFunds());
+        budgetTypeService.save(budgetType);
+        budgetSubtypeRepository.deleteById(budgetSubtype.getId());
     }
 }

@@ -11,7 +11,7 @@ import static com.notificationMicroservice.enumerators.NotificationType.EMAIL;
 public class NotificationUtils {
 
     @Value("${spring.mail.username}")
-    private static String senderEmail;
+    private static String SENDER_EMAIL;
 
     public static Notification findOrInitializeNotification(NotificationRequestDTO notificationRequestDTO, NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
         return notificationRequestDTO.getId() != null ?
@@ -21,7 +21,7 @@ public class NotificationUtils {
 
     public static void prepareExportReportNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
         notification.setType(EMAIL);
-        notification.setSender(senderEmail);
+        notification.setSender(SENDER_EMAIL);
         notification.setRecipient(notificationRequestDTO.getRecipient());
         notification.setSubject("Movements Report");
         notification.setBody("Please find attached the movements report for the specified period.");
@@ -29,7 +29,7 @@ public class NotificationUtils {
 
     public static void prepareResetPasswordNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
         notification.setType(EMAIL);
-        notification.setSender(senderEmail);
+        notification.setSender(SENDER_EMAIL);
         notification.setRecipient(notificationRequestDTO.getRecipient());
         notification.setSubject("Password Reset Request");
 

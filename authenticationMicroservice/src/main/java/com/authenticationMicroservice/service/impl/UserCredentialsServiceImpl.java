@@ -1,7 +1,7 @@
 package com.authenticationMicroservice.service.impl;
 
-
 import com.authenticationMicroservice.dto.*;
+import com.authenticationMicroservice.enumerator.UserStatus;
 import com.authenticationMicroservice.exception.*;
 import com.authenticationMicroservice.mapper.DTOMapper;
 import com.authenticationMicroservice.model.PasswordResetToken;
@@ -32,13 +32,9 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     @Override
     public AuthenticationResponseDTO register(UserCredentialsDTO userCredentialsDTO) throws UserCredentialsValidationException {
         UserCredentialsValidator.validateUserCredentialsCreation(userCredentialsDTO, userCredentialsRepository);
-
         UserCredentials newUser = dtoMapper.toEntity(userCredentialsDTO, passwordEncoder);
         userCredentialsRepository.save(newUser);
-
-        String token = jwtService.generateToken(newUser);
-        String refreshToken = jwtService.generateRefreshToken(newUser);
-        return dtoMapper.toDTO(token,refreshToken, newUser.getId());
+        return dtoMapper.toDTO(jwtService.generateToken(newUser), jwtService.generateRefreshToken(newUser), newUser.getId());
     }
 
     @Override
@@ -63,9 +59,7 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
         }
 
         UserCredentialsValidator.validateUserCredentialsUpdate(userCredentialsDTO, userCredentialsRepository);
-
         dtoMapper.updateFromDTO(userCredentialsDTO, existingUser, passwordEncoder);
-
         return dtoMapper.toDTO(userCredentialsRepository.save(existingUser));
     }
 
@@ -113,5 +107,12 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
     @Override
     public void save(UserCredentials userCredentials) {
         userCredentialsRepository.save(userCredentials);
+    }
+
+    @Override
+    public UserStatus getUserStatus(String nif) {
+        return userCredentialsRepository.findByNif(nif)
+                .map(UserCredentials::getStatus)
+                .orElse(UserStatus.LOGGED_OUT);
     }
 }

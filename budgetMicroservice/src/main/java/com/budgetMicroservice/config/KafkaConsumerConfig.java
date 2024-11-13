@@ -1,7 +1,6 @@
 package com.budgetMicroservice.config;
 
 import com.budgetMicroservice.dto.*;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.UUIDDeserializer;
@@ -18,10 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
 @EnableKafka
 @Configuration
-@Slf4j
 public class KafkaConsumerConfig {
 
     @Value("${kafka-bootstrap-servers}")
@@ -116,7 +113,6 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UUIDDeserializer.class);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "uuid_group");
-
         return new DefaultKafkaConsumerFactory<>(config);
     }
 

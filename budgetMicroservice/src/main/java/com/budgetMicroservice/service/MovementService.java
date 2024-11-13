@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.UUID;
 
 public interface MovementService {

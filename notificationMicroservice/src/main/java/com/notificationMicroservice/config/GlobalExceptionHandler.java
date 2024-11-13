@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(FailedToSendEmailException.class)
-    public ResponseEntity<ErrorResponse> handleMovementsNotFoundForBudgetTypeException(FailedToSendEmailException ex) {
+    public ResponseEntity<ErrorResponse> handleFailedToSendEmailException(FailedToSendEmailException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }

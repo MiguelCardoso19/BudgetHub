@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.jsonwebtoken.SignatureAlgorithm.HS256;
@@ -46,34 +45,13 @@ public class JwtService {
     }
 
     public String extractNif(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
 
         return claims.getSubject();
     }
 
     private String createToken(UserCredentials user, long expirationTime) {
-        return Jwts.builder()
-                .setSubject(user.getNif())
-                .claim("roles", user.getRoles().stream()
-                        .map(Enum::name)
-                        .collect(Collectors.toList()))
-                .claim("email", user.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(HS256, SECRET_KEY)
-                .compact();
-    }
-
-    public List<String> extractRoles(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.get("roles", List.class);
+        return Jwts.builder().setSubject(user.getNif()).claim("roles", user.getRoles().stream().map(Enum::name).collect(Collectors.toList())).claim("email", user.getEmail()).setIssuedAt(new Date()).setExpiration(new Date(System.currentTimeMillis() + expirationTime)).signWith(HS256, SECRET_KEY).compact();
     }
 
     private boolean isTokenExpired(String token) {
@@ -81,10 +59,7 @@ public class JwtService {
     }
 
     private Date extractExpiration(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
 
         return claims.getExpiration();
     }

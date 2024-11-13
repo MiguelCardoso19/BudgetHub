@@ -3,7 +3,9 @@ package com.portalMicroservice.controller.authentication;
 import com.portalMicroservice.client.authentication.UserCredentialsFeignClient;
 import com.portalMicroservice.dto.authentication.AuthenticationResponseDTO;
 import com.portalMicroservice.dto.authentication.DeleteRequestDTO;
+import com.portalMicroservice.dto.authentication.ResetPasswordRequestDTO;
 import com.portalMicroservice.dto.authentication.UserCredentialsDTO;
+import com.portalMicroservice.service.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "User Credentials API", description = "API for managing user credentials including registration, update, and deletion.")
 public class UserCredentialsController {
     private final UserCredentialsFeignClient userCredentialsFeignClient;
+    private final JwtService jwtService;
 
     @Operation(summary = "Register a new user",
             description = "Registers a new user with provided credentials and returns an authentication response containing a JWT token.")
@@ -63,5 +66,36 @@ public class UserCredentialsController {
             @Valid @RequestBody @Parameter(description = "User credentials to delete") DeleteRequestDTO deleteRequestDTO
     ) {
         return userCredentialsFeignClient.delete(deleteRequestDTO);
+    }
+
+    @Operation(
+            summary = "Recover password by sending a reset link to the logged user's email",
+            description = "Sends a password recovery email to the user with a reset token.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Password recovery email sent successfully"),
+                    @ApiResponse(responseCode = "404", description = "Email not found in the system")
+            })
+    @PostMapping("/recover-password")
+    public ResponseEntity<Void> recoverPassword() {
+        userCredentialsFeignClient.recoverPassword(jwtService.getEmailFromRequest());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "Reset the user's password using the provided reset token",
+            description = "This method resets the user's password after validating the reset token and setting the new password.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+                    @ApiResponse(responseCode = "400", description = "Invalid password format or request data"),
+                    @ApiResponse(responseCode = "404", description = "Invalid or expired token")
+            })
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody
+            @Parameter(description = "Reset password request containing the reset token and the new password", required = true)
+            ResetPasswordRequestDTO resetPasswordRequestDTO
+    ) {
+        userCredentialsFeignClient.resetPassword(resetPasswordRequestDTO);
+        return ResponseEntity.noContent().build();
     }
 }

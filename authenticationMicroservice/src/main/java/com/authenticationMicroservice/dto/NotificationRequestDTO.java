@@ -19,5 +19,4 @@ public class NotificationRequestDTO {
             example = "http://localhost:8080/api/v1/auth/reset-password?token=abc123xyz",
             nullable = true)
     private String resetLink;
-
 }

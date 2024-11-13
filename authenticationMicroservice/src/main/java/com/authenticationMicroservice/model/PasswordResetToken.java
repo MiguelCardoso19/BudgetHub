@@ -2,7 +2,6 @@ package com.authenticationMicroservice.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
@@ -11,7 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Audited
-@RequiredArgsConstructor
 public class PasswordResetToken extends AbstractEntity {
 
     private String token;
@@ -19,6 +17,7 @@ public class PasswordResetToken extends AbstractEntity {
     private LocalDateTime expiryDate;
 
     @NotAudited
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserCredentials user;
 }

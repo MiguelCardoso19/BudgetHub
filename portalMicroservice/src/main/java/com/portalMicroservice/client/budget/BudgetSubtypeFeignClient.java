@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.UUID;
 
 @FeignClient(name = "budgetSubtypeFeignClient", url = "${budget-microservice-budgetSubtype.url}", configuration = CustomErrorDecoder.class)

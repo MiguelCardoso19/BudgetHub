@@ -16,7 +16,7 @@ import static com.authenticationMicroservice.enumerator.UserStatus.LOGGED_OUT;
 @Entity
 @Data
 @Audited
-public class UserCredentials extends AbstractEntity{
+public class UserCredentials extends AbstractEntity {
 
     @Column(nullable = false, unique = true)
     private String email;

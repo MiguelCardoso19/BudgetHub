@@ -65,8 +65,8 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "401", description = "Unauthorized, token invalid or user not found")
     })
     @PostMapping("/sign-out")
-    public ResponseEntity<Void> signOut( @Parameter(description = "HTTP request containing the JWT for sign-out verification")
-                                          HttpServletRequest request) throws NifNotFoundException {
+    public ResponseEntity<Void> signOut(@Parameter(description = "HTTP request containing the JWT for sign-out verification")
+                                        HttpServletRequest request) throws NifNotFoundException {
         authenticationService.signOut(request);
         return ResponseEntity.noContent().build();
     }
