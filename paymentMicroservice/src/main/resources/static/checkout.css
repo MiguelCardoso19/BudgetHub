@@ -30,6 +30,18 @@ form {
     display: none;
 }
 
+#email {
+    border-radius: 6px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid rgba(50, 50, 93, 0.1);
+    max-height: 44px;
+    font-size: 16px;
+    width: 100%;
+    background: white;
+    box-sizing: border-box;
+}
+
 #payment-message {
     color: rgb(105, 115, 134);
     font-size: 16px;
@@ -42,7 +54,6 @@ form {
     margin-bottom: 24px;
 }
 
-/* Buttons and links */
 button {
     background: #0055DE;
     font-family: Arial, sans-serif;
@@ -114,7 +125,6 @@ button:disabled {
     animation: loading 2s infinite ease;
 }
 
-/* dynamic payment methods annotation */
 #dpm-annotation {
     align-self: center;
     color: #353A44;
@@ -129,7 +139,6 @@ button:disabled {
     color: #533AFD;
 }
 
-/* Payment status page */
 #payment-status {
     display: flex;
     justify-content: center;

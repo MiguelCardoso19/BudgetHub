@@ -1,6 +1,9 @@
-const stripe = Stripe("pk_test_51QKObSKwh7K1xlkdUFKeYlZtEz3fz27DEjCYbCJXlMXguUGmhVtqes3WwQY5h0eG8Sh2BTbsUtAG269VXJNpRpEN00pLTHU6gZ");
+const stripe = Stripe(stripePublicKey);
 
-const items = [{ id: "xl-tshirt", amount: 1000 }];
+const items = [
+    {id: "123456789", amount: 10},
+    {id: "98765432", amount: 20}
+];
 
 let elements;
 
@@ -13,15 +16,15 @@ document
 async function initialize() {
     const response = await fetch("/create-payment-intent", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({items}),
     });
-    const { clientSecret, dpmCheckerLink } = await response.json();
+    const {clientSecret, dpmCheckerLink} = await response.json();
 
     const appearance = {
         theme: 'stripe',
     };
-    elements = stripe.elements({ appearance, clientSecret });
+    elements = stripe.elements({appearance, clientSecret});
 
     const paymentElementOptions = {
         layout: "tabs",
@@ -37,10 +40,10 @@ async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await stripe.confirmPayment({
+    const {error} = await stripe.confirmPayment({
         elements,
         confirmParams: {
-
+            receipt_email: email,
             return_url: "http://localhost:8084/complete.html",
         },
     });

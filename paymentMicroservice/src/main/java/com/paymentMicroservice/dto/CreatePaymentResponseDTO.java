@@ -4,5 +4,8 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class CreatePaymentResponseDTO {
+
     private String clientSecret;
+
+    private String id;
 }

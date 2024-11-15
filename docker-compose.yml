@@ -36,18 +36,6 @@ services:
     volumes:
       - notification-data:/var/lib/postgresql/data
 
-  payment-db:
-    image: postgres:latest
-    container_name: payment-db
-    environment:
-      POSTGRES_DB: payment-db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: user
-    ports:
-      - "5436:5432"
-    volumes:
-      - payment-data:/var/lib/postgresql/data
-
   zookeeper:
     image: wurstmeister/zookeeper:latest
     container_name: zookeeper
@@ -123,12 +111,7 @@ services:
     ports:
       - "8084:8084"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment-db
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: user
       KAFKA_BOOTSTRAP_SERVERS: kafka:9093
-    depends_on:
-      - payment-db
 
   authentication-microservice:
     build:
@@ -148,5 +131,4 @@ volumes:
   authentication-data:
   budget-data:
   notification-data:
-  payment-data:
   redis-data:

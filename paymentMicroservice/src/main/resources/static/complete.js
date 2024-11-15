@@ -60,7 +60,7 @@ function setErrorState() {
     document.querySelector("#view-details").classList.add("hidden");
 }
 
-const stripe = Stripe("pk_test_51QKObSKwh7K1xlkdUFKeYlZtEz3fz27DEjCYbCJXlMXguUGmhVtqes3WwQY5h0eG8Sh2BTbsUtAG269VXJNpRpEN00pLTHU6gZ");
+const stripe = Stripe(stripePublicKey);
 
 checkStatus();
 
