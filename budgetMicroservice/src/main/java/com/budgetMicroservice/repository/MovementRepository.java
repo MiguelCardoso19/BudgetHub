@@ -9,10 +9,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface MovementRepository extends JpaRepository<Movement, UUID> {
+    Optional<Movement> findByDocumentNumber(String documentNumber);
     Page<Movement> findByBudgetSubtypeId(UUID budgetSubtypeId, Pageable pageable);
     Page<Movement> findByBudgetTypeId(UUID budgetTypeId, Pageable pageable);
     List<Movement> findByDateOfEmissionBetweenAndStatus(LocalDate startDate, LocalDate endDate, MovementStatus status);

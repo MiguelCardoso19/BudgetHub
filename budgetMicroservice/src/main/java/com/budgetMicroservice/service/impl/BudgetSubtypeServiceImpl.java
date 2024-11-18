@@ -104,6 +104,7 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
     public BudgetSubtypeDTO findBudgetSubtypeDTOById(UUID id) throws BudgetSubtypeNotFoundException {
         BudgetSubtypeDTO budgetSubtypeDTO = budgetMapper.toDTO(findById(id));
         kafkaBudgetSubtypeTemplate.send("budget-subtype-response", budgetSubtypeDTO);
+        kafkaBudgetSubtypeTemplate.send("budget-subtype-payment-response", budgetSubtypeDTO);
         return budgetSubtypeDTO;
     }
 

@@ -35,11 +35,13 @@ public class MovementValidator {
             errorMessages.add("a movement already exists with document number: " + movementDTO.getDocumentNumber());
         }
 
-        log.info("Checking for existing movement with invoice ID: {}", movementDTO.getInvoiceId());
+        if (movementDTO.getInvoiceId() != null) {
+            log.info("Checking for existing movement with invoice ID: {}", movementDTO.getInvoiceId());
 
-        if (repository.existsByInvoiceId(movementDTO.getInvoiceId())) {
-            log.error("Validation failed: Movement already exists with invoice ID {}", movementDTO.getInvoiceId());
-            errorMessages.add("a movement already exists with invoice ID: " + movementDTO.getInvoiceId());
+            if (repository.existsByInvoiceId(movementDTO.getInvoiceId())) {
+                log.error("Validation failed: Movement already exists with invoice ID {}", movementDTO.getInvoiceId());
+                errorMessages.add("a movement already exists with invoice ID: " + movementDTO.getInvoiceId());
+            }
         }
 
         if (!supplierService.existsById(movementDTO.getSupplierId())) {
@@ -47,14 +49,10 @@ public class MovementValidator {
             errorMessages.add("supplier with ID " + movementDTO.getSupplierId() + " not found.");
         }
 
-        if (!invoiceService.existsById(movementDTO.getInvoiceId())) {
-            log.error("Validation failed: Invoice with ID {} not found.", movementDTO.getInvoiceId());
-            errorMessages.add("invoice with ID " + movementDTO.getInvoiceId() + " not found.");
-        }
-
         if (!errorMessages.isEmpty()) {
             log.error("Movement validation failed with errors: {}", errorMessages);
-            kafkaMovementValidationExceptionTemplate.send("movement-validation-exception-response", new MovementValidationException(errorMessages, movementDTO.getCorrelationId()));
+            kafkaMovementValidationExceptionTemplate.send("movement-validation-exception-response",
+                    new MovementValidationException(errorMessages, movementDTO.getCorrelationId()));
             throw new MovementValidationException(errorMessages);
         }
     }
@@ -77,9 +75,11 @@ public class MovementValidator {
 
         log.info("Checking for existing movement with invoice ID (update): {}", movementDTO.getInvoiceId());
 
-        if (repository.existsByInvoiceIdAndIdNot(movementDTO.getInvoiceId(), movementDTO.getId())) {
-            log.error("Validation failed: Movement already exists with invoice ID {}", movementDTO.getInvoiceId());
-            errorMessages.add("a movement already exists with invoice ID: " + movementDTO.getInvoiceId());
+        if (movementDTO.getInvoiceId() != null) {
+            if (repository.existsByInvoiceIdAndIdNot(movementDTO.getInvoiceId(), movementDTO.getId())) {
+                log.error("Validation failed: Movement already exists with invoice ID {}", movementDTO.getInvoiceId());
+                errorMessages.add("a movement already exists with invoice ID: " + movementDTO.getInvoiceId());
+            }
         }
 
         if (!supplierService.existsById(movementDTO.getSupplierId())) {
@@ -87,9 +87,12 @@ public class MovementValidator {
             errorMessages.add("supplier with ID " + movementDTO.getSupplierId() + " not found.");
         }
 
-        if (!invoiceService.existsById(movementDTO.getInvoiceId())) {
-            log.error("Validation failed: Invoice with ID {} not found.", movementDTO.getInvoiceId());
-            errorMessages.add("invoice with ID " + movementDTO.getInvoiceId() + " not found.");
+
+        if (movementDTO.getInvoiceId() != null) {
+            if (!invoiceService.existsById(movementDTO.getInvoiceId())) {
+                log.error("Validation failed: Invoice with ID {} not found.", movementDTO.getInvoiceId());
+                errorMessages.add("invoice with ID " + movementDTO.getInvoiceId() + " not found.");
+            }
         }
 
         if (!errorMessages.isEmpty()) {

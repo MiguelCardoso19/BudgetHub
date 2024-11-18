@@ -22,7 +22,7 @@ public class InvoiceEventListenerServiceImpl implements InvoiceEventListenerServ
     @Override
     @KafkaListener(topics = "invoice-response", groupId = "invoice_response_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
     public void handleInvoiceResponse(InvoiceDTO invoiceDTO) throws GenericException {
-        CompletableFuture<InvoiceDTO> future = invoiceService.getPendingRequest(invoiceDTO.getCorrelationId(), invoiceDTO.getId());
+        CompletableFuture<InvoiceDTO> future = invoiceService.removePendingRequestById(invoiceDTO.getCorrelationId(), invoiceDTO.getId());
 
         if (future != null) {
             future.complete(invoiceDTO);
@@ -34,7 +34,7 @@ public class InvoiceEventListenerServiceImpl implements InvoiceEventListenerServ
     @Override
     @KafkaListener(topics = "invoice-page-response", groupId = "pageable_response_group", concurrency = "10", containerFactory = "customPageKafkaListenerContainerFactory")
     public void handleInvoicePageResponse(CustomPageDTO customPageDTO) throws GenericException {
-        CompletableFuture<CustomPageDTO> future = invoiceService.getPendingPageRequest(customPageDTO.getPageable().getCorrelationId());
+        CompletableFuture<CustomPageDTO> future = invoiceService.removePendingPageRequestById(customPageDTO.getPageable().getCorrelationId());
 
         if (future != null) {
             future.complete(customPageDTO);
@@ -46,7 +46,7 @@ public class InvoiceEventListenerServiceImpl implements InvoiceEventListenerServ
     @Override
     @KafkaListener(topics = "invoice-delete-success-response", groupId = "invoice_delete_success_response_group", concurrency = "10")
     public void handleDeleteSuccess(UUID id) throws GenericException {
-        CompletableFuture<InvoiceDTO> future = invoiceService.getPendingRequest(id, null);
+        CompletableFuture<InvoiceDTO> future = invoiceService.removePendingRequestById(id, null);
 
         if (future != null) {
             future.complete(null);
@@ -58,7 +58,7 @@ public class InvoiceEventListenerServiceImpl implements InvoiceEventListenerServ
     @Override
     @KafkaListener(topics = "invoice-not-found-exception-response", groupId = "invoice_not_found_response_group", concurrency = "10", containerFactory = "invoiceNotFoundExceptionKafkaListenerContainerFactory")
     public void handleNotFoundExceptionResponse(InvoiceNotFoundException errorPayload) {
-        CompletableFuture<InvoiceDTO> future = invoiceService.getPendingRequest(UUID.fromString(errorPayload.getId()), null);
+        CompletableFuture<InvoiceDTO> future = invoiceService.removePendingRequestById(UUID.fromString(errorPayload.getId()), null);
 
         if (future != null) {
             future.completeExceptionally(new InvoiceNotFoundException(errorPayload.getId()));
@@ -68,7 +68,7 @@ public class InvoiceEventListenerServiceImpl implements InvoiceEventListenerServ
     @Override
     @KafkaListener(topics = "upload-file-success-response", groupId = "upload_file_success_response_group", concurrency = "10")
     public void handleUploadFileSuccess(UUID id) throws GenericException {
-        CompletableFuture<InvoiceDTO> future = invoiceService.getPendingRequest(id, null);
+        CompletableFuture<InvoiceDTO> future = invoiceService.removePendingRequestById(id, null);
 
         if (future != null) {
             future.complete(null);
@@ -80,7 +80,7 @@ public class InvoiceEventListenerServiceImpl implements InvoiceEventListenerServ
     @Override
     @KafkaListener(topics = "failed-to-upload-file-exception-response", groupId = "failed_to_upload_file_exception_group", concurrency = "10", containerFactory = "failedToUploadFileExceptionKafkaListenerContainerFactory")
     public void handleFailedToUploadFileExceptionResponse(FailedToUploadFileException errorPayload) {
-        CompletableFuture<InvoiceDTO> future = invoiceService.getPendingRequest(errorPayload.getId(), null);
+        CompletableFuture<InvoiceDTO> future = invoiceService.removePendingRequestById(errorPayload.getId(), null);
 
         if (future != null) {
             future.completeExceptionally(new FailedToUploadFileException(errorPayload.getId()));

@@ -22,7 +22,7 @@ public class SupplierEventListenerServiceImpl implements SupplierEventListenerSe
     @Override
     @KafkaListener(topics = "supplier-response", groupId = "supplier_response_group", concurrency = "10", containerFactory = "supplierKafkaListenerContainerFactory")
     public void handleInvoiceResponse(SupplierDTO supplierDTO) throws GenericException {
-        CompletableFuture<SupplierDTO> future = supplierService.getPendingRequest(supplierDTO.getCorrelationId(), supplierDTO.getId());
+        CompletableFuture<SupplierDTO> future = supplierService.removePendingRequestById(supplierDTO.getCorrelationId(), supplierDTO.getId());
 
         if (future != null) {
             future.complete(supplierDTO);
@@ -34,7 +34,7 @@ public class SupplierEventListenerServiceImpl implements SupplierEventListenerSe
     @Override
     @KafkaListener(topics = "page-response", groupId = "pageable_response_group", concurrency = "10", containerFactory = "customPageKafkaListenerContainerFactory")
     public void handleInvoicePageResponse(CustomPageDTO customPageDTO) throws GenericException {
-        CompletableFuture<CustomPageDTO> future = supplierService.getPendingPageRequest(customPageDTO.getPageable().getCorrelationId());
+        CompletableFuture<CustomPageDTO> future = supplierService.removePendingPageRequestById(customPageDTO.getPageable().getCorrelationId());
 
         if (future != null) {
             future.complete(customPageDTO);
@@ -46,7 +46,7 @@ public class SupplierEventListenerServiceImpl implements SupplierEventListenerSe
     @Override
     @KafkaListener(topics = "supplier-delete-success-response", groupId = "supplier_delete_success_response_group", concurrency = "10")
     public void handleDeleteSuccess(UUID id) throws GenericException {
-        CompletableFuture<SupplierDTO> future = supplierService.getPendingRequest(id, null);
+        CompletableFuture<SupplierDTO> future = supplierService.removePendingRequestById(id, null);
 
         if (future != null) {
             future.complete(null);
@@ -58,7 +58,7 @@ public class SupplierEventListenerServiceImpl implements SupplierEventListenerSe
     @Override
     @KafkaListener(topics = "supplier-not-found-exception-response", groupId = "supplier_not_found_response_group", concurrency = "10", containerFactory = "supplierNotFoundExceptionKafkaListenerContainerFactory")
     public void handleNotFoundExceptionResponse(SupplierNotFoundException errorPayload) {
-        CompletableFuture<SupplierDTO> future = supplierService.getPendingRequest(UUID.fromString(errorPayload.getId()), null);
+        CompletableFuture<SupplierDTO> future = supplierService.removePendingRequestById(UUID.fromString(errorPayload.getId()), null);
 
         if (future != null) {
             future.completeExceptionally(new SupplierNotFoundException(errorPayload.getId()));
@@ -68,7 +68,7 @@ public class SupplierEventListenerServiceImpl implements SupplierEventListenerSe
     @Override
     @KafkaListener(topics = "supplier-validation-exception-response", groupId = "supplier_validation_response_group", concurrency = "10", containerFactory = "supplierValidationExceptionKafkaListenerContainerFactory")
     public void handleValidationExceptionResponse(SupplierValidationException errorPayload) {
-        CompletableFuture<SupplierDTO> future = supplierService.getPendingRequest(errorPayload.getId(), null);
+        CompletableFuture<SupplierDTO> future = supplierService.removePendingRequestById(errorPayload.getId(), null);
 
         if (future != null) {
             String formatedErrorMessage = errorPayload.getMessage().substring(errorPayload.getMessage().indexOf("[") + 1, errorPayload.getMessage().indexOf("]"));

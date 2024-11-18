@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/user-credentials")
 @RequiredArgsConstructor
-@Tag(name = "User Credentials API", description = "APIs for managing user credentials, including registration, updating, and deletion.")
+@Tag(name = "User Credentials Controller", description = "APIs for managing user credentials, including registration, updating, and deletion.")
 public class UserCredentialsController {
     private final UserCredentialsServiceImpl userCredentialsService;
 
@@ -71,6 +71,7 @@ public class UserCredentialsController {
     @Operation(
             summary = "Recover password by sending a reset link to the user's email",
             description = "This method sends a password recovery email to the user with a reset token.",
+            security = @SecurityRequirement(name = "bearerAuth"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Password recovery email sent successfully"),
                     @ApiResponse(responseCode = "400", description = "Invalid email format"),
@@ -88,6 +89,7 @@ public class UserCredentialsController {
     @Operation(
             summary = "Reset the user's password using the provided reset token",
             description = "This method resets the user's password after validating the reset token and setting the new password.",
+            security = @SecurityRequirement(name = "bearerAuth"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Password reset successfully"),
                     @ApiResponse(responseCode = "400", description = "Invalid password format or request data"),
@@ -105,6 +107,7 @@ public class UserCredentialsController {
     @Operation(
             summary = "Retrieve the user's status (logged in or logged out)",
             description = "This method checks the current status of the user, whether they are logged in or logged out based on their nif.",
+            security = @SecurityRequirement(name = "bearerAuth"),
             responses = {
                     @ApiResponse(responseCode = "200", description = "User status fetched successfully"),
                     @ApiResponse(responseCode = "404", description = "User not found")

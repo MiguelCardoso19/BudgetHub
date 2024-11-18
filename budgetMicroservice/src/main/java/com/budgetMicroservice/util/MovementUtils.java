@@ -33,9 +33,9 @@ public class MovementUtils {
         movementDTO.setTotalValue(totalValue);
     }
 
-    public static void setBudget(Movement movement, MovementDTO movementDTO,
-                                 BudgetSubtypeService budgetSubtypeService,
-                                 BudgetTypeService budgetTypeService) throws BudgetSubtypeNotFoundException, BudgetTypeNotFoundException {
+    public void setBudget(Movement movement, MovementDTO movementDTO,
+                          BudgetSubtypeService budgetSubtypeService,
+                          BudgetTypeService budgetTypeService) throws BudgetSubtypeNotFoundException, BudgetTypeNotFoundException {
         if (movementDTO.getBudgetSubtypeId() != null) {
             BudgetSubtype budgetSubtype = budgetSubtypeService.findBudgetSubtypeEntityById(movementDTO.getBudgetSubtypeId());
             movement.setBudgetSubtype(budgetSubtype);
@@ -81,9 +81,9 @@ public class MovementUtils {
         }
     }
 
-    public static void adjustBudgetAmounts(BudgetSubtypeService budgetSubtypeService,
-                                           BudgetTypeService budgetTypeService,
-                                           Movement oldMovement, MovementDTO newMovementDTO) throws BudgetExceededException {
+    public void adjustBudgetAmounts(BudgetSubtypeService budgetSubtypeService,
+                                    BudgetTypeService budgetTypeService,
+                                    Movement oldMovement, MovementDTO newMovementDTO) throws BudgetExceededException {
         double oldTotalValue = oldMovement.getTotalValue();
         double newTotalValue = newMovementDTO.getTotalValue();
         double valueDifference = newTotalValue - oldTotalValue;
@@ -115,8 +115,8 @@ public class MovementUtils {
         }
     }
 
-    public static void removeMovementValueFromBudget(Movement movement, BudgetSubtypeService budgetSubtypeService,
-                                                     BudgetTypeService budgetTypeService) {
+    public void removeMovementValueFromBudget(Movement movement, BudgetSubtypeService budgetSubtypeService,
+                                              BudgetTypeService budgetTypeService) {
         Double totalValue = movement.getTotalValue();
 
         if (movement.getBudgetSubtype() != null) {
@@ -139,7 +139,7 @@ public class MovementUtils {
     }
 
 
-    public static void populateSheetWithMovements(XSSFSheet sheet, List<Movement> movements) {
+    public void populateSheetWithMovements(XSSFSheet sheet, List<Movement> movements) {
         int rowIdx = 0;
 
         Row headerRow = sheet.createRow(rowIdx++);
@@ -183,7 +183,7 @@ public class MovementUtils {
         }
     }
 
-    public static List<Movement> filterMovements(MovementRepository movementRepository, LocalDate startDate, LocalDate endDate, MovementStatus status) {
+    public List<Movement> filterMovements(MovementRepository movementRepository, LocalDate startDate, LocalDate endDate, MovementStatus status) {
         int conditionCode = (startDate != null ? 1 : 0) + (endDate != null ? 2 : 0) + (status != null ? 4 : 0);
 
         return switch (conditionCode) {

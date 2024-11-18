@@ -21,6 +21,6 @@ public interface MovementService {
     CustomPageDTO getByBudgetType(UUID budgetTypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO getByBudgetSubtype(UUID budgetSubtypeId, Pageable pageable) throws ExecutionException, InterruptedException, TimeoutException;
     void exportMovementsReport(LocalDate startDate, LocalDate endDate, MovementStatus status, String emailFromRequest) throws ExecutionException, InterruptedException, TimeoutException;
-    CompletableFuture<MovementDTO> getPendingRequest(UUID correlationId, UUID id);
-    CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
+    CompletableFuture<MovementDTO> removePendingRequestById(UUID correlationId, UUID id);
+    CompletableFuture<CustomPageDTO> removePendingPageRequestById(UUID correlationId);
 }

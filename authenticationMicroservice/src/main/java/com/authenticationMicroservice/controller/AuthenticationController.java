@@ -24,7 +24,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication API", description = "Handles user authentication, token validation, and refresh token operations.")
+@Tag(name = "Authentication Controller", description = "Handles user authentication, token validation, and refresh token operations.")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 

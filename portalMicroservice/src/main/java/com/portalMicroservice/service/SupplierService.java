@@ -17,6 +17,6 @@ public interface SupplierService {
     void delete(UUID id) throws ExecutionException, InterruptedException, TimeoutException;
     SupplierDTO getById(UUID id) throws ExecutionException, InterruptedException, GenericException, TimeoutException, SupplierNotFoundException;
     CustomPageDTO getAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
-    CompletableFuture<SupplierDTO> getPendingRequest(UUID correlationId, UUID id);
-    CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
+    CompletableFuture<SupplierDTO> removePendingRequestById(UUID correlationId, UUID id);
+    CompletableFuture<CustomPageDTO> removePendingPageRequestById(UUID correlationId);
 }

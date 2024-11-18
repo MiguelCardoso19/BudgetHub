@@ -19,6 +19,6 @@ public interface InvoiceService {
     InvoiceDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     void attachBase64FileToInvoice(UUID invoiceId, MultipartFile file) throws FailedToUploadFileException, ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO getAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
-    CompletableFuture<InvoiceDTO> getPendingRequest(UUID correlationId, UUID id);
-    CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
+    CompletableFuture<InvoiceDTO> removePendingRequestById(UUID correlationId, UUID id);
+    CompletableFuture<CustomPageDTO> removePendingPageRequestById(UUID correlationId);
 }

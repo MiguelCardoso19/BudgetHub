@@ -2,6 +2,7 @@ package com.paymentMicroservice.controller;
 
 import com.paymentMicroservice.dto.CreatePaymentDTO;
 import com.paymentMicroservice.dto.PaymentConfirmationRequest;
+import com.paymentMicroservice.exception.BudgetExceededException;
 import com.paymentMicroservice.exception.FailedToCancelPaymentException;
 import com.paymentMicroservice.exception.FailedToConfirmPaymentException;
 import com.paymentMicroservice.service.PaymentService;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 @RestController()
 @RequiredArgsConstructor
 public class PaymentController {
@@ -21,7 +25,7 @@ public class PaymentController {
 
     // String to make frontend happy
     @PostMapping("/create-payment-intent")
-    public String createPaymentIntent(@Valid @RequestBody CreatePaymentDTO createPaymentDTO) throws StripeException {
+    public String createPaymentIntent(@Valid @RequestBody CreatePaymentDTO createPaymentDTO) throws StripeException, BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
         return paymentService.createPaymentIntent(createPaymentDTO);
     }
 

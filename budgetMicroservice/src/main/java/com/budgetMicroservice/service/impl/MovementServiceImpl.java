@@ -13,7 +13,6 @@ import com.budgetMicroservice.validator.MovementValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -26,7 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static com.budgetMicroservice.enumerator.MovementStatus.PAID;
+import static com.budgetMicroservice.enumerator.MovementStatus.*;
 
 @Service
 @Slf4j
@@ -57,10 +56,14 @@ public class MovementServiceImpl implements MovementService {
         movementUtils.calculateIvaAndTotal(movementDTO);
         Movement movement = movementMapper.toEntity(movementDTO);
         movement.setSupplier(supplierService.findSupplierEntityById(movementDTO.getSupplierId()));
-        movement.setInvoice(invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId()));
-        MovementUtils.setBudget(movement, movementDTO, budgetSubtypeService, budgetTypeService);
 
-        if (movement.getStatus().equals(PAID)) {
+        if (movementDTO.getInvoiceId() != null) {
+            movement.setInvoice(invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId()));
+        }
+
+        movementUtils.setBudget(movement, movementDTO, budgetSubtypeService, budgetTypeService);
+
+        if (movement.getStatus().equals(SUCCEEDED)) {
             movementUtils.updateSpentAmounts(movementDTO, budgetSubtypeService, budgetTypeService, movement, movement.getTotalValue());
         }
 
@@ -79,14 +82,16 @@ public class MovementServiceImpl implements MovementService {
         movementValidator.validateMovementUpdate(movementDTO, movementRepository, supplierService, invoiceService);
         movementUtils.calculateIvaAndTotal(movementDTO);
 
-        if (movementDTO.getStatus().equals(PAID)) {
-            MovementUtils.adjustBudgetAmounts(budgetSubtypeService, budgetTypeService, previousMovement, movementDTO);
+        if (movementDTO.getStatus().equals(SUCCEEDED)) {
+            movementUtils.adjustBudgetAmounts(budgetSubtypeService, budgetTypeService, previousMovement, movementDTO);
+        } else if (movementDTO.getStatus().equals(CANCELED) && previousMovement.getStatus().equals(SUCCEEDED)) {
+            movementUtils.removeMovementValueFromBudget(previousMovement, budgetSubtypeService, budgetTypeService);
         }
 
         Movement existingMovement = movementMapper.toEntity(movementDTO);
         existingMovement.setSupplier(supplierService.findSupplierEntityById(movementDTO.getSupplierId()));
         existingMovement.setInvoice(invoiceService.findInvoiceEntityById(movementDTO.getInvoiceId()));
-        MovementUtils.setBudget(existingMovement, movementDTO, budgetSubtypeService, budgetTypeService);
+        movementUtils.setBudget(existingMovement, movementDTO, budgetSubtypeService, budgetTypeService);
         MovementDTO exisitingMovementDTO = movementMapper.toDTO(movementRepository.save(existingMovement));
         kafkaMovementTemplate.send("movement-response", exisitingMovementDTO);
         return exisitingMovementDTO;
@@ -110,8 +115,8 @@ public class MovementServiceImpl implements MovementService {
     public void delete(UUID id) throws MovementNotFoundException {
         Movement existingMovement = findById(id);
 
-        if (existingMovement.getStatus().equals(PAID)) {
-            MovementUtils.removeMovementValueFromBudget(existingMovement, budgetSubtypeService, budgetTypeService);
+        if (existingMovement.getStatus().equals(SUCCEEDED)) {
+            movementUtils.removeMovementValueFromBudget(existingMovement, budgetSubtypeService, budgetTypeService);
         }
         kafkaUuidTemplate.send("movement-delete-success-response", id);
         movementRepository.deleteById(id);
@@ -142,19 +147,26 @@ public class MovementServiceImpl implements MovementService {
         return getMovementsByBudgetId(movementsByBudgetRequestDTO, false, "MovementsNotFoundForBudgetSubtypeException");
     }
 
-    /**
-     * IMPLEMENT PAYMENT SERVICE
-     */
     @Override
     @KafkaListener(topics = "update-movement-status", groupId = "movement_update_status_group", concurrency = "10", containerFactory = "movementUpdateStatusRequestKafkaContainerFactory")
-    public MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException, MovementValidationException, BudgetExceededException {
-        Movement movement = findById(movementUpdateStatusRequestDTO.getId());
+    public MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException, BudgetExceededException, DocumentNumberNotFoundException {
+        Movement movement;
+
+        if (movementUpdateStatusRequestDTO.getId() != null) {
+            movement = findById(movementUpdateStatusRequestDTO.getId());
+        } else {
+            movement = movementRepository.findByDocumentNumber(movementUpdateStatusRequestDTO.getDocumentNumber())
+                    .orElseThrow(() -> new DocumentNumberNotFoundException(movementUpdateStatusRequestDTO.getDocumentNumber()));
+        }
+
         movement.setStatus(movementUpdateStatusRequestDTO.getStatus());
         MovementDTO movementDTO = movementMapper.toDTO(movement);
         movementDTO.setCorrelationId(movementUpdateStatusRequestDTO.getCorrelationId());
 
-        if (movementUpdateStatusRequestDTO.getStatus().equals(PAID)) {
+        if (movementUpdateStatusRequestDTO.getStatus().equals(SUCCEEDED)) {
             movementUtils.updateSpentAmounts(movementDTO, budgetSubtypeService, budgetTypeService, movement, movement.getTotalValue());
+        } else if (movementUpdateStatusRequestDTO.getStatus().equals(CANCELED) && movement.getStatus().equals(SUCCEEDED)) {
+            movementUtils.removeMovementValueFromBudget(movement, budgetSubtypeService, budgetTypeService);
         }
         movementRepository.save(movement);
         MovementDTO movementDTOToSend = movementMapper.toDTO(movement);
@@ -165,7 +177,7 @@ public class MovementServiceImpl implements MovementService {
     @Override
     @KafkaListener(topics = "export-movements-report", groupId = "movement_group", concurrency = "10", containerFactory = "exportMovementsKafkaListenerContainerFactory")
     public void exportMovements(ExportMovementsRequestDTO request) throws GenerateExcelException {
-        List<Movement> movements = MovementUtils.filterMovements(
+        List<Movement> movements = movementUtils.filterMovements(
                 movementRepository,
                 request.getStartDate(),
                 request.getEndDate(),
@@ -173,7 +185,7 @@ public class MovementServiceImpl implements MovementService {
         );
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-            MovementUtils.populateSheetWithMovements(workbook.createSheet("Movements Report"), movements);
+            movementUtils.populateSheetWithMovements(workbook.createSheet("Movements Report"), movements);
             workbook.write(outStream);
             String attachmentBase64 = Base64.getEncoder().encodeToString(outStream.toByteArray());
             kafkaNotificationRequestTemplate.send("notification-topic", new NotificationRequestDTO(request.getUserEmail(), attachmentBase64));

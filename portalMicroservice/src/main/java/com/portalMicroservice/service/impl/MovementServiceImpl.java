@@ -101,11 +101,11 @@ public class MovementServiceImpl implements MovementService {
         future.get(TIMEOUT_DURATION, SECONDS);
     }
 
-    public CompletableFuture<MovementDTO> getPendingRequest(UUID correlationId, UUID id) {
+    public CompletableFuture<MovementDTO> removePendingRequestById(UUID correlationId, UUID id) {
         return pendingRequests.remove(correlationId != null ? correlationId : id);
     }
 
-    public CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId) {
+    public CompletableFuture<CustomPageDTO> removePendingPageRequestById(UUID correlationId) {
         return pendingPageRequests.remove(correlationId);
     }
 }

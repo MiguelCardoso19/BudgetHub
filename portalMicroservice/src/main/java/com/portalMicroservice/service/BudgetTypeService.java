@@ -16,6 +16,6 @@ public interface BudgetTypeService {
     void delete(UUID id) throws ExecutionException, InterruptedException, TimeoutException;
     BudgetTypeDTO getById(UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
     CustomPageDTO findAll(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException;
-    CompletableFuture<BudgetTypeDTO> getPendingRequest(UUID correlationId, UUID id);
-    CompletableFuture<CustomPageDTO> getPendingPageRequest(UUID correlationId);
+    CompletableFuture<BudgetTypeDTO> removePendingRequestById(UUID correlationId, UUID id);
+    CompletableFuture<CustomPageDTO> removePendingPageRequestById(UUID correlationId);
 }

@@ -18,4 +18,6 @@ public class MovementUpdateStatusRequestDTO extends AbstractDTO {
     @Schema(description = "The new status to update the movement to.",
             example = "PAID", required = true)
     private MovementStatus status;
+
+    private String documentNumber;
 }

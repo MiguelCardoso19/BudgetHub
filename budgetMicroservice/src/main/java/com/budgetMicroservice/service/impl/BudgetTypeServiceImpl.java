@@ -88,6 +88,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     @KafkaListener(topics = "find-budget-type-by-id", groupId = "uuid_group", concurrency = "10")
     public BudgetTypeDTO findBudgetTypeDTOById(UUID id) throws BudgetTypeNotFoundException {
         BudgetTypeDTO budgetTypeDTO = budgetMapper.toDTO(findById(id));
+        kafkaBudgetTypeTemplate.send("budget-type-payment-response", budgetTypeDTO);
         kafkaBudgetTypeTemplate.send("budget-type-response", budgetTypeDTO);
         return budgetTypeDTO;
     }

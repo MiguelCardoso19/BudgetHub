@@ -21,7 +21,7 @@ public class BudgetSubtypeEventListenerServiceImpl implements BudgetSubtypeEvent
     @Override
     @KafkaListener(topics = "budget-subtype-response", groupId = "budget_subtype_response_group", concurrency = "10", containerFactory = "budgetSubtypeKafkaListenerContainerFactory")
     public void handleBudgetSubtypeResponse(BudgetSubtypeDTO budgetSubtypeDTO) throws GenericException {
-        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.getPendingRequest(budgetSubtypeDTO.getCorrelationId(), budgetSubtypeDTO.getId());
+        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.removePendingRequestById(budgetSubtypeDTO.getCorrelationId(), budgetSubtypeDTO.getId());
 
         if (future != null) {
             future.complete(budgetSubtypeDTO);
@@ -33,7 +33,7 @@ public class BudgetSubtypeEventListenerServiceImpl implements BudgetSubtypeEvent
     @Override
     @KafkaListener(topics = "budget-subtype-page-response", groupId = "pageable_response_group", concurrency = "10", containerFactory = "customPageKafkaListenerContainerFactory")
     public void handleBudgetSubtypePageResponse(CustomPageDTO customPageDTO) throws GenericException {
-        CompletableFuture<CustomPageDTO> future = budgetSubtypeService.getPendingPageRequest(customPageDTO.getPageable().getCorrelationId());
+        CompletableFuture<CustomPageDTO> future = budgetSubtypeService.removePendingPageRequestById(customPageDTO.getPageable().getCorrelationId());
 
         if (future != null) {
             future.complete(customPageDTO);
@@ -45,7 +45,7 @@ public class BudgetSubtypeEventListenerServiceImpl implements BudgetSubtypeEvent
     @Override
     @KafkaListener(topics = "budget-subtype-delete-success-response", groupId = "budget_subtype_delete_success_response_group", concurrency = "10")
     public void handleDeleteSuccess(UUID id) throws GenericException {
-        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.getPendingRequest(id, null);
+        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.removePendingRequestById(id, null);
 
         if (future != null) {
             future.complete(null);
@@ -57,7 +57,7 @@ public class BudgetSubtypeEventListenerServiceImpl implements BudgetSubtypeEvent
     @Override
     @KafkaListener(topics = "budget-subtype-not-found-exception-response", groupId = "budget_subtype_not_found_response_group", concurrency = "10", containerFactory = "budgetSubtypeNotFoundExceptionKafkaListenerContainerFactory")
     public void handleNotFoundExceptionResponse(BudgetSubtypeNotFoundException errorPayload) {
-        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.getPendingRequest(UUID.fromString(errorPayload.getId()), null);
+        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.removePendingRequestById(UUID.fromString(errorPayload.getId()), null);
 
         if (future != null) {
             future.completeExceptionally(new BudgetSubtypeNotFoundException(errorPayload.getId()));
@@ -67,7 +67,7 @@ public class BudgetSubtypeEventListenerServiceImpl implements BudgetSubtypeEvent
     @Override
     @KafkaListener(topics = "budget-subtype-already-exists-exception-response", groupId = "budget_subtype_already_exists_response_group", concurrency = "10", containerFactory = "budgetSubtypeAlreadyExistsExceptionKafkaListenerContainerFactory")
     public void handleValidationExceptionResponse(BudgetSubtypeAlreadyExistsException errorPayload) {
-        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.getPendingRequest(errorPayload.getId(), null);
+        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.removePendingRequestById(errorPayload.getId(), null);
 
         if (future != null) {
             int firstQuoteIndex = errorPayload.getMessage().indexOf("'");
@@ -80,7 +80,7 @@ public class BudgetSubtypeEventListenerServiceImpl implements BudgetSubtypeEvent
     @Override
     @KafkaListener(topics = "budget-subtype-budget-exceeded-exception-response", groupId = "budget_subtype_budget_exceeded_response_group", concurrency = "10", containerFactory = "budgetExceededExceptionKafkaListenerContainerFactory")
     public void handleBudgetExceededExceptionResponse(BudgetExceededException errorPayload) {
-        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.getPendingRequest(errorPayload.getId(), null);
+        CompletableFuture<BudgetSubtypeDTO> future = budgetSubtypeService.removePendingRequestById(errorPayload.getId(), null);
 
         if (future != null) {
             future.completeExceptionally(new BudgetExceededException(errorPayload.getMessage()));

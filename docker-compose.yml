@@ -36,6 +36,18 @@ services:
     volumes:
       - notification-data:/var/lib/postgresql/data
 
+  payment-db:
+    image: postgres:latest
+    container_name: payment-db
+    environment:
+        POSTGRES_DB: payment-db
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: user
+    ports:
+        - "5436:5432"
+    volumes:
+        - payment-data:/var/lib/postgresql/data
+
   zookeeper:
     image: wurstmeister/zookeeper:latest
     container_name: zookeeper
@@ -111,7 +123,15 @@ services:
     ports:
       - "8084:8084"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment-db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: user
       KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - payment-db
+      - redis
 
   authentication-microservice:
     build:
@@ -127,8 +147,19 @@ services:
     depends_on:
       - authentication-db
 
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: stripe-cli
+    command: [ "listen", "--forward-to", "http://host.docker.internal:8084/webhook", "--verbose" ]
+    environment:
+      STRIPE_API_KEY: ${STRIPE_PRIVATE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_KEY}
+    ports:
+      - "12111:12111"
+
 volumes:
   authentication-data:
   budget-data:
   notification-data:
   redis-data:
+  payment-data:

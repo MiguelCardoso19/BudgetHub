@@ -144,4 +144,10 @@ public class GlobalExceptionHandler {
                 OPTIMISTIC_LOCKING_FAILURE.getErrorCode());
         return new ResponseEntity<>(errorResponse, OPTIMISTIC_LOCKING_FAILURE.getStatus());
     }
+
+    @ExceptionHandler(DocumentNumberNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDocumentNumberNotFoundException(DocumentNumberNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
 }

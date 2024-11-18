@@ -7,7 +7,8 @@ import static org.springframework.http.HttpStatus.*;
 
 public enum ErrorMessage {
     FAILED_TO_CANCEL_PAYMENT("FAILED_TO_CANCEL_PAYMENT", "Failed to cancel the payment", CONFLICT),
-    FAILED_TO_CONFIRM_PAYMENT("FAILED_TO_CONFIRM_PAYMENT", "Failed to confirm the payment", CONFLICT);
+    FAILED_TO_CONFIRM_PAYMENT("FAILED_TO_CONFIRM_PAYMENT", "Failed to confirm the payment", CONFLICT),
+    BUDGET_EXCEEDED("BUDGET_EXCEEDED", "Total value exceeds the available budget. Total value: %s, Available: %s", BAD_REQUEST);
 
     @Getter
     private final String errorCode;

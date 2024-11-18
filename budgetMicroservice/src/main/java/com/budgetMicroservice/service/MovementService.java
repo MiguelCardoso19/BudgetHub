@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface MovementService {
     MovementDTO create(MovementDTO movementDTO) throws BudgetSubtypeNotFoundException, SupplierNotFoundException, MovementAlreadyExistsException, MovementValidationException, InvoiceNotFoundException, BudgetExceededException, BudgetTypeNotFoundException;
-    MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException, MovementValidationException, BudgetExceededException;
+    MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException, MovementValidationException, BudgetExceededException, DocumentNumberNotFoundException;
     Movement getMovementEntityById(UUID id) throws MovementNotFoundException;
     Page<MovementDTO> getAll(CustomPageableDTO customPageableDTO) throws JsonProcessingException;
     MovementDTO getMovementDTOById(UUID id) throws MovementNotFoundException;

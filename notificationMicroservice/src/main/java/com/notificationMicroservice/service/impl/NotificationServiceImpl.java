@@ -53,7 +53,7 @@ public class NotificationServiceImpl implements NotificationService {
         handleEmailNotification(notificationRequestDTO, "reset-password");
     }
 
-    @Scheduled(cron = "30 * * * * ?")
+    @Scheduled(cron = "${RETRY_DELAY}")
     @Transactional
     @Override
     public void retryFailedEmails() {
