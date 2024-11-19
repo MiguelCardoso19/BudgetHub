@@ -3,9 +3,6 @@ package com.paymentMicroservice.util;
 import com.google.gson.Gson;
 import com.paymentMicroservice.dto.CreatePaymentDTO;
 import com.paymentMicroservice.dto.CreatePaymentItemDTO;
-import com.stripe.exception.StripeException;
-import com.stripe.model.PaymentIntent;
-import com.stripe.param.PaymentIntentConfirmParams;
 
 import java.util.HashMap;
 import java.util.Map;

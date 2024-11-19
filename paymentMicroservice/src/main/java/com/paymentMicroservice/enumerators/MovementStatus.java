@@ -6,5 +6,6 @@ public enum MovementStatus {
     REFUSED,
     CANCELED,
     FAILED,
+    REFUNDED,
     SUCCEEDED
 }

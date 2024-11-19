@@ -16,10 +16,6 @@ import java.time.LocalDate;
 @Setter
 public class Movement extends AbstractEntity {
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MovementType type;
-
     @Column(nullable = false)
     private String documentNumber;
 
@@ -40,6 +36,11 @@ public class Movement extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
     private MovementStatus status;
+
+    @NotAudited
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MovementType type;
 
     @NotAudited
     @JoinColumn(name = "invoice_id")

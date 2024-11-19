@@ -35,6 +35,17 @@
             <column name="retryable" type="${boolean.type}">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_date" type="${timestamp.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_date" type="${timestamp.type}"/>
+            <column name="created_by" type="${varchar.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="${varchar.type}"/>
+            <column name="version" type="${integer.type}">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 

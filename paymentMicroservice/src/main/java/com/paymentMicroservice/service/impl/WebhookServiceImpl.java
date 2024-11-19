@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.paymentMicroservice.dto.MovementDTO;
 import com.paymentMicroservice.dto.MovementUpdateStatusRequestDTO;
 import com.paymentMicroservice.enumerators.MovementType;
+import com.paymentMicroservice.service.StripeInvoiceService;
 import com.paymentMicroservice.service.WebhookService;
 import com.paymentMicroservice.util.WebhookUtils;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.net.Webhook;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +27,15 @@ import static com.paymentMicroservice.enumerators.MovementStatus.*;
 @Slf4j
 @RequiredArgsConstructor
 public class WebhookServiceImpl implements WebhookService {
+    private final StripeInvoiceService stripeInvoiceService;
     private final KafkaTemplate<String, MovementDTO> kafkaMovementTemplate;
     private final KafkaTemplate<String, MovementUpdateStatusRequestDTO> kafkaMovementUpdateStatusRequestTemplate;
-    private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
 
     @Value("${STRIPE_WEBHOOK_KEY}")
     private String STRIPE_WEBHOOK_KEY;
 
     @Override
-    public String handleWebhookEvents(String payload, String sigHeader) throws JsonProcessingException {
+    public String handleWebhookEvents(String payload, String sigHeader) throws JsonProcessingException, StripeException {
         if (sigHeader == null) {
             log.warn("Missing signature header.");
             return "";
@@ -63,19 +65,20 @@ public class WebhookServiceImpl implements WebhookService {
         }
     }
 
-    private void handleEvent(Event event, StripeObject stripeObject) throws JsonProcessingException {
+    private void handleEvent(Event event, StripeObject stripeObject) throws JsonProcessingException, StripeException {
         switch (event.getType()) {
             case "payment_intent.created" -> handlePaymentIntentCreated((PaymentIntent) stripeObject);
             case "payment_intent.succeeded" -> handlePaymentIntentSucceeded((PaymentIntent) stripeObject);
-            case "charge.succeeded" -> handleChargeSucceeded((PaymentIntent) stripeObject);
-            case "charge.updated" -> handleChargeUpdated((PaymentIntent) stripeObject);
+            case "charge.succeeded" -> handleChargeSucceeded((Charge) stripeObject);
+            case "charge.refunded" -> handleChargeRefund((Charge) stripeObject);
+            case "charge.updated" -> handleChargeUpdated((Charge) stripeObject);
             case "payment_intent.canceled" -> handlePaymentIntentCanceled((PaymentIntent) stripeObject);
             case "payment_method.attached" -> handlePaymentMethodAttached((PaymentMethod) stripeObject);
             default -> log.warn("Unhandled event type: {}", event.getType());
         }
     }
 
-    private void handlePaymentIntentCreated(PaymentIntent paymentIntent) throws JsonProcessingException {
+    private void handlePaymentIntentCreated(PaymentIntent paymentIntent) throws JsonProcessingException, StripeException {
         log.info("Payment for intent {} created.", paymentIntent.getId());
         Map<String, String> metadata = paymentIntent.getMetadata();
         Map<String, UUID> parsedItems = WebhookUtils.parseItemsMetadata(metadata);
@@ -87,32 +90,44 @@ public class WebhookServiceImpl implements WebhookService {
         movementDTO.setType(MovementType.valueOf(metadata.get("movement_type")));
         movementDTO.setIvaRate(Double.parseDouble(metadata.get("iva_rate")));
         movementDTO.setValueWithoutIva(Double.parseDouble(metadata.get("total_amount")));
-        movementDTO.setBudgetTypeId(parsedItems.get("budgetTypeId"));
-        movementDTO.setBudgetSubtypeId(parsedItems.get("budgetSubtypeId"));
+
+        if (parsedItems.containsKey("budgetTypeId")) {
+            movementDTO.setBudgetTypeId(parsedItems.get("budgetTypeId"));
+        } else {
+            movementDTO.setBudgetSubtypeId(parsedItems.get("budgetSubtypeId"));
+        }
         movementDTO.setSupplierId(parsedItems.get("supplierId"));
-        kafkaMovementTemplate.send("create-movement", movementDTO);
+        kafkaMovementTemplate.send("create-movement", paymentIntent.getId(), movementDTO);
     }
 
     private void handlePaymentIntentCanceled(PaymentIntent paymentIntent) {
-        log.info("Payment for {} canceled.", paymentIntent.getId());
-        kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status",
+        log.info("Payment intent {} canceled.", paymentIntent.getId());
+        kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status", paymentIntent.getId(),
                 WebhookUtils.buildMovementUpdateRequestDTO(CANCELED, paymentIntent.getId()));
     }
 
     private void handlePaymentIntentSucceeded(PaymentIntent paymentIntent) {
-        log.info("Payment for intent {} succeeded.", paymentIntent.getId());
-        kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status",
+        log.info("Payment intent {} succeeded.", paymentIntent.getId());
+        kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status", paymentIntent.getId(),
                 WebhookUtils.buildMovementUpdateRequestDTO(PROCESSING, paymentIntent.getId()));
     }
 
-    private void handleChargeSucceeded(PaymentIntent paymentIntent) {
-        log.info("Charge succeeded for amount: {}", paymentIntent.getId());
-        kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status",
-                WebhookUtils.buildMovementUpdateRequestDTO(SUCCEEDED, paymentIntent.getId()));
+    private void handleChargeSucceeded(Charge charge) {
+        log.info("Charge of payment intent {} succeeded ", charge.getPaymentIntent());
+        stripeInvoiceService.sendChargeSucceededInvoice(charge.getReceiptUrl(), charge.getPaymentIntent(), charge.getReceiptEmail());
+        kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status", charge.getPaymentIntent(),
+                WebhookUtils.buildMovementUpdateRequestDTO(SUCCEEDED, charge.getPaymentIntent()));
     }
 
-    private void handleChargeUpdated(PaymentIntent paymentIntent) {
-        log.info("Charge updated with ID: {}", paymentIntent.getId());
+    private void handleChargeRefund(Charge charge) {
+        log.info("Charge refunded with ID: {}", charge.getPaymentIntent());
+        stripeInvoiceService.sendChargeRefundInvoice(charge.getReceiptUrl(), charge.getPaymentIntent(), charge.getReceiptEmail());
+        kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status", charge.getPaymentIntent(),
+                WebhookUtils.buildMovementUpdateRequestDTO(REFUNDED, charge.getPaymentIntent()));
+    }
+
+    private void handleChargeUpdated(Charge charge) {
+        log.info("Charge updated with ID: {}", charge.getPaymentIntent());
     }
 
     private void handlePaymentMethodAttached(PaymentMethod paymentMethod) {

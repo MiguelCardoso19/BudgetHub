@@ -1,7 +1,8 @@
 package com.paymentMicroservice.controller;
 
 import com.paymentMicroservice.dto.CreatePaymentDTO;
-import com.paymentMicroservice.dto.PaymentConfirmationRequest;
+import com.paymentMicroservice.dto.PaymentConfirmationRequestDTO;
+import com.paymentMicroservice.dto.RefundChargeRequestDTO;
 import com.paymentMicroservice.exception.BudgetExceededException;
 import com.paymentMicroservice.exception.FailedToCancelPaymentException;
 import com.paymentMicroservice.exception.FailedToConfirmPaymentException;
@@ -30,15 +31,20 @@ public class PaymentController {
     }
 
     @PostMapping("/confirm-payment-intent")
-    public ResponseEntity<Void> confirmPaymentIntent(@RequestBody PaymentConfirmationRequest request) throws StripeException, FailedToConfirmPaymentException {
+    public ResponseEntity<Void> confirmPaymentIntent(@RequestBody PaymentConfirmationRequestDTO request) throws StripeException, FailedToConfirmPaymentException {
         paymentService.confirmPaymentIntent(request);
         return ResponseEntity.ok().build();
     }
 
-
     @PostMapping("/cancel-payment-intent")
-    public ResponseEntity<Void> cancelPaymentIntent(@RequestBody PaymentConfirmationRequest request) throws StripeException, FailedToCancelPaymentException {
+    public ResponseEntity<Void> cancelPaymentIntent(@RequestBody PaymentConfirmationRequestDTO request) throws StripeException, FailedToCancelPaymentException {
         paymentService.cancelPaymentIntent(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/refund-charge")
+    public ResponseEntity<Void> refundCharge(@RequestBody RefundChargeRequestDTO request) throws StripeException {
+        paymentService.refundCharge(request);
         return ResponseEntity.ok().build();
     }
 }

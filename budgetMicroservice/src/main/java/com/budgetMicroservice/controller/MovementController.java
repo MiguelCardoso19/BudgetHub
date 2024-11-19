@@ -62,16 +62,15 @@ public class MovementController {
     }
 
     @Operation(summary = "Update the status of a movement",
-            description = "Updates the status of a movement (e.g., Paid, Pending). Only valid statuses are allowed.")
+            description = "Updates the status of a movement (e.g., Canceled, Pending). Only valid statuses are allowed.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully updated the status"),
             @ApiResponse(responseCode = "404", description = "Movement not found"),
             @ApiResponse(responseCode = "400", description = "Invalid status or bad request")
     })
-    @PutMapping("/status/update/{id}")
-    public ResponseEntity<MovementDTO> updateMovementStatus(@PathVariable UUID id,
-                                                            @RequestBody MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO)
-            throws MovementNotFoundException, MovementValidationException, BudgetExceededException {
+    @PutMapping("/status/update")
+    public ResponseEntity<MovementDTO> updateMovementStatus(@RequestBody MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO)
+            throws MovementNotFoundException, MovementValidationException, BudgetExceededException, DocumentNumberNotFoundException {
         return ResponseEntity.ok(movementService.updateMovementStatus(movementUpdateStatusRequestDTO));
     }
 

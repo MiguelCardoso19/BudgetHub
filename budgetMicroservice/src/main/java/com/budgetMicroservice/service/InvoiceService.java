@@ -3,10 +3,7 @@ package com.budgetMicroservice.service;
 import com.budgetMicroservice.dto.AttachFileRequestDTO;
 import com.budgetMicroservice.dto.CustomPageableDTO;
 import com.budgetMicroservice.dto.InvoiceDTO;
-import com.budgetMicroservice.exception.FailedToUploadFileException;
-import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
-import com.budgetMicroservice.exception.InvoiceNotFoundException;
-import com.budgetMicroservice.exception.MovementNotFoundException;
+import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.model.Invoice;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
@@ -16,7 +13,7 @@ import java.util.UUID;
 
 public interface InvoiceService {
     void attachMultipartFileToInvoice(UUID id, MultipartFile file) throws InvoiceNotFoundException, FailedToUploadFileException;
-    InvoiceDTO create(InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException;
+    InvoiceDTO create(InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException, DocumentNumberNotFoundException;
     InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException, InvoiceAlreadyExistsException;
     void delete(UUID id) throws InvoiceNotFoundException;
     Page<InvoiceDTO> getAll(CustomPageableDTO customPageableDTO) throws JsonProcessingException;

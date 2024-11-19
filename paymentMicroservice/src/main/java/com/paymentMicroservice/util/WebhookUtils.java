@@ -31,7 +31,11 @@ public class WebhookUtils {
             }
         }
 
-        return Map.of("budgetTypeId", budgetTypeId, "budgetSubtypeId", budgetSubtypeId, "supplierId", supplierId);
+        if(budgetSubtypeId == null){
+            return Map.of("budgetTypeId", budgetTypeId, "supplierId", supplierId);
+        }
+
+        return Map.of("budgetSubtypeId", budgetSubtypeId, "supplierId", supplierId);
     }
 
     public static MovementUpdateStatusRequestDTO buildMovementUpdateRequestDTO(MovementStatus status, String documentNumber) {

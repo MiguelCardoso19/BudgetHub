@@ -1,10 +1,7 @@
 package com.budgetMicroservice.controller;
 
 import com.budgetMicroservice.dto.InvoiceDTO;
-import com.budgetMicroservice.exception.FailedToUploadFileException;
-import com.budgetMicroservice.exception.InvoiceAlreadyExistsException;
-import com.budgetMicroservice.exception.InvoiceNotFoundException;
-import com.budgetMicroservice.exception.MovementNotFoundException;
+import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.service.InvoiceService;
 import com.budgetMicroservice.util.PageableUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,7 +50,7 @@ public class InvoiceController {
             @ApiResponse(responseCode = "409", description = "Invoice already exists")
     })
     @PostMapping("/create")
-    public ResponseEntity<InvoiceDTO> createInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException {
+    public ResponseEntity<InvoiceDTO> createInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException, DocumentNumberNotFoundException {
         return ResponseEntity.ok(invoiceService.create(invoiceDTO));
     }
 

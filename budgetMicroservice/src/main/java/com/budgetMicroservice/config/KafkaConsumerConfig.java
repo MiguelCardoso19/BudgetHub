@@ -72,10 +72,12 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, "movement_update_status_group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
-        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, MovementUpdateStatusRequestDTO.class);
-        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new JsonDeserializer<>(MovementUpdateStatusRequestDTO.class));
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<MovementUpdateStatusRequestDTO> jsonDeserializer = new JsonDeserializer<>(MovementUpdateStatusRequestDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
     }
 
     @Bean

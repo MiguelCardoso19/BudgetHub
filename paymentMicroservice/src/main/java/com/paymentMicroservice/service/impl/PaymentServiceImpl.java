@@ -12,7 +12,9 @@ import com.paymentMicroservice.util.PaymentUtils;
 import com.paymentMicroservice.validator.PaymentValidator;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Charge;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
 import com.stripe.model.Token;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.PaymentIntentCancelParams;
@@ -21,6 +23,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void cancelPaymentIntent(PaymentConfirmationRequest request) throws StripeException, FailedToCancelPaymentException {
+    public void cancelPaymentIntent(PaymentConfirmationRequestDTO request) throws StripeException, FailedToCancelPaymentException {
         PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getClientSecret());
 
         if ("requires_payment_method".equals(paymentIntent.getStatus()) ||
@@ -101,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void confirmPaymentIntent(PaymentConfirmationRequest request) throws FailedToConfirmPaymentException, StripeException {
+    public void confirmPaymentIntent(PaymentConfirmationRequestDTO request) throws FailedToConfirmPaymentException, StripeException {
         PaymentIntentConfirmParams confirmParams = PaymentIntentConfirmParams.builder()
                 .setReturnUrl("http://localhost:8084/complete.html")
                 .build();
@@ -118,6 +121,13 @@ public class PaymentServiceImpl implements PaymentService {
             saveFailedPayment(request.getClientSecret());
             throw new FailedToConfirmPaymentException(paymentIntent.getId());
         }
+    }
+
+    @Override
+    public void refundCharge(RefundChargeRequestDTO request) throws StripeException {
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getPaymentIntentId());
+        Charge charge = Charge.retrieve(paymentIntent.getLatestCharge());
+        Refund.create(Map.of("charge", charge.getId()));
     }
 
     @Override

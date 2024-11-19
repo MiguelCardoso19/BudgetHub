@@ -2,7 +2,6 @@ package com.budgetMicroservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -16,7 +15,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "DTO representing an invoice, including details such as the date of emission, description, associated movement, and file data.")
 public class InvoiceDTO extends AbstractDTO {
-
     @NotNull
     @NotEmpty
     @Schema(description = "The date when the invoice was emitted.",
@@ -33,7 +31,6 @@ public class InvoiceDTO extends AbstractDTO {
             example = "123e4567-e89b-12d3-a456-426614174000", nullable = true)
     private UUID movementId;
 
-    @Lob
     @Schema(description = "The file content of the invoice, stored as a byte array.",
             nullable = true)
     private byte[] file;
@@ -41,4 +38,8 @@ public class InvoiceDTO extends AbstractDTO {
     @Schema(description = "The associated movement details for this invoice, if available.",
             nullable = true)
     private MovementDTO movement;
+
+    private String stripeReceiptUrl;
+
+    private String movementDocumentNumber;
 }

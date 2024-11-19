@@ -23,4 +23,5 @@ public interface MovementService {
     Page<MovementDTO> getMovementsByBudgetSubtype(MovementsByBudgetRequestDTO movementsByBudgetRequestDTO) throws Exception;
     void exportMovements(ExportMovementsRequestDTO request) throws IOException, MovementNotFoundException, GenerateExcelException;
     MovementStatus getMovementStatus(UUID id) throws MovementNotFoundException;
+    Movement getMovementByDocumentNumber(String movementDocumentNumber) throws DocumentNumberNotFoundException;
 }

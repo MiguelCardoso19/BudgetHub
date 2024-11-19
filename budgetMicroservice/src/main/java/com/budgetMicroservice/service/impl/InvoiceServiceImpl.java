@@ -11,7 +11,6 @@ import com.budgetMicroservice.service.MovementService;
 import com.budgetMicroservice.util.PageableUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -37,16 +36,26 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final KafkaTemplate<String, FailedToUploadFileException> kafkaFailedToUploadFileExceptionTemplate;
 
     @Override
+    @Transactional
     @KafkaListener(topics = "create-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
-    public InvoiceDTO create(InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException {
+    public InvoiceDTO create(InvoiceDTO invoiceDTO) throws InvoiceAlreadyExistsException, MovementNotFoundException, DocumentNumberNotFoundException {
         Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
+        Movement movement = null;
 
         if (invoiceDTO.getMovementId() != null) {
-            Movement movement = movementService.getMovementEntityById(invoiceDTO.getMovementId());
+            movement = movementService.getMovementEntityById(invoiceDTO.getMovementId());
+            invoice.setMovement(movement);
+        } else if (invoiceDTO.getMovementDocumentNumber() != null) {
+            movement = movementService.getMovementByDocumentNumber(invoiceDTO.getMovementDocumentNumber());
             invoice.setMovement(movement);
         }
 
         Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        if (movement != null) {
+            movement.setInvoice(savedInvoice);
+        }
+
         InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(savedInvoice);
         savedInvoiceDTO.setCorrelationId(invoiceDTO.getCorrelationId());
         kafkaInvoiceTemplate.send("invoice-response", savedInvoiceDTO);

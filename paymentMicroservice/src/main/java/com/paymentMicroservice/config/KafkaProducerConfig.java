@@ -3,6 +3,7 @@ package com.paymentMicroservice.config;
 import com.paymentMicroservice.dto.InvoiceDTO;
 import com.paymentMicroservice.dto.MovementDTO;
 import com.paymentMicroservice.dto.MovementUpdateStatusRequestDTO;
+import com.paymentMicroservice.dto.NotificationRequestDTO;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.UUIDSerializer;
@@ -78,5 +79,19 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, MovementUpdateStatusRequestDTO> kafkaMovementUpdateStatusRequestTemplate() {
         return new KafkaTemplate<>(MovementUpdateStatusRequestProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, NotificationRequestDTO> notificationRequestProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, NotificationRequestDTO> notificationRequestKafkaTemplate() {
+        return new KafkaTemplate<>(notificationRequestProducerFactory());
     }
 }

@@ -12,7 +12,6 @@ import com.budgetMicroservice.util.PageableUtils;
 import com.budgetMicroservice.validator.MovementValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -28,7 +27,6 @@ import java.util.*;
 import static com.budgetMicroservice.enumerator.MovementStatus.*;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
 public class MovementServiceImpl implements MovementService {
     private final BudgetSubtypeService budgetSubtypeService;
@@ -84,7 +82,9 @@ public class MovementServiceImpl implements MovementService {
 
         if (movementDTO.getStatus().equals(SUCCEEDED)) {
             movementUtils.adjustBudgetAmounts(budgetSubtypeService, budgetTypeService, previousMovement, movementDTO);
-        } else if (movementDTO.getStatus().equals(CANCELED) && previousMovement.getStatus().equals(SUCCEEDED)) {
+        } else if (         movementDTO.getStatus().equals(CANCELED) ||
+                            movementDTO.getStatus().equals(REFUNDED) &&
+                            previousMovement.getStatus().equals(SUCCEEDED)) {
             movementUtils.removeMovementValueFromBudget(previousMovement, budgetSubtypeService, budgetTypeService);
         }
 
@@ -148,6 +148,7 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
+    @Transactional
     @KafkaListener(topics = "update-movement-status", groupId = "movement_update_status_group", concurrency = "10", containerFactory = "movementUpdateStatusRequestKafkaContainerFactory")
     public MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException, BudgetExceededException, DocumentNumberNotFoundException {
         Movement movement;
@@ -155,19 +156,21 @@ public class MovementServiceImpl implements MovementService {
         if (movementUpdateStatusRequestDTO.getId() != null) {
             movement = findById(movementUpdateStatusRequestDTO.getId());
         } else {
-            movement = movementRepository.findByDocumentNumber(movementUpdateStatusRequestDTO.getDocumentNumber())
-                    .orElseThrow(() -> new DocumentNumberNotFoundException(movementUpdateStatusRequestDTO.getDocumentNumber()));
+            movement = getMovementByDocumentNumber(movementUpdateStatusRequestDTO.getDocumentNumber());
         }
 
-        movement.setStatus(movementUpdateStatusRequestDTO.getStatus());
         MovementDTO movementDTO = movementMapper.toDTO(movement);
         movementDTO.setCorrelationId(movementUpdateStatusRequestDTO.getCorrelationId());
 
         if (movementUpdateStatusRequestDTO.getStatus().equals(SUCCEEDED)) {
             movementUtils.updateSpentAmounts(movementDTO, budgetSubtypeService, budgetTypeService, movement, movement.getTotalValue());
-        } else if (movementUpdateStatusRequestDTO.getStatus().equals(CANCELED) && movement.getStatus().equals(SUCCEEDED)) {
+        } else if (        movementUpdateStatusRequestDTO.getStatus().equals(CANCELED) ||
+                           movementUpdateStatusRequestDTO.getStatus().equals(REFUNDED) &&
+                           movement.getStatus().equals(SUCCEEDED)) {
             movementUtils.removeMovementValueFromBudget(movement, budgetSubtypeService, budgetTypeService);
         }
+
+        movement.setStatus(movementUpdateStatusRequestDTO.getStatus());
         movementRepository.save(movement);
         MovementDTO movementDTOToSend = movementMapper.toDTO(movement);
         kafkaMovementTemplate.send("movement-response", movementDTOToSend);
@@ -196,14 +199,17 @@ public class MovementServiceImpl implements MovementService {
         }
     }
 
-    /**
-     * IMPLEMENT PAYMENT SERVICE
-     */
     @Override
     @KafkaListener(topics = "movement-status-request", groupId = "uuid_group", concurrency = "10")
     public MovementStatus getMovementStatus(UUID id) throws MovementNotFoundException {
         Movement movement = findById(id);
         return movement.getStatus();
+    }
+
+    @Override
+    public Movement getMovementByDocumentNumber(String movementDocumentNumber) throws DocumentNumberNotFoundException {
+        return movementRepository.findByDocumentNumber(movementDocumentNumber)
+                .orElseThrow(() -> new DocumentNumberNotFoundException(movementDocumentNumber));
     }
 
     private Page<MovementDTO> getMovementsByBudgetId(MovementsByBudgetRequestDTO requestDTO, boolean isBudgetType, String exceptionType) throws Exception {
