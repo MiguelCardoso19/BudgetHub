@@ -1,6 +1,5 @@
 package com.paymentMicroservice.service.impl;
 
-import com.google.gson.Gson;
 import com.paymentMicroservice.dto.*;
 import com.paymentMicroservice.exception.BudgetExceededException;
 import com.paymentMicroservice.exception.FailedToCancelPaymentException;
@@ -23,10 +22,11 @@ import com.stripe.param.PaymentIntentCreateParams;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +45,12 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentValidator paymentValidator;
     private final FailedPaymentRepository failedPaymentRepository;
     private final RedissonClient redissonClient;
-
-    private final Gson gson = new Gson();
+    private final KafkaTemplate<String, CreatePaymentResponseDTO> kafkaCreatePaymentResponseTemplate;
+    private final KafkaTemplate<String, String> kafkaStringTemplate;
+    private final KafkaTemplate<String, StripeCardTokenDTO> kafkaStripeCardTokenTemplate;
+    private final KafkaTemplate<String, StripeSepaTokenDTO> kafkaStripeSepaTokenTemplate;
+    private final KafkaTemplate<String, FailedToCancelPaymentException> kafkaFailedToCancelPaymentExceptionTemplate;
+    private final KafkaTemplate<String, FailedToConfirmPaymentException> kafkaFailedToConfirmPaymentExceptionTemplate;
 
     @Value("${STRIPE_PRIVATE_KEY}")
     private String STRIPE_PRIVATE_KEY;
@@ -62,76 +66,78 @@ public class PaymentServiceImpl implements PaymentService {
         Stripe.apiKey = STRIPE_PRIVATE_KEY;
     }
 
-    // String to make JS frontend happy
     @Override
-    public String createPaymentIntent(CreatePaymentDTO createPaymentDTO) throws StripeException, BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
+    @KafkaListener(topics = "create-payment-intent-topic", groupId = "create_payment_group", concurrency = "10", containerFactory = "createPaymentRequestKafkaListenerContainerFactory")
+    public void createPaymentIntent(CreatePaymentDTO createPaymentDTO) throws StripeException, BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
         paymentValidator.validateFundsForPayment(createPaymentDTO);
 
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(PaymentUtils.calculateAmount(createPaymentDTO) * 100L)
                 .setReceiptEmail(createPaymentDTO.getReceiptEmail())
-//                .addPaymentMethodType("card")
-//                .addPaymentMethodType("sepa_debit")
-//                .addPaymentMethodType("multibanco")
-//                .addPaymentMethodType("paypal")
-//                .addPaymentMethodType("revolut_pay")
-//                .setCurrency("EUR")
                 .putAllMetadata(PaymentUtils.buildMetadata(createPaymentDTO))
                 .setCurrency(createPaymentDTO.getCurrency())
                 .setPaymentMethod(createPaymentDTO.getPaymentMethodId())
                 .build();
 
         RequestOptions requestOptions = RequestOptions.builder()
-                .setIdempotencyKey(UUID.randomUUID().toString())
+                .setIdempotencyKey(createPaymentDTO.getCorrelationId().toString())
                 .build();
 
         PaymentIntent paymentIntent = PaymentIntent.create(params, requestOptions);
-
-        CreatePaymentResponseDTO paymentResponse = new CreatePaymentResponseDTO(paymentIntent.getClientSecret(), paymentIntent.getId());
-        return gson.toJson(paymentResponse);
+        kafkaCreatePaymentResponseTemplate.send("create-payment-intent-response-topic", new CreatePaymentResponseDTO(paymentIntent.getId(), createPaymentDTO.getCorrelationId()));
     }
 
     @Override
-    public void cancelPaymentIntent(PaymentConfirmationRequestDTO request) throws StripeException, FailedToCancelPaymentException {
-        PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getClientSecret());
+    @KafkaListener(topics = "cancel-payment-intent-topic", groupId = "payment_action_request_group", concurrency = "10", containerFactory = "paymentActionRequestKafkaListenerContainerFactory")
+    public void cancelPaymentIntent(PaymentActionRequestDTO request) throws StripeException, FailedToCancelPaymentException {
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getPaymentIntentId());
 
         if ("requires_payment_method".equals(paymentIntent.getStatus()) ||
                 "requires_confirmation".equals(paymentIntent.getStatus())) {
             paymentIntent.cancel(PaymentIntentCancelParams.builder().build());
+            kafkaStringTemplate.send("payment-action-success-response-topic", request.getPaymentIntentId());
         } else {
-            throw new FailedToCancelPaymentException(request.getClientSecret().substring(0, request.getClientSecret().indexOf("_")));
+            kafkaFailedToCancelPaymentExceptionTemplate.send("failed-to-cancel-payment-response", new FailedToCancelPaymentException(request.getPaymentIntentId()));
+            throw new FailedToCancelPaymentException(request.getPaymentIntentId());
         }
     }
 
     @Override
-    public void confirmPaymentIntent(PaymentConfirmationRequestDTO request) throws FailedToConfirmPaymentException, StripeException {
+    @KafkaListener(topics = "confirm-payment-intent-topic", groupId = "payment_action_request_group", concurrency = "10", containerFactory = "paymentActionRequestKafkaListenerContainerFactory")
+    public void confirmPaymentIntent(PaymentActionRequestDTO request) throws FailedToConfirmPaymentException, StripeException {
         PaymentIntentConfirmParams confirmParams = PaymentIntentConfirmParams.builder()
                 .setReturnUrl("http://localhost:8084/complete.html")
                 .build();
 
-        PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getClientSecret());
+        PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getPaymentIntentId());
 
         if ("canceled".equals(paymentIntent.getStatus())) {
+            kafkaFailedToConfirmPaymentExceptionTemplate.send("failed-to-confirm-payment-response", new FailedToConfirmPaymentException(paymentIntent.getId()));
             throw new FailedToConfirmPaymentException(paymentIntent.getId());
         }
 
         try {
             paymentIntent.confirm(confirmParams);
+            kafkaStringTemplate.send("payment-action-success-response-topic", request.getPaymentIntentId());
         } catch (StripeException e) {
-            saveFailedPayment(request.getClientSecret());
+            PaymentUtils.saveFailedPayment(request.getPaymentIntentId(), failedPaymentRepository);
+            kafkaFailedToConfirmPaymentExceptionTemplate.send("failed-to-confirm-payment-response", new FailedToConfirmPaymentException(paymentIntent.getId()));
             throw new FailedToConfirmPaymentException(paymentIntent.getId());
         }
     }
 
     @Override
+    @KafkaListener(topics = "refund-charge-topic", groupId = "refund_charge_request_group", concurrency = "10", containerFactory = "refundChargeRequestKafkaListenerContainerFactory")
     public void refundCharge(RefundChargeRequestDTO request) throws StripeException {
         PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getPaymentIntentId());
         Charge charge = Charge.retrieve(paymentIntent.getLatestCharge());
         Refund.create(Map.of("charge", charge.getId()));
+        kafkaStringTemplate.send("refund-charge-success-response-topic", request.getPaymentIntentId());
     }
 
     @Override
-    public StripeCardTokenDTO createCardToken(StripeCardTokenDTO model) throws StripeException {
+    @KafkaListener(topics = "create-card-token-topic", groupId = "create_card_token_group", concurrency = "10", containerFactory = "stripeCardTokenKafkaListenerContainerFactory")
+    public void createCardToken(StripeCardTokenDTO model) throws StripeException {
         Map<String, Object> card = new HashMap<>();
         card.put("number", model.getCardNumber());
         card.put("exp_month", Integer.parseInt(model.getExpMonth()));
@@ -144,11 +150,12 @@ public class PaymentServiceImpl implements PaymentService {
             model.setSuccess(true);
             model.setToken(token.getId());
         }
-        return model;
+        kafkaStripeCardTokenTemplate.send("create-card-token-response-topic", model);
     }
 
     @Override
-    public StripeSepaTokenDTO createSepaToken(StripeSepaTokenDTO model) throws StripeException {
+    @KafkaListener(topics = "create-sepa-token-topic", groupId = "create_sepa_token_group", concurrency = "10", containerFactory = "stripeSepaTokenKafkaListenerContainerFactory")
+    public void createSepaToken(StripeSepaTokenDTO model) throws StripeException {
         Map<String, Object> sepaDebitParams = new HashMap<>();
         sepaDebitParams.put("iban", model.getIban());
         sepaDebitParams.put("account_holder_name", model.getAccountHolderName());
@@ -160,7 +167,7 @@ public class PaymentServiceImpl implements PaymentService {
             model.setSuccess(true);
             model.setToken(token.getId());
         }
-        return model;
+        kafkaStripeSepaTokenTemplate.send("create-sepa-token-response-topic", model);
     }
 
     @Scheduled(cron = "${RETRY_DELAY}")
@@ -209,14 +216,5 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
         return false;
-    }
-
-    private void saveFailedPayment(String clientSecret) {
-        FailedPayment failedPayment = new FailedPayment();
-        failedPayment.setClientSecret(clientSecret);
-        failedPayment.setRetryAttempts(0);
-        failedPayment.setLastAttemptTime(LocalDateTime.now());
-        failedPayment.setRetryable(true);
-        failedPaymentRepository.save(failedPayment);
     }
 }

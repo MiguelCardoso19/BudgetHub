@@ -15,5 +15,8 @@ public class NotificationRequestDTO {
             example = "recipient@example.com", required = true)
     private String recipient;
 
+    @Schema(description = "A URL link to the Stripe receipt, allowing users to view or download their receipt.",
+            example = "https://stripe.com/receipts/example123",
+            nullable = true)
     private String stripeReceiptUrl;
 }

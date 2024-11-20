@@ -41,4 +41,8 @@ public class InvoiceDTO extends AbstractDTO {
     @Schema(description = "The associated movement details for this invoice, if available.",
             nullable = true)
     private MovementDTO movement;
+
+    private String stripeReceiptUrl;
+
+    private String movementDocumentNumber;
 }

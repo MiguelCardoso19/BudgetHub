@@ -1,7 +1,6 @@
 package com.budgetMicroservice.service;
 
 import com.budgetMicroservice.dto.*;
-import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.model.Movement;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,6 +21,5 @@ public interface MovementService {
     Page<MovementDTO> getMovementsByBudgetType(MovementsByBudgetRequestDTO movementsByBudgetRequestDTO) throws Exception;
     Page<MovementDTO> getMovementsByBudgetSubtype(MovementsByBudgetRequestDTO movementsByBudgetRequestDTO) throws Exception;
     void exportMovements(ExportMovementsRequestDTO request) throws IOException, MovementNotFoundException, GenerateExcelException;
-    MovementStatus getMovementStatus(UUID id) throws MovementNotFoundException;
     Movement getMovementByDocumentNumber(String movementDocumentNumber) throws DocumentNumberNotFoundException;
 }

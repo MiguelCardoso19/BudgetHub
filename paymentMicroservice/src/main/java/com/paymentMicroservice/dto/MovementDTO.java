@@ -87,4 +87,8 @@ public class MovementDTO {
     @Schema(description = "Total value of the movement, including IVA (VAT).",
             example = "1210.00", nullable = true)
     private Double totalValue;
+
+    @Schema(description = "Invoice details associated with the movement, if available.",
+            nullable = true)
+    private InvoiceDTO invoice;
 }

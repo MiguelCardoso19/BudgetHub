@@ -3,7 +3,10 @@ package com.paymentMicroservice.util;
 import com.google.gson.Gson;
 import com.paymentMicroservice.dto.CreatePaymentDTO;
 import com.paymentMicroservice.dto.CreatePaymentItemDTO;
+import com.paymentMicroservice.model.FailedPayment;
+import com.paymentMicroservice.repository.FailedPaymentRepository;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,5 +55,14 @@ public class PaymentUtils {
         metadata.put("currency", createPaymentDTO.getCurrency());
         metadata.put("items", gson.toJson(itemsMetadata));
         return metadata;
+    }
+
+    public static void saveFailedPayment(String clientSecret, FailedPaymentRepository failedPaymentRepository) {
+        FailedPayment failedPayment = new FailedPayment();
+        failedPayment.setClientSecret(clientSecret);
+        failedPayment.setRetryAttempts(0);
+        failedPayment.setLastAttemptTime(LocalDateTime.now());
+        failedPayment.setRetryable(true);
+        failedPaymentRepository.save(failedPayment);
     }
 }

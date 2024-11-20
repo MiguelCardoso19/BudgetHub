@@ -34,6 +34,8 @@ public enum ErrorMessage {
     FAILED_TO_GENERATE_EXCEL("FAILED_TO_GENERATE_EXCEL", "Failed to generate the Excel file", CONFLICT),
     FAILED_TO_SEND_EMAIL("FAILED_TO_SEND_EMAIL", "Failed to send email to: %s", CONFLICT),
     BUDGET_SUBTYPE_NOT_FOUND("BUDGET_SUBTYPE_NOT_FOUND", "Budget subtype not found with ID: %s", NOT_FOUND),
+    FAILED_TO_CANCEL_PAYMENT("FAILED_TO_CANCEL_PAYMENT", "Failed to cancel the payment", CONFLICT),
+    FAILED_TO_CONFIRM_PAYMENT("FAILED_TO_CONFIRM_PAYMENT", "Failed to confirm the payment", CONFLICT),
     OPTIMISTIC_LOCKING_FAILURE("OPTIMISTIC_LOCKING_FAILURE", "This entity has been modified by another transaction", CONFLICT),
     BUDGET_EXCEEDED("BUDGET_EXCEEDED", "%s", BAD_REQUEST);
 

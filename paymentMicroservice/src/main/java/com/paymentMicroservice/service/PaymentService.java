@@ -10,11 +10,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public interface PaymentService {
-    String createPaymentIntent(CreatePaymentDTO createPaymentDTO) throws StripeException, BudgetExceededException, ExecutionException, InterruptedException, TimeoutException;
-    void cancelPaymentIntent(PaymentConfirmationRequestDTO request) throws StripeException, FailedToCancelPaymentException;
-    void confirmPaymentIntent(PaymentConfirmationRequestDTO request) throws StripeException, FailedToConfirmPaymentException;
-    StripeCardTokenDTO createCardToken(StripeCardTokenDTO model) throws StripeException;
-    StripeSepaTokenDTO createSepaToken(StripeSepaTokenDTO model) throws StripeException;
+    void createPaymentIntent(CreatePaymentDTO createPaymentDTO) throws StripeException, BudgetExceededException, ExecutionException, InterruptedException, TimeoutException;
+    void cancelPaymentIntent(PaymentActionRequestDTO request) throws StripeException, FailedToCancelPaymentException;
+    void confirmPaymentIntent(PaymentActionRequestDTO request) throws StripeException, FailedToConfirmPaymentException;
+    void createCardToken(StripeCardTokenDTO model) throws StripeException;
+    void createSepaToken(StripeSepaTokenDTO model) throws StripeException;
     void retryFailedPayments() throws StripeException;
     void refundCharge(RefundChargeRequestDTO request) throws StripeException;
 }

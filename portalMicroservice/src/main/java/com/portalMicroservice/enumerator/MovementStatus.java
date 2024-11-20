@@ -4,6 +4,8 @@ public enum MovementStatus {
     ACCEPTED,
     PROCESSING,
     REFUSED,
+    CANCELED,
     FAILED,
-    PAID
+    REFUNDED,
+    SUCCEEDED
 }

@@ -1,9 +1,9 @@
 package com.paymentMicroservice.config;
 
-import com.paymentMicroservice.dto.InvoiceDTO;
-import com.paymentMicroservice.dto.MovementDTO;
-import com.paymentMicroservice.dto.MovementUpdateStatusRequestDTO;
-import com.paymentMicroservice.dto.NotificationRequestDTO;
+import com.paymentMicroservice.dto.*;
+import com.paymentMicroservice.exception.BudgetExceededException;
+import com.paymentMicroservice.exception.FailedToCancelPaymentException;
+import com.paymentMicroservice.exception.FailedToConfirmPaymentException;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.UUIDSerializer;
@@ -54,6 +54,20 @@ public class KafkaProducerConfig {
     }
 
     @Bean
+    public ProducerFactory<String, String> stringProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, String> stringKafkaTemplate() {
+        return new KafkaTemplate<>(stringProducerFactory());
+    }
+
+    @Bean
     public ProducerFactory<String, InvoiceDTO> invoiceProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -93,5 +107,89 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, NotificationRequestDTO> notificationRequestKafkaTemplate() {
         return new KafkaTemplate<>(notificationRequestProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, CreatePaymentResponseDTO> createPaymentResponseProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, CreatePaymentResponseDTO> createPaymentResponseKafkaTemplate() {
+        return new KafkaTemplate<>(createPaymentResponseProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, StripeCardTokenDTO> stripeCardTokenProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, StripeCardTokenDTO> stripeCardTokenKafkaTemplate() {
+        return new KafkaTemplate<>(stripeCardTokenProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, StripeSepaTokenDTO> stripeSepaTokenProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, StripeSepaTokenDTO> stripeSepaTokenKafkaTemplate() {
+        return new KafkaTemplate<>(stripeSepaTokenProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, FailedToCancelPaymentException> failedToCancelPaymentExceptionProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, FailedToCancelPaymentException> stripeFailedToCancelPaymentExceptionKafkaTemplate() {
+        return new KafkaTemplate<>(failedToCancelPaymentExceptionProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, FailedToConfirmPaymentException> failedToConfirmPaymentExceptionProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, FailedToConfirmPaymentException> stripeFailedToConfirmPaymentExceptionKafkaTemplate() {
+        return new KafkaTemplate<>(failedToConfirmPaymentExceptionProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, BudgetExceededException> budgetExceededExceptionProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, BudgetExceededException> budgetExceededExceptionKafkaTemplate() {
+        return new KafkaTemplate<>(budgetExceededExceptionProducerFactory());
     }
 }

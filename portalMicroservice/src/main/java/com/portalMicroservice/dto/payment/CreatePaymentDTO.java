@@ -1,12 +1,10 @@
-package com.paymentMicroservice.dto;
+package com.portalMicroservice.dto.payment;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.gson.annotations.SerializedName;
-import com.paymentMicroservice.enumerators.MovementType;
+import com.portalMicroservice.enumerator.MovementType;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -22,14 +20,12 @@ public class CreatePaymentDTO {
     @NotNull
     String paymentMethodId;
 
-    @Email
     String receiptEmail;
 
     @NotNull
     String description;
 
     @NotNull
-    @SerializedName("items")
     CreatePaymentItemDTO[] items;
 
     @NotNull

@@ -2,7 +2,6 @@ package com.portalMicroservice.service.impl;
 
 import com.portalMicroservice.dto.budget.CustomPageDTO;
 import com.portalMicroservice.dto.budget.MovementDTO;
-import com.portalMicroservice.exception.GenericException;
 import com.portalMicroservice.exception.budget.*;
 import com.portalMicroservice.service.MovementEventListenerService;
 import com.portalMicroservice.service.MovementService;
@@ -20,49 +19,37 @@ public class MovementEventListenerServiceImpl implements MovementEventListenerSe
 
     @Override
     @KafkaListener(topics = "movement-response", groupId = "movement_response_group", concurrency = "10", containerFactory = "movementKafkaListenerContainerFactory")
-    public void handleMovementResponse(MovementDTO movementDTO) throws GenericException {
+    public void handleMovementResponse(MovementDTO movementDTO) {
         CompletableFuture<MovementDTO> future = movementService.removePendingRequestById(movementDTO.getCorrelationId(), movementDTO.getId());
-
         if (future != null) {
             future.complete(movementDTO);
-        } else {
-            throw new GenericException();
         }
     }
 
     @Override
     @KafkaListener(topics = "movement-page-response", groupId = "pageable_response_group", concurrency = "10", containerFactory = "customPageKafkaListenerContainerFactory")
-    public void handleMovementPageResponse(CustomPageDTO customPageDTO) throws GenericException {
+    public void handleMovementPageResponse(CustomPageDTO customPageDTO) {
         CompletableFuture<CustomPageDTO> future = movementService.removePendingPageRequestById(customPageDTO.getPageable().getCorrelationId());
-
         if (future != null) {
             future.complete(customPageDTO);
-        } else {
-            throw new GenericException();
         }
     }
 
     @Override
     @KafkaListener(topics = "movement-delete-success-response", groupId = "movement_delete_success_response_group", concurrency = "10")
-    public void handleDeleteSuccess(UUID id) throws GenericException {
+    public void handleDeleteSuccess(UUID id) {
         CompletableFuture<MovementDTO> future = movementService.removePendingRequestById(id, null);
-
         if (future != null) {
             future.complete(null);
-        } else {
-            throw new GenericException();
         }
     }
 
     @Override
     @KafkaListener(topics = "export-report-success-response", groupId = "export_report_success_response_group", concurrency = "10")
-    public void handleExportReportSuccess(UUID id) throws GenericException {
+    public void handleExportReportSuccess(UUID id) {
         CompletableFuture<MovementDTO> future = movementService.removePendingRequestById(id, null);
-
         if (future != null) {
             future.complete(null);
-        } else {
-            throw new GenericException();
         }
     }
 
@@ -70,7 +57,6 @@ public class MovementEventListenerServiceImpl implements MovementEventListenerSe
     @KafkaListener(topics = "generate-excel-exception-response", groupId = "generate_excel_response_group", concurrency = "10", containerFactory = "generateExcelExceptionKafkaListenerContainerFactory")
     public void handleGenerateExcelExceptionResponse(GenerateExcelException errorPayload) {
         CompletableFuture<MovementDTO> future = movementService.removePendingRequestById(errorPayload.getCorrelationId(), null);
-
         if (future != null) {
             future.completeExceptionally(new GenerateExcelException());
         }
@@ -80,7 +66,6 @@ public class MovementEventListenerServiceImpl implements MovementEventListenerSe
     @KafkaListener(topics = "movement-not-found-exception-response", groupId = "movement_not_found_response_group", concurrency = "10", containerFactory = "movementNotFoundExceptionKafkaListenerContainerFactory")
     public void handleNotFoundExceptionResponse(MovementNotFoundException errorPayload) {
         CompletableFuture<MovementDTO> future = movementService.removePendingRequestById(UUID.fromString(errorPayload.getId()), null);
-
         if (future != null) {
             future.completeExceptionally(new MovementNotFoundException(errorPayload.getId()));
         }
@@ -90,7 +75,6 @@ public class MovementEventListenerServiceImpl implements MovementEventListenerSe
     @KafkaListener(topics = "movement-validation-exception-response", groupId = "movement_validation_response_group", concurrency = "10", containerFactory = "movementValidationExceptionKafkaListenerContainerFactory")
     public void handleValidationExceptionResponse(MovementValidationException errorPayload) {
         CompletableFuture<MovementDTO> future = movementService.removePendingRequestById(errorPayload.getId(), null);
-
         if (future != null) {
             String formatedErrorMessage = errorPayload.getMessage().substring(errorPayload.getMessage().indexOf("[") + 1, errorPayload.getMessage().indexOf("]"));
             future.completeExceptionally(new MovementValidationException(formatedErrorMessage));
@@ -101,7 +85,6 @@ public class MovementEventListenerServiceImpl implements MovementEventListenerSe
     @KafkaListener(topics = "movement-budget-exceeded-exception-response", groupId = "movement_budget_exceeded_response_group", concurrency = "10", containerFactory = "movementBudgetExceededExceptionKafkaListenerContainerFactory")
     public void handleBudgetExceededExceptionExceptionResponse(BudgetExceededException errorPayload) {
         CompletableFuture<MovementDTO> future = movementService.removePendingRequestById(errorPayload.getId(), null);
-
         if (future != null) {
             future.completeExceptionally(new MovementValidationException(errorPayload.getMessage()));
         }
@@ -111,7 +94,6 @@ public class MovementEventListenerServiceImpl implements MovementEventListenerSe
     @KafkaListener(topics = "movement-not-found-for-budget-type-exception-response", groupId = "movement_not_found_for_budget_type_response_group", concurrency = "10", containerFactory = "movementsNotFoundForBudgetTypeExceptionKafkaListenerContainerFactory")
     public void handleMovementsNotFoundForBudgetTypeExceptionResponse(MovementsNotFoundForBudgetTypeException errorPayload) {
         CompletableFuture<CustomPageDTO> future = movementService.removePendingPageRequestById(UUID.fromString(errorPayload.getCorrelationId()));
-
         if (future != null) {
             future.completeExceptionally(new MovementsNotFoundForBudgetTypeException(errorPayload.getBudgetId()));
         }
@@ -121,7 +103,6 @@ public class MovementEventListenerServiceImpl implements MovementEventListenerSe
     @KafkaListener(topics = "movement-not-found-for-budget-subtype-exception-response", groupId = "movement_not_found_for_budget_subtype_response_group", concurrency = "10", containerFactory = "movementsNotFoundForBudgetSubtypeExceptionKafkaListenerContainerFactory")
     public void handleMovementsNotFoundForBudgetSubtypeExceptionResponse(MovementsNotFoundForBudgetSubtypeException errorPayload) {
         CompletableFuture<CustomPageDTO> future = movementService.removePendingPageRequestById(UUID.fromString(errorPayload.getCorrelationId()));
-
         if (future != null) {
             future.completeExceptionally(new MovementsNotFoundForBudgetSubtypeException(errorPayload.getBudgetId()));
         }

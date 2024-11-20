@@ -8,4 +8,5 @@ public interface NotificationService {
     void handleEmailNotificationWithAttachmentRequest(NotificationRequestDTO notificationRequestDTO) throws JsonProcessingException, FailedToSendEmailException;
     void retryFailedEmails() throws JsonProcessingException, FailedToSendEmailException;
     void handleEmailNotificationResetPassword(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException;
+    void handleEmailNotificationStripeReceipt(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException;
 }

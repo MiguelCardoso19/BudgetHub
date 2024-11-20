@@ -3,6 +3,7 @@ package com.budgetMicroservice.service.impl;
 import com.budgetMicroservice.dto.*;
 import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.exception.*;
+import com.budgetMicroservice.mapper.InvoiceMapper;
 import com.budgetMicroservice.mapper.MovementMapper;
 import com.budgetMicroservice.model.*;
 import com.budgetMicroservice.repository.MovementRepository;
@@ -36,6 +37,7 @@ public class MovementServiceImpl implements MovementService {
     private final MovementValidator movementValidator;
     private final MovementUtils movementUtils;
     private final MovementMapper movementMapper;
+    private final InvoiceMapper invoiceMapper;
     private final MovementRepository movementRepository;
     private final KafkaTemplate<String, MovementDTO> kafkaMovementTemplate;
     private final KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
@@ -82,9 +84,9 @@ public class MovementServiceImpl implements MovementService {
 
         if (movementDTO.getStatus().equals(SUCCEEDED)) {
             movementUtils.adjustBudgetAmounts(budgetSubtypeService, budgetTypeService, previousMovement, movementDTO);
-        } else if (         movementDTO.getStatus().equals(CANCELED) ||
-                            movementDTO.getStatus().equals(REFUNDED) &&
-                            previousMovement.getStatus().equals(SUCCEEDED)) {
+        } else if (movementDTO.getStatus().equals(CANCELED) ||
+                movementDTO.getStatus().equals(REFUNDED) &&
+                        previousMovement.getStatus().equals(SUCCEEDED)) {
             movementUtils.removeMovementValueFromBudget(previousMovement, budgetSubtypeService, budgetTypeService);
         }
 
@@ -164,9 +166,9 @@ public class MovementServiceImpl implements MovementService {
 
         if (movementUpdateStatusRequestDTO.getStatus().equals(SUCCEEDED)) {
             movementUtils.updateSpentAmounts(movementDTO, budgetSubtypeService, budgetTypeService, movement, movement.getTotalValue());
-        } else if (        movementUpdateStatusRequestDTO.getStatus().equals(CANCELED) ||
-                           movementUpdateStatusRequestDTO.getStatus().equals(REFUNDED) &&
-                           movement.getStatus().equals(SUCCEEDED)) {
+        } else if (movementUpdateStatusRequestDTO.getStatus().equals(CANCELED) ||
+                movementUpdateStatusRequestDTO.getStatus().equals(REFUNDED) &&
+                        movement.getStatus().equals(SUCCEEDED)) {
             movementUtils.removeMovementValueFromBudget(movement, budgetSubtypeService, budgetTypeService);
         }
 
@@ -200,16 +202,15 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Override
-    @KafkaListener(topics = "movement-status-request", groupId = "uuid_group", concurrency = "10")
-    public MovementStatus getMovementStatus(UUID id) throws MovementNotFoundException {
-        Movement movement = findById(id);
-        return movement.getStatus();
-    }
-
-    @Override
+    @KafkaListener(topics = "get-movement-by-document-number", groupId = "string_group", concurrency = "10")
     public Movement getMovementByDocumentNumber(String movementDocumentNumber) throws DocumentNumberNotFoundException {
-        return movementRepository.findByDocumentNumber(movementDocumentNumber)
+        Movement movement = movementRepository.findByDocumentNumber(movementDocumentNumber)
                 .orElseThrow(() -> new DocumentNumberNotFoundException(movementDocumentNumber));
+
+        MovementDTO movementDTO = movementMapper.toDTO(movement);
+        movementDTO.setInvoice(invoiceMapper.toDTO(movement.getInvoice()));
+        kafkaMovementTemplate.send("movement-payment-response", movementDocumentNumber, movementDTO);
+        return movement;
     }
 
     private Page<MovementDTO> getMovementsByBudgetId(MovementsByBudgetRequestDTO requestDTO, boolean isBudgetType, String exceptionType) throws Exception {

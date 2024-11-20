@@ -27,6 +27,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Data
 public class PaymentValidator {
     private final KafkaTemplate<String, UUID> kafkaUuidTemplate;
+    private final KafkaTemplate<String, BudgetExceededException> kafkaBudgetExceededExceptionTemplate;
 
     private final ConcurrentHashMap<UUID, CompletableFuture<BudgetSubtypeDTO>> pendingSubtypeRequests = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, CompletableFuture<BudgetTypeDTO>> pendingTypeRequests = new ConcurrentHashMap<>();
@@ -37,8 +38,8 @@ public class PaymentValidator {
     public void validateFundsForPayment(CreatePaymentDTO createPaymentDTO) throws BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
         Map<UUID, Long> budgetSubtypeTotals = calculateBudgetTotals(createPaymentDTO.getItems(), true);
         Map<UUID, Long> budgetTypeTotals = calculateBudgetTotals(createPaymentDTO.getItems(), false);
-        validateBudgetFunds(budgetSubtypeTotals, "find-budget-subtype-by-id", pendingSubtypeRequests, BudgetSubtypeDTO.class);
-        validateBudgetFunds(budgetTypeTotals, "find-budget-type-by-id", pendingTypeRequests, BudgetTypeDTO.class);
+        validateBudgetFunds(budgetSubtypeTotals, "find-budget-subtype-by-id", pendingSubtypeRequests, BudgetSubtypeDTO.class, createPaymentDTO.getCorrelationId());
+        validateBudgetFunds(budgetTypeTotals, "find-budget-type-by-id", pendingTypeRequests, BudgetTypeDTO.class, createPaymentDTO.getCorrelationId());
     }
 
     public CompletableFuture<BudgetTypeDTO> removePendingTypeRequestById(UUID id) {
@@ -49,7 +50,7 @@ public class PaymentValidator {
         return pendingSubtypeRequests.remove(id);
     }
 
-    private <T> void validateBudgetFunds(Map<UUID, Long> budgetTotals, String kafkaTopic, Map<UUID, CompletableFuture<T>> pendingRequests, Class<T> dtoClass) throws BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
+    private <T> void validateBudgetFunds(Map<UUID, Long> budgetTotals, String kafkaTopic, Map<UUID, CompletableFuture<T>> pendingRequests, Class<T> dtoClass, UUID correlationId) throws BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
         for (Map.Entry<UUID, Long> entry : budgetTotals.entrySet()) {
             UUID budgetID = entry.getKey();
             CompletableFuture<T> future = new CompletableFuture<>();
@@ -58,6 +59,7 @@ public class PaymentValidator {
 
             T dto = future.get(TIMEOUT_DURATION, SECONDS);
             if (dto != null && entry.getValue() > getAvailableFunds(dto)) {
+                kafkaBudgetExceededExceptionTemplate.send("payment-exceeded-available-funds-response", new BudgetExceededException(correlationId, getAvailableFunds(dto), (double) entry.getValue()));
                 throw new BudgetExceededException(getAvailableFunds(dto), (double) entry.getValue());
             }
         }

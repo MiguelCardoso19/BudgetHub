@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import static com.paymentMicroservice.enumerators.MovementStatus.*;
 
@@ -35,7 +37,7 @@ public class WebhookServiceImpl implements WebhookService {
     private String STRIPE_WEBHOOK_KEY;
 
     @Override
-    public String handleWebhookEvents(String payload, String sigHeader) throws JsonProcessingException, StripeException {
+    public String handleWebhookEvents(String payload, String sigHeader) throws JsonProcessingException, StripeException, ExecutionException, InterruptedException, TimeoutException {
         if (sigHeader == null) {
             log.warn("Missing signature header.");
             return "";
@@ -65,7 +67,7 @@ public class WebhookServiceImpl implements WebhookService {
         }
     }
 
-    private void handleEvent(Event event, StripeObject stripeObject) throws JsonProcessingException, StripeException {
+    private void handleEvent(Event event, StripeObject stripeObject) throws JsonProcessingException, StripeException, ExecutionException, InterruptedException, TimeoutException {
         switch (event.getType()) {
             case "payment_intent.created" -> handlePaymentIntentCreated((PaymentIntent) stripeObject);
             case "payment_intent.succeeded" -> handlePaymentIntentSucceeded((PaymentIntent) stripeObject);
@@ -119,7 +121,7 @@ public class WebhookServiceImpl implements WebhookService {
                 WebhookUtils.buildMovementUpdateRequestDTO(SUCCEEDED, charge.getPaymentIntent()));
     }
 
-    private void handleChargeRefund(Charge charge) {
+    private void handleChargeRefund(Charge charge) throws ExecutionException, InterruptedException, TimeoutException {
         log.info("Charge refunded with ID: {}", charge.getPaymentIntent());
         stripeInvoiceService.sendChargeRefundInvoice(charge.getReceiptUrl(), charge.getPaymentIntent(), charge.getReceiptEmail());
         kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status", charge.getPaymentIntent(),

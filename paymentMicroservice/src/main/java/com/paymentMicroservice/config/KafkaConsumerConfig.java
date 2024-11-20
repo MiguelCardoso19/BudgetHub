@@ -1,9 +1,6 @@
 package com.paymentMicroservice.config;
 
-import com.paymentMicroservice.dto.BudgetSubtypeDTO;
-import com.paymentMicroservice.dto.BudgetTypeDTO;
-import com.paymentMicroservice.dto.MovementDTO;
-import com.paymentMicroservice.dto.MovementUpdateStatusRequestDTO;
+import com.paymentMicroservice.dto.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -104,6 +101,111 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, MovementDTO> movementKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, MovementDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(movementConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, CreatePaymentDTO> createPaymentRequestConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "create_payment_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<CreatePaymentDTO> jsonDeserializer = new JsonDeserializer<>(CreatePaymentDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, CreatePaymentDTO> createPaymentRequestKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, CreatePaymentDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(createPaymentRequestConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, PaymentActionRequestDTO> paymentActionRequestConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "payment_action_request_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<PaymentActionRequestDTO> jsonDeserializer = new JsonDeserializer<>(PaymentActionRequestDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, PaymentActionRequestDTO> paymentActionRequestKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, PaymentActionRequestDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(paymentActionRequestConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, RefundChargeRequestDTO> refundChargeRequestConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "refund_charge_request_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<RefundChargeRequestDTO> jsonDeserializer = new JsonDeserializer<>(RefundChargeRequestDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, RefundChargeRequestDTO> refundChargeRequestKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, RefundChargeRequestDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(refundChargeRequestConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, StripeCardTokenDTO> stripeCardTokenConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "create_card_token_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<StripeCardTokenDTO> jsonDeserializer = new JsonDeserializer<>(StripeCardTokenDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, StripeCardTokenDTO> stripeCardTokenKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, StripeCardTokenDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(stripeCardTokenConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, StripeSepaTokenDTO> stripeSepaTokenConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "create_sepa_token_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<StripeSepaTokenDTO> jsonDeserializer = new JsonDeserializer<>(StripeSepaTokenDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, StripeSepaTokenDTO> stripeSepaTokenKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, StripeSepaTokenDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(stripeSepaTokenConsumerFactory());
         return factory;
     }
 }

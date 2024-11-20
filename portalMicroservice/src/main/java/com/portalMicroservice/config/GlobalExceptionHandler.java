@@ -5,6 +5,8 @@ import com.portalMicroservice.exception.*;
 import com.portalMicroservice.exception.authentication.*;
 import com.portalMicroservice.exception.budget.*;
 import com.portalMicroservice.exception.notification.FailedToSendEmailException;
+import com.portalMicroservice.exception.payment.FailedToCancelPaymentException;
+import com.portalMicroservice.exception.payment.FailedToConfirmPaymentException;
 import com.portalMicroservice.exception.portal.InvalidAuthorizationHeaderException;
 import com.portalMicroservice.exception.portal.InvalidTokenException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -192,5 +194,17 @@ public class GlobalExceptionHandler {
                 OPTIMISTIC_LOCKING_FAILURE.getStatus().value(),
                 OPTIMISTIC_LOCKING_FAILURE.getErrorCode());
         return new ResponseEntity<>(errorResponse, OPTIMISTIC_LOCKING_FAILURE.getStatus());
+    }
+
+    @ExceptionHandler(FailedToConfirmPaymentException.class)
+    public ResponseEntity<ErrorResponse> handleFailedToConfirmPaymentException(FailedToConfirmPaymentException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(FailedToCancelPaymentException.class)
+    public ResponseEntity<ErrorResponse> handleFailedToCancelPaymentException(FailedToCancelPaymentException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 }

@@ -11,7 +11,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +30,6 @@ import static java.util.concurrent.TimeUnit.HOURS;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final JavaMailSender emailSender;
@@ -42,15 +40,21 @@ public class NotificationServiceImpl implements NotificationService {
     private String EMAIL_RETRY_LOCK_KEY;
 
     @Override
-    @KafkaListener(topics = "notification-topic", groupId = "notification_group", containerFactory = "notificationRequestKafkaListenerContainerFactory")
+    @KafkaListener(topics = "notification-topic", groupId = "notification_group", concurrency = "10", containerFactory = "notificationRequestKafkaListenerContainerFactory")
     public void handleEmailNotificationWithAttachmentRequest(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException {
         handleEmailNotification(notificationRequestDTO, "export-report");
     }
 
     @Override
-    @KafkaListener(topics = "notification-reset-password-topic", groupId = "notification_group", containerFactory = "notificationRequestKafkaListenerContainerFactory")
+    @KafkaListener(topics = "notification-reset-password-topic", groupId = "notification_group", concurrency = "10", containerFactory = "notificationRequestKafkaListenerContainerFactory")
     public void handleEmailNotificationResetPassword(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException {
         handleEmailNotification(notificationRequestDTO, "reset-password");
+    }
+
+    @Override
+    @KafkaListener(topics = "notification-stripe-receipt", groupId = "notification_group", concurrency = "10", containerFactory = "notificationRequestKafkaListenerContainerFactory")
+    public void handleEmailNotificationStripeReceipt(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException {
+        handleEmailNotification(notificationRequestDTO, "stripe-receipt");
     }
 
     @Scheduled(cron = "${RETRY_DELAY}")
@@ -64,7 +68,6 @@ public class NotificationServiceImpl implements NotificationService {
                     List<Notification> failedNotifications = notificationRepository.findByStatus(FAILED);
 
                     for (Notification notification : failedNotifications) {
-                        log.info("Retrying notification: {}", notification.getRecipient());
                         if (notification.getAttachment() != null) {
                             handleEmailNotificationWithAttachmentRequest(notificationMapper.toDTO(notification));
                         }
@@ -76,7 +79,6 @@ public class NotificationServiceImpl implements NotificationService {
             }
         } catch (InterruptedException | FailedToSendEmailException e) {
             Thread.currentThread().interrupt();
-            log.error("Failed to acquire lock for retrying failed emails");
         }
     }
 
@@ -84,22 +86,15 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = NotificationUtils.findOrInitializeNotification(notificationRequestDTO, notificationRepository, notificationMapper);
 
         try {
-            if ("export-report".equals(notificationType)) {
-                NotificationUtils.prepareExportReportNotification(notification, notificationRequestDTO);
-            } else if ("reset-password".equals(notificationType)) {
-                NotificationUtils.prepareResetPasswordNotification(notification, notificationRequestDTO);
-            }
-
+            NotificationUtils.prepareNotification(notification, notificationRequestDTO, notificationType);
             sendEmail(notification, notificationRequestDTO);
             notification.setStatus(SENT);
-
         } catch (MessagingException e) {
             notification.setStatus(FAILED);
             throw new FailedToSendEmailException(notification.getRecipient());
-
         } finally {
             if (notification.getAttachment() == null) {
-                notification.setBody("We received a request to reset your password...");
+                notification.setBody(NotificationUtils.getDefaultBodyMessage(notificationType, notificationRequestDTO));
             }
             notificationRepository.save(notification);
         }

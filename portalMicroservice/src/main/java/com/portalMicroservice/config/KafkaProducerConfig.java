@@ -1,6 +1,7 @@
 package com.portalMicroservice.config;
 
 import com.portalMicroservice.dto.budget.*;
+import com.portalMicroservice.dto.payment.*;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.UUIDSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -161,5 +162,75 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, BudgetTypeDTO> budgetTypekafkaTemplate() {
         return new KafkaTemplate<>(budgetTypeProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, CreatePaymentDTO> createPaymentProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, CreatePaymentDTO> createPaymentkafkaTemplate() {
+        return new KafkaTemplate<>(createPaymentProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, PaymentActionRequestDTO> paymentActionRequestProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, PaymentActionRequestDTO> paymentActionRequestkafkaTemplate() {
+        return new KafkaTemplate<>(paymentActionRequestProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, RefundChargeRequestDTO> refundChargeRequestProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, RefundChargeRequestDTO> refundChargeRequesttkafkaTemplate() {
+        return new KafkaTemplate<>(refundChargeRequestProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, StripeCardTokenDTO> stripeCardTokenDTOProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, StripeCardTokenDTO> stripeCardTokenDTOkafkaTemplate() {
+        return new KafkaTemplate<>(stripeCardTokenDTOProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, StripeSepaTokenDTO> stripeSepaTokenDTOProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, StripeSepaTokenDTO> stripeSepaTokenDTOkafkaTemplate() {
+        return new KafkaTemplate<>(stripeSepaTokenDTOProducerFactory());
     }
 }
