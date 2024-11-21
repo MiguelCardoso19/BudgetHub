@@ -2,11 +2,11 @@ package com.portalMicroservice.config;
 
 import com.portalMicroservice.dto.budget.*;
 import com.portalMicroservice.dto.payment.CreatePaymentResponseDTO;
+import com.portalMicroservice.dto.payment.SessionResponseDTO;
 import com.portalMicroservice.dto.payment.StripeCardTokenDTO;
 import com.portalMicroservice.dto.payment.StripeSepaTokenDTO;
 import com.portalMicroservice.exception.budget.*;
-import com.portalMicroservice.exception.payment.FailedToCancelPaymentException;
-import com.portalMicroservice.exception.payment.FailedToConfirmPaymentException;
+import com.portalMicroservice.exception.payment.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -609,6 +609,111 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, BudgetExceededException> budgetExceededForPaymentExceptionKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, BudgetExceededException> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(budgetExceededForPaymentExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, RefundException> refundExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "refund_exception_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<RefundException> jsonDeserializer = new JsonDeserializer<>(RefundException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, RefundException> refundExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, RefundException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(refundExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, StripeCardTokenCreationException> stripeCardTokenCreationExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "stripe_card_token_creation_exception_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<StripeCardTokenCreationException> jsonDeserializer = new JsonDeserializer<>(StripeCardTokenCreationException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, StripeCardTokenCreationException> stripeCardTokenCreationExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, StripeCardTokenCreationException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(stripeCardTokenCreationExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, StripeSepaTokenCreationException> stripeSepaTokenCreationExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "stripe_sepa_token_creation_exception_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<StripeSepaTokenCreationException> jsonDeserializer = new JsonDeserializer<>(StripeSepaTokenCreationException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, StripeSepaTokenCreationException> stripeSepaTokenCreationExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, StripeSepaTokenCreationException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(stripeSepaTokenCreationExceptionConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, SessionResponseDTO> sessionResponseConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "payment_session_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<SessionResponseDTO> jsonDeserializer = new JsonDeserializer<>(SessionResponseDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, SessionResponseDTO> sessionResponseKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, SessionResponseDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(sessionResponseConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, PaymentSessionException> paymentSessionExceptionConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "payment_session_exception_response_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<PaymentSessionException> jsonDeserializer = new JsonDeserializer<>(PaymentSessionException.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, PaymentSessionException> paymentSessionExceptionKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, PaymentSessionException> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(paymentSessionExceptionConsumerFactory());
         return factory;
     }
 }

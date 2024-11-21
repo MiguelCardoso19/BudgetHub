@@ -208,4 +208,25 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(stripeSepaTokenConsumerFactory());
         return factory;
     }
+
+    @Bean
+    public ConsumerFactory<String, SessionRequestDTO> sessionRequestConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "create_payment_session_group");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        JsonDeserializer<SessionRequestDTO> jsonDeserializer = new JsonDeserializer<>(SessionRequestDTO.class);
+        jsonDeserializer.setRemoveTypeHeaders(false);
+        jsonDeserializer.setUseTypeMapperForKey(true);
+        jsonDeserializer.addTrustedPackages("*");
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), jsonDeserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, SessionRequestDTO> sessionRequestKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, SessionRequestDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(sessionRequestConsumerFactory());
+        return factory;
+    }
 }

@@ -1,8 +1,6 @@
 package com.paymentMicroservice.dto;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.gson.annotations.SerializedName;
 import com.paymentMicroservice.enumerators.MovementType;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,7 +27,6 @@ public class CreatePaymentDTO {
     String description;
 
     @NotNull
-    @SerializedName("items")
     CreatePaymentItemDTO[] items;
 
     @NotNull

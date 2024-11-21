@@ -207,7 +207,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, StripeCardTokenDTO> stripeCardTokenDTOProducerFactory() {
+    public ProducerFactory<String, StripeCardTokenDTO> stripeCardTokenProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -216,12 +216,12 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, StripeCardTokenDTO> stripeCardTokenDTOkafkaTemplate() {
-        return new KafkaTemplate<>(stripeCardTokenDTOProducerFactory());
+    public KafkaTemplate<String, StripeCardTokenDTO> stripeCardTokenkafkaTemplate() {
+        return new KafkaTemplate<>(stripeCardTokenProducerFactory());
     }
 
     @Bean
-    public ProducerFactory<String, StripeSepaTokenDTO> stripeSepaTokenDTOProducerFactory() {
+    public ProducerFactory<String, StripeSepaTokenDTO> stripeSepaTokenProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -231,6 +231,20 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, StripeSepaTokenDTO> stripeSepaTokenDTOkafkaTemplate() {
-        return new KafkaTemplate<>(stripeSepaTokenDTOProducerFactory());
+        return new KafkaTemplate<>(stripeSepaTokenProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, SessionRequestDTO> sessionRequestProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, SessionRequestDTO> sessionRequestkafkaTemplate() {
+        return new KafkaTemplate<>(sessionRequestProducerFactory());
     }
 }

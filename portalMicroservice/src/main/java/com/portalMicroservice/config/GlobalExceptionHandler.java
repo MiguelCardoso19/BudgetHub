@@ -5,17 +5,22 @@ import com.portalMicroservice.exception.*;
 import com.portalMicroservice.exception.authentication.*;
 import com.portalMicroservice.exception.budget.*;
 import com.portalMicroservice.exception.notification.FailedToSendEmailException;
-import com.portalMicroservice.exception.payment.FailedToCancelPaymentException;
-import com.portalMicroservice.exception.payment.FailedToConfirmPaymentException;
+import com.portalMicroservice.exception.payment.*;
 import com.portalMicroservice.exception.portal.InvalidAuthorizationHeaderException;
 import com.portalMicroservice.exception.portal.InvalidTokenException;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.portalMicroservice.exception.ErrorMessage.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -204,6 +209,46 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(FailedToCancelPaymentException.class)
     public ResponseEntity<ErrorResponse> handleFailedToCancelPaymentException(FailedToCancelPaymentException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidAuthorizationHeaderException(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            errors.put(error.getDefaultMessage(), error.getDefaultMessage());
+        });
+        return new ResponseEntity<>(errors, BAD_REQUEST);
+    }
+
+    @ExceptionHandler(TimeoutException.class)
+    public ResponseEntity<ErrorResponse> handleTimeoutException(TimeoutException e) {
+        GenericException ex = new GenericException();
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(RefundException.class)
+    public ResponseEntity<ErrorResponse> handleRefundNotPossibleException(RefundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(StripeCardTokenCreationException.class)
+    public ResponseEntity<ErrorResponse> handleStripeCardTokenCreationException(StripeCardTokenCreationException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(StripeSepaTokenCreationException.class)
+    public ResponseEntity<ErrorResponse> handleStripeSepaTokenCreationException(StripeSepaTokenCreationException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(PaymentSessionException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentSessionException(PaymentSessionException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getStatus().value(), ex.getErrorCode());
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }

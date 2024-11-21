@@ -1,9 +1,7 @@
 package com.paymentMicroservice.config;
 
 import com.paymentMicroservice.dto.*;
-import com.paymentMicroservice.exception.BudgetExceededException;
-import com.paymentMicroservice.exception.FailedToCancelPaymentException;
-import com.paymentMicroservice.exception.FailedToConfirmPaymentException;
+import com.paymentMicroservice.exception.*;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.UUIDSerializer;
@@ -191,5 +189,75 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, BudgetExceededException> budgetExceededExceptionKafkaTemplate() {
         return new KafkaTemplate<>(budgetExceededExceptionProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, RefundException> refundNotPossibleExceptionProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, RefundException> refundNotPossibleExceptionKafkaTemplate() {
+        return new KafkaTemplate<>(refundNotPossibleExceptionProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, StripeCardTokenCreationException> stripeCardTokenCreationExceptionProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, StripeCardTokenCreationException> stripeCardTokenCreationExceptionKafkaTemplate() {
+        return new KafkaTemplate<>(stripeCardTokenCreationExceptionProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, StripeSepaTokenCreationException> stripeSepaTokenCreationExceptionProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, StripeSepaTokenCreationException> stripeSepaTokenCreationExceptionKafkaTemplate() {
+        return new KafkaTemplate<>(stripeSepaTokenCreationExceptionProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, SessionResponseDTO> sessionResponseProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, SessionResponseDTO> sessionResponseKafkaTemplate() {
+        return new KafkaTemplate<>(sessionResponseProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, PaymentSessionException> paymentSessionExceptionProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, PaymentSessionException> paymentSessionExceptionKafkaTemplate() {
+        return new KafkaTemplate<>(paymentSessionExceptionProducerFactory());
     }
 }

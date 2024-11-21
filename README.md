@@ -33,7 +33,6 @@
 - **Liquibase**
 - **Docker**
 - **Redis**
-- **Thymeleaf**
 - **Gradle**
 - **Lombok**
 - **Swagger**

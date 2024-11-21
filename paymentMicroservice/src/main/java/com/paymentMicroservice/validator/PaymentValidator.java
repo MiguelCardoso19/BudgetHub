@@ -35,11 +35,11 @@ public class PaymentValidator {
     @Value("${TIMEOUT_DURATION}")
     private long TIMEOUT_DURATION;
 
-    public void validateFundsForPayment(CreatePaymentDTO createPaymentDTO) throws BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
-        Map<UUID, Long> budgetSubtypeTotals = calculateBudgetTotals(createPaymentDTO.getItems(), true);
-        Map<UUID, Long> budgetTypeTotals = calculateBudgetTotals(createPaymentDTO.getItems(), false);
-        validateBudgetFunds(budgetSubtypeTotals, "find-budget-subtype-by-id", pendingSubtypeRequests, BudgetSubtypeDTO.class, createPaymentDTO.getCorrelationId());
-        validateBudgetFunds(budgetTypeTotals, "find-budget-type-by-id", pendingTypeRequests, BudgetTypeDTO.class, createPaymentDTO.getCorrelationId());
+    public void validateFundsForPayment(CreatePaymentItemDTO[] items, UUID correlationId) throws BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
+        Map<UUID, Long> budgetSubtypeTotals = calculateBudgetTotals(items, true);
+        Map<UUID, Long> budgetTypeTotals = calculateBudgetTotals(items, false);
+        validateBudgetFunds(budgetSubtypeTotals, "find-budget-subtype-by-id", pendingSubtypeRequests, BudgetSubtypeDTO.class, correlationId);
+        validateBudgetFunds(budgetTypeTotals, "find-budget-type-by-id", pendingTypeRequests, BudgetTypeDTO.class, correlationId);
     }
 
     public CompletableFuture<BudgetTypeDTO> removePendingTypeRequestById(UUID id) {
@@ -56,7 +56,6 @@ public class PaymentValidator {
             CompletableFuture<T> future = new CompletableFuture<>();
             pendingRequests.put(budgetID, future);
             kafkaUuidTemplate.send(kafkaTopic, budgetID);
-
             T dto = future.get(TIMEOUT_DURATION, SECONDS);
             if (dto != null && entry.getValue() > getAvailableFunds(dto)) {
                 kafkaBudgetExceededExceptionTemplate.send("payment-exceeded-available-funds-response", new BudgetExceededException(correlationId, getAvailableFunds(dto), (double) entry.getValue()));

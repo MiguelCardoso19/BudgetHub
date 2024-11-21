@@ -1,9 +1,7 @@
 package com.paymentMicroservice.service.impl;
 
 import com.paymentMicroservice.dto.*;
-import com.paymentMicroservice.exception.BudgetExceededException;
-import com.paymentMicroservice.exception.FailedToCancelPaymentException;
-import com.paymentMicroservice.exception.FailedToConfirmPaymentException;
+import com.paymentMicroservice.exception.*;
 import com.paymentMicroservice.model.FailedPayment;
 import com.paymentMicroservice.repository.FailedPaymentRepository;
 import com.paymentMicroservice.service.PaymentService;
@@ -11,14 +9,10 @@ import com.paymentMicroservice.util.PaymentUtils;
 import com.paymentMicroservice.validator.PaymentValidator;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Charge;
-import com.stripe.model.PaymentIntent;
-import com.stripe.model.Refund;
-import com.stripe.model.Token;
-import com.stripe.net.RequestOptions;
-import com.stripe.param.PaymentIntentCancelParams;
-import com.stripe.param.PaymentIntentConfirmParams;
-import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.model.*;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.*;
+import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -51,6 +44,11 @@ public class PaymentServiceImpl implements PaymentService {
     private final KafkaTemplate<String, StripeSepaTokenDTO> kafkaStripeSepaTokenTemplate;
     private final KafkaTemplate<String, FailedToCancelPaymentException> kafkaFailedToCancelPaymentExceptionTemplate;
     private final KafkaTemplate<String, FailedToConfirmPaymentException> kafkaFailedToConfirmPaymentExceptionTemplate;
+    private final KafkaTemplate<String, RefundException> kafkaRefundNotPossibleExceptionTemplate;
+    private final KafkaTemplate<String, StripeCardTokenCreationException> kafkaStripeCardTokenCreationExceptionTemplate;
+    private final KafkaTemplate<String, StripeSepaTokenCreationException> kafkaStripeSepaTokenCreationExceptionTemplate;
+    private final KafkaTemplate<String, SessionResponseDTO> kafkaSessionResponseTemplate;
+    private final KafkaTemplate<String, PaymentSessionException> kafkaPaymentSessionExceptionTemplate;
 
     @Value("${STRIPE_PRIVATE_KEY}")
     private String STRIPE_PRIVATE_KEY;
@@ -67,23 +65,22 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
     @KafkaListener(topics = "create-payment-intent-topic", groupId = "create_payment_group", concurrency = "10", containerFactory = "createPaymentRequestKafkaListenerContainerFactory")
     public void createPaymentIntent(CreatePaymentDTO createPaymentDTO) throws StripeException, BudgetExceededException, ExecutionException, InterruptedException, TimeoutException {
-        paymentValidator.validateFundsForPayment(createPaymentDTO);
+        paymentValidator.validateFundsForPayment(createPaymentDTO.getItems(), createPaymentDTO.getCorrelationId());
+        Customer customer = findOrCreateCustomer(createPaymentDTO.getReceiptEmail());
 
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
-                .setAmount(PaymentUtils.calculateAmount(createPaymentDTO) * 100L)
+                .setAmount(PaymentUtils.calculateAmount(createPaymentDTO.getItems()) * 100L)
                 .setReceiptEmail(createPaymentDTO.getReceiptEmail())
+                .setCustomer(customer.getId())
                 .putAllMetadata(PaymentUtils.buildMetadata(createPaymentDTO))
                 .setCurrency(createPaymentDTO.getCurrency())
                 .setPaymentMethod(createPaymentDTO.getPaymentMethodId())
                 .build();
 
-        RequestOptions requestOptions = RequestOptions.builder()
-                .setIdempotencyKey(createPaymentDTO.getCorrelationId().toString())
-                .build();
-
-        PaymentIntent paymentIntent = PaymentIntent.create(params, requestOptions);
+        PaymentIntent paymentIntent = PaymentIntent.create(params, PaymentUtils.setIdempotencyKey(createPaymentDTO.getCorrelationId().toString()));
         kafkaCreatePaymentResponseTemplate.send("create-payment-intent-response-topic", new CreatePaymentResponseDTO(paymentIntent.getId(), createPaymentDTO.getCorrelationId()));
     }
 
@@ -105,12 +102,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @KafkaListener(topics = "confirm-payment-intent-topic", groupId = "payment_action_request_group", concurrency = "10", containerFactory = "paymentActionRequestKafkaListenerContainerFactory")
     public void confirmPaymentIntent(PaymentActionRequestDTO request) throws FailedToConfirmPaymentException, StripeException {
-        PaymentIntentConfirmParams confirmParams = PaymentIntentConfirmParams.builder()
-                .setReturnUrl("http://localhost:8084/complete.html")
-                .build();
+        PaymentIntentConfirmParams confirmParams = PaymentIntentConfirmParams.builder().setReturnUrl("https://localhost:4200/success").build();
 
         PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getPaymentIntentId());
-
         if ("canceled".equals(paymentIntent.getStatus())) {
             kafkaFailedToConfirmPaymentExceptionTemplate.send("failed-to-confirm-payment-response", new FailedToConfirmPaymentException(paymentIntent.getId()));
             throw new FailedToConfirmPaymentException(paymentIntent.getId());
@@ -128,16 +122,22 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @KafkaListener(topics = "refund-charge-topic", groupId = "refund_charge_request_group", concurrency = "10", containerFactory = "refundChargeRequestKafkaListenerContainerFactory")
-    public void refundCharge(RefundChargeRequestDTO request) throws StripeException {
+    public void refundCharge(RefundChargeRequestDTO request) throws StripeException, RefundException {
         PaymentIntent paymentIntent = PaymentIntent.retrieve(request.getPaymentIntentId());
         Charge charge = Charge.retrieve(paymentIntent.getLatestCharge());
+
+        if (charge.getStatus() != null && !"succeeded".equalsIgnoreCase(charge.getStatus())) {
+            kafkaRefundNotPossibleExceptionTemplate.send("refund-exception-response", new RefundException(request.getPaymentIntentId()));
+            throw new RefundException(request.getPaymentIntentId());
+        }
+
         Refund.create(Map.of("charge", charge.getId()));
         kafkaStringTemplate.send("refund-charge-success-response-topic", request.getPaymentIntentId());
     }
 
     @Override
     @KafkaListener(topics = "create-card-token-topic", groupId = "create_card_token_group", concurrency = "10", containerFactory = "stripeCardTokenKafkaListenerContainerFactory")
-    public void createCardToken(StripeCardTokenDTO model) throws StripeException {
+    public void createCardToken(StripeCardTokenDTO model) throws StripeException, StripeCardTokenCreationException {
         Map<String, Object> card = new HashMap<>();
         card.put("number", model.getCardNumber());
         card.put("exp_month", Integer.parseInt(model.getExpMonth()));
@@ -149,13 +149,16 @@ public class PaymentServiceImpl implements PaymentService {
         if (token != null && token.getId() != null) {
             model.setSuccess(true);
             model.setToken(token.getId());
+            kafkaStripeCardTokenTemplate.send("create-card-token-response-topic", model);
         }
-        kafkaStripeCardTokenTemplate.send("create-card-token-response-topic", model);
+
+        kafkaStripeCardTokenCreationExceptionTemplate.send("stripe-card-token-creation-exception-response", new StripeCardTokenCreationException(model.getCorrelationId()));
+        throw new StripeCardTokenCreationException();
     }
 
     @Override
     @KafkaListener(topics = "create-sepa-token-topic", groupId = "create_sepa_token_group", concurrency = "10", containerFactory = "stripeSepaTokenKafkaListenerContainerFactory")
-    public void createSepaToken(StripeSepaTokenDTO model) throws StripeException {
+    public void createSepaToken(StripeSepaTokenDTO model) throws StripeException, StripeSepaTokenCreationException {
         Map<String, Object> sepaDebitParams = new HashMap<>();
         sepaDebitParams.put("iban", model.getIban());
         sepaDebitParams.put("account_holder_name", model.getAccountHolderName());
@@ -166,8 +169,37 @@ public class PaymentServiceImpl implements PaymentService {
         if (token != null && token.getId() != null) {
             model.setSuccess(true);
             model.setToken(token.getId());
+            kafkaStripeSepaTokenTemplate.send("create-sepa-token-response-topic", model);
         }
-        kafkaStripeSepaTokenTemplate.send("create-sepa-token-response-topic", model);
+
+        kafkaStripeSepaTokenCreationExceptionTemplate.send("stripe-sepa-token-creation-exception-response", new StripeSepaTokenCreationException(model.getCorrelationId()));
+        throw new StripeSepaTokenCreationException();
+    }
+
+    @Override
+    @KafkaListener(topics = "create-payment-session-topic", groupId = "create_payment_session_group", concurrency = "10", containerFactory = "sessionRequestKafkaListenerContainerFactory")
+    public void createPaymentSession(SessionRequestDTO sessionRequestDTO) throws BudgetExceededException, ExecutionException, InterruptedException, TimeoutException, PaymentSessionException {
+        SessionResponseDTO response;
+
+        try {
+            paymentValidator.validateFundsForPayment(sessionRequestDTO.getItems(), sessionRequestDTO.getCorrelationId());
+            Customer customer = findOrCreateCustomer(sessionRequestDTO.getEmail());
+            SessionCreateParams.Builder sessionCreateParamsBuilder = PaymentUtils.initializeSessionBuilder(customer);
+            PaymentUtils.addLineItemsToSession(sessionRequestDTO, sessionCreateParamsBuilder);
+
+            SessionCreateParams.PaymentIntentData paymentIntentData = SessionCreateParams.PaymentIntentData.builder()
+                    .setReceiptEmail(customer.getEmail())
+                    .putAllMetadata(PaymentUtils.buildMetadata(sessionRequestDTO))
+                    .build();
+
+            SessionCreateParams.Builder sessionParamsBuilder = sessionCreateParamsBuilder.setPaymentIntentData(paymentIntentData);
+            Session session = Session.create(sessionParamsBuilder.build(), PaymentUtils.setIdempotencyKey(sessionRequestDTO.getCorrelationId().toString()));
+            response = new SessionResponseDTO(session.getId(), session.getUrl(), sessionRequestDTO.getCorrelationId());
+        } catch (StripeException e) {
+            kafkaPaymentSessionExceptionTemplate.send("payment-session-exception-response-topic", new PaymentSessionException(e.getStripeError().getMessage(), sessionRequestDTO.getCorrelationId()));
+            throw new PaymentSessionException(e.getStripeError().getMessage());
+        }
+        kafkaSessionResponseTemplate.send("create-payment-session-response-topic", response);
     }
 
     @Scheduled(cron = "${RETRY_DELAY}")
@@ -201,6 +233,20 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
+    private Customer findOrCreateCustomer(String email) throws StripeException {
+        CustomerSearchParams params = CustomerSearchParams.builder().setQuery("email:'" + email + "'").build();
+
+        CustomerSearchResult search = Customer.search(params);
+        Customer customer;
+        if (search.getData().isEmpty()) {
+            CustomerCreateParams customerCreateParams = CustomerCreateParams.builder().setEmail(email).build();
+            customer = Customer.create(customerCreateParams);
+        } else {
+            customer = search.getData().get(0);
+        }
+        return customer;
+    }
+
     private boolean retryToConfirmPaymentIntent(String clientSecret) throws StripeException {
         PaymentIntent paymentIntent = PaymentIntent.retrieve(clientSecret);
 
@@ -208,7 +254,7 @@ public class PaymentServiceImpl implements PaymentService {
                 paymentIntent.getStatus().equals("requires_confirmation")) {
             try {
                 paymentIntent.confirm(PaymentIntentConfirmParams.builder()
-                        .setReturnUrl("http://localhost:8084/complete.html")
+                        .setReturnUrl("https://localhost:4200/success")
                         .build());
                 return true;
             } catch (StripeException e) {

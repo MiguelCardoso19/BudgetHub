@@ -36,6 +36,10 @@ public enum ErrorMessage {
     BUDGET_SUBTYPE_NOT_FOUND("BUDGET_SUBTYPE_NOT_FOUND", "Budget subtype not found with ID: %s", NOT_FOUND),
     FAILED_TO_CANCEL_PAYMENT("FAILED_TO_CANCEL_PAYMENT", "Failed to cancel the payment", CONFLICT),
     FAILED_TO_CONFIRM_PAYMENT("FAILED_TO_CONFIRM_PAYMENT", "Failed to confirm the payment", CONFLICT),
+    REFUND_NOT_POSSIBLE("REFUND_NOT_POSSIBLE", "The refund was not possible", CONFLICT),
+    FAILED_TO_CREATE_PAYMENT_SESSION("FAILED_TO_CREATE_PAYMENT_SESSION", "Failed to create the payment session due to the following error/s: %s", CONFLICT),
+    UNABLE_TO_CREATE_STRIPE_CARD_TOKEN("UNABLE_TO_CREATE_STRIPE_CARD_TOKEN", "It was not possible to create Stripe CARD payment method token", CONFLICT),
+    UNABLE_TO_CREATE_STRIPE_SEPA_TOKEN("UNABLE_TO_CREATE_STRIPE_SEPA_TOKEN", "It was not possible to create Stripe SEPA payment method token", CONFLICT),
     OPTIMISTIC_LOCKING_FAILURE("OPTIMISTIC_LOCKING_FAILURE", "This entity has been modified by another transaction", CONFLICT),
     BUDGET_EXCEEDED("BUDGET_EXCEEDED", "%s", BAD_REQUEST);
 

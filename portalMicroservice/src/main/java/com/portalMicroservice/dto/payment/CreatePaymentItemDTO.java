@@ -15,7 +15,6 @@ public class CreatePaymentItemDTO {
     @Min(1)
     Long amount;
 
-
     UUID budgetSubtypeId;
 
     UUID budgetTypeId;

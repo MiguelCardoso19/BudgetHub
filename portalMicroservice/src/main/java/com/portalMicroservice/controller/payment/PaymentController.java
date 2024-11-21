@@ -18,36 +18,41 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final JwtService jwtService;
 
-    @PostMapping("/create")
-    public ResponseEntity<CreatePaymentResponseDTO> createPayment(@Valid @RequestBody CreatePaymentDTO createPaymentDTO) throws ExecutionException, InterruptedException, TimeoutException {
-        return ResponseEntity.ok(paymentService.createPayment(createPaymentDTO, jwtService.getEmailFromRequest()));
+    @PostMapping("/create-payment-intent")
+    public ResponseEntity<CreatePaymentResponseDTO> createPaymentIntent(@Valid @RequestBody CreatePaymentDTO createPaymentDTO) throws ExecutionException, InterruptedException, TimeoutException {
+        return ResponseEntity.ok(paymentService.createPaymentIntent(createPaymentDTO, jwtService.getEmailFromRequest()));
     }
 
     @PostMapping("/cancel")
     public ResponseEntity<Void> cancelPayment(@Valid @RequestBody PaymentActionRequestDTO request) throws ExecutionException, InterruptedException, TimeoutException {
-        paymentService.cancelPayment(request);
+        paymentService.cancelPayment(request, jwtService.getEmailFromRequest());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/confirm")
     public ResponseEntity<String> confirmPayment(@Valid @RequestBody PaymentActionRequestDTO request) throws ExecutionException, InterruptedException, TimeoutException {
-        paymentService.confirmPayment(request);
+        paymentService.confirmPayment(request, jwtService.getEmailFromRequest());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/refund")
     public ResponseEntity<String> refundCharge(@Valid @RequestBody RefundChargeRequestDTO request) throws ExecutionException, InterruptedException, TimeoutException {
-        paymentService.refundCharge(request);
+        paymentService.refundCharge(request, jwtService.getEmailFromRequest());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/create-card-token")
-    public ResponseEntity<StripeCardTokenDTO> createCardToken(@RequestBody StripeCardTokenDTO request) throws ExecutionException, InterruptedException, TimeoutException {
-        return ResponseEntity.ok(paymentService.createCardToken(request));
+    public ResponseEntity<StripeCardTokenDTO> createCardToken(@Valid @RequestBody StripeCardTokenDTO request) throws ExecutionException, InterruptedException, TimeoutException {
+        return ResponseEntity.ok(paymentService.createCardToken(request, jwtService.getEmailFromRequest()));
     }
 
     @PostMapping("/create-sepa-token")
-    public ResponseEntity<StripeSepaTokenDTO> createSepaToken(@RequestBody StripeSepaTokenDTO request) throws ExecutionException, InterruptedException, TimeoutException {
-        return ResponseEntity.ok(paymentService.createSepaToken(request));
+    public ResponseEntity<StripeSepaTokenDTO> createSepaToken(@Valid @RequestBody StripeSepaTokenDTO request) throws ExecutionException, InterruptedException, TimeoutException {
+        return ResponseEntity.ok(paymentService.createSepaToken(request, jwtService.getEmailFromRequest()));
+    }
+
+    @PostMapping("/create-payment-session")
+    public ResponseEntity<SessionResponseDTO> createPaymentSession(@Valid @RequestBody SessionRequestDTO request) throws ExecutionException, InterruptedException, TimeoutException {
+        return ResponseEntity.ok(paymentService.createPaymentSession(request, jwtService.getEmailFromRequest()));
     }
 }
