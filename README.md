@@ -2,8 +2,6 @@
 
 **BudgetHub** is a microservice-based financial management platform that helps businesses track expenses, manage budgets, and process payments. It provides a central portal for users to securely register, log in, and manage all financial activities. With easy integrations for expense tracking, payment processing, and notifications.
 
----
-
 ## Table of Contents
 
 1. [Key Features](#key-features)
@@ -13,6 +11,8 @@
 5. [Portal Microservice](#portal-microservice)
     - [Overview](#overview-1)
     - [Key Features](#key-features-1)
+    - [Arquitecture](#architecture-1)
+    - [Endpoints](#endpoints)
 6. [Authentication Microservice](#authentication-microservice)
     - [Overview](#overview-2)
     - [Features](#features-1)
@@ -25,8 +25,9 @@
 9. [Payment Microservice](#payment-microservice)
     - [Overview](#overview-5)
     - [Key Features](#key-features-2)
+10. [Portal Microservice Endpoints](#portal-microservice-endpoints)
 
----
+
 
 ## Key Features
 
@@ -36,7 +37,7 @@
 - **Notification System**: A dedicated service that manages and sends various notifications, including transactional emails, payment updates, and account alerts, with support for retries and persistent tracking.
 - **Unified Service Access**: A centralized portal that serves as a single entry point for users to interact with the entire system, routing requests to the appropriate microservices seamlessly.
 
----
+
 
 ## Microservices Overview
 
@@ -46,7 +47,7 @@
 4. **Payment Microservice**: Integrates with Stripe to securely process payments, manage payment intents, cancellations, refunds, and handle payment tokens, ensuring efficient transaction handling.
 5. **Notification Microservice**: Manages the creation and delivery of notifications, such as email alerts for payment confirmations, password resets, and transaction updates, with a system for tracking and retrying failed notifications.
 
----
+
 
 ## Tech Stack
 
@@ -63,12 +64,14 @@
 - **Liquibase**
 - **Docker**
 - **Redis**
+- **Mockito**
+- **JUnit 5**
 - **Gradle**
 - **Lombok**
 - **Swagger**
 - **MapStruct**
 
----
+
 
 ## Architecture
 BudgetHub follows a microservices architecture, with independent services communicating via Kafka or synchronous FeignClient calls. Each service is designed for scalability, reliability, and modularity.
@@ -85,7 +88,6 @@ The **Portal Microservice** is a comprehensive Spring Boot-based application tha
 
 This service is designed to handle operations asynchronously using Kafka, ensuring scalability and responsiveness. It also leverages Redis for distributed locking and retries to handle failures gracefully.
 
----
 
 ## Key Features
 
@@ -131,6 +133,12 @@ This service is designed to handle operations asynchronously using Kafka, ensuri
 
 The **Portal Microservice** is built with a microservices architecture, where each module interacts with Kafka topics for communication. Redis is used for distributed locking and retries, while Stripe handles payment processing. Each operation uses unique `correlationId`s for seamless asynchronous request-response flows.
 
+## Endpoints
+
+![portalMicroserviceEndpoints1](portalMicroserviceEndpoints1.png)
+![portalMicroserviceEndpoints2](portalMicroserviceEndpoints2.png)
+![portalMicroserviceEndpoints3](portalMicroserviceEndpoints3.png)
+![portalMicroserviceEndpoints4](portalMicroserviceEndpoints4.png)
 
 ---
 

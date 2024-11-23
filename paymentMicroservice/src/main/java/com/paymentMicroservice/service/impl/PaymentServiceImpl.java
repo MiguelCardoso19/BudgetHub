@@ -150,6 +150,7 @@ public class PaymentServiceImpl implements PaymentService {
             model.setSuccess(true);
             model.setToken(token.getId());
             kafkaStripeCardTokenTemplate.send("create-card-token-response-topic", model);
+            return;
         }
 
         kafkaStripeCardTokenCreationExceptionTemplate.send("stripe-card-token-creation-exception-response", new StripeCardTokenCreationException(model.getCorrelationId()));
@@ -170,6 +171,7 @@ public class PaymentServiceImpl implements PaymentService {
             model.setSuccess(true);
             model.setToken(token.getId());
             kafkaStripeSepaTokenTemplate.send("create-sepa-token-response-topic", model);
+            return;
         }
 
         kafkaStripeSepaTokenCreationExceptionTemplate.send("stripe-sepa-token-creation-exception-response", new StripeSepaTokenCreationException(model.getCorrelationId()));
@@ -234,9 +236,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private Customer findOrCreateCustomer(String email) throws StripeException {
-        CustomerSearchParams params = CustomerSearchParams.builder().setQuery("email:'" + email + "'").build();
-
-        CustomerSearchResult search = Customer.search(params);
+        CustomerSearchResult search = Customer.search(CustomerSearchParams.builder().setQuery("email:'" + email + "'").build());
         Customer customer;
         if (search.getData().isEmpty()) {
             CustomerCreateParams customerCreateParams = CustomerCreateParams.builder().setEmail(email).build();

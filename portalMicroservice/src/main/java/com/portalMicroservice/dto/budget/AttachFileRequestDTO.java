@@ -10,8 +10,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AttachFileRequestDTO {
 
-    @Schema(description = "The unique identifier for the attachment request.",
-            example = "bce75d99-5481-4c1f-8211-3e4452d45b71")
+    @Schema(description = "Unique identifier for the entity, typically assigned upon creation or retrieval.",
+            example = "123e4567-e89b-12d3-a456-426614174000", required = true)
     private UUID id;
 
     @Schema(description = "The base64 encoded file content to be attached.",

@@ -8,11 +8,13 @@ import com.portalMicroservice.service.BudgetTypeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -28,13 +30,16 @@ public class BudgetTypeController {
     private final BudgetTypeService budgetTypeService;
 
     @Operation(summary = "Create a new Budget Type",
-            description = "Creates a new Budget Type. This operation will check for existing budget types and throw an error if a duplicate is found.")
+            description = "Creates a new Budget Type. This operation will check for existing budget types and throw an error if a duplicate is found.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully created a new Budget Type"),
             @ApiResponse(responseCode = "409", description = "Budget Type already exists"),
             @ApiResponse(responseCode = "400", description = "Invalid Budget Type data"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/create")
     public ResponseEntity<BudgetTypeDTO> createBudgetType(@RequestBody BudgetTypeDTO budgetTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
         // return budgetTypeFeignClient.createBudgetType(budgetTypeDTO);
@@ -42,21 +47,26 @@ public class BudgetTypeController {
     }
 
     @Operation(summary = "Delete a Budget Type",
-            description = "Deletes a Budget Type by its unique ID. Throws a 404 error if the Budget Type is not found.")
+            description = "Deletes a Budget Type by its unique ID. Throws a 404 error if the Budget Type is not found.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Successfully deleted the Budget Type"),
             @ApiResponse(responseCode = "404", description = "Budget Type not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteBudgetType(@PathVariable UUID id) throws ExecutionException, InterruptedException, TimeoutException {
-        // return budgetTypeFeignClient.deleteBudgetType(id);
+        // budgetTypeFeignClient.deleteBudgetType(id);
         budgetTypeService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Update an existing Budget Type",
-            description = "Updates an existing Budget Type. If the Budget Type does not exist or a conflict occurs, the operation will throw appropriate errors.")
+            description = "Updates an existing Budget Type. If the Budget Type does not exist or a conflict occurs, the operation will throw appropriate errors.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully updated the Budget Type"),
             @ApiResponse(responseCode = "404", description = "Budget Type not found"),
@@ -64,6 +74,7 @@ public class BudgetTypeController {
             @ApiResponse(responseCode = "400", description = "Invalid Budget Type data"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping("/update")
     public ResponseEntity<BudgetTypeDTO> updateBudgetType(@Valid @RequestBody BudgetTypeDTO budgetTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
         // return budgetTypeFeignClient.updateBudgetType(budgetTypeDTO);
@@ -71,12 +82,15 @@ public class BudgetTypeController {
     }
 
     @Operation(summary = "Get a Budget Type by ID",
-            description = "Fetches a specific Budget Type by its unique ID. Returns a 404 if the Budget Type is not found.")
+            description = "Fetches a specific Budget Type by its unique ID. Returns a 404 if the Budget Type is not found.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully fetched the Budget Type"),
             @ApiResponse(responseCode = "404", description = "Budget Type not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/{id}")
     public ResponseEntity<BudgetTypeDTO> findBudgetTypeById(@PathVariable UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         //  return budgetTypeFeignClient.findBudgetTypeById(id);
@@ -84,12 +98,15 @@ public class BudgetTypeController {
     }
 
     @Operation(summary = "Get all Budget Types",
-            description = "Retrieves all Budget Types, supporting pagination. Returns a paginated list of Budget Types.")
+            description = "Retrieves all Budget Types, supporting pagination. Returns a paginated list of Budget Types.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully fetched the list of Budget Types"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/all")
     public ResponseEntity<CustomPageDTO> findAllBudgetTypes(Pageable pageable) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         // return budgetTypeFeignClient.findAllBudgetTypes(pageable);

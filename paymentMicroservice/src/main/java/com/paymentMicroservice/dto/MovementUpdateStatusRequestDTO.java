@@ -20,6 +20,9 @@ public class MovementUpdateStatusRequestDTO {
             example = "PAID", required = true)
     private MovementStatus status;
 
+    @Schema(description = "The unique document number associated with the payment movement",
+            example = "INV-2024-0001",
+            nullable = true)
     @NotNull
     private String documentNumber;
 }

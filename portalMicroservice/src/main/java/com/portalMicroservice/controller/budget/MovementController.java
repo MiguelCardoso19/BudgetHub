@@ -10,10 +10,12 @@ import com.portalMicroservice.service.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -31,12 +33,15 @@ public class MovementController {
     private final JwtService jwtService;
 
     @Operation(summary = "Create a new movement",
-            description = "Creates a new financial movement.")
+            description = "Creates a new financial movement.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Movement successfully created"),
             @ApiResponse(responseCode = "400", description = "Invalid request data"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/create")
     public ResponseEntity<MovementDTO> create(@RequestBody MovementDTO movementDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         // return movementFeignClient.createMovement(movementDTO);
@@ -44,13 +49,16 @@ public class MovementController {
     }
 
     @Operation(summary = "Update an existing movement",
-            description = "Updates an existing movement by providing updated details.")
+            description = "Updates an existing movement by providing updated details.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Movement successfully updated"),
             @ApiResponse(responseCode = "400", description = "Invalid update data"),
             @ApiResponse(responseCode = "404", description = "Movement not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping("/update")
     public ResponseEntity<MovementDTO> update(@RequestBody MovementDTO movementDTO) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         // return movementFeignClient.updateMovement(movementDTO);
@@ -58,11 +66,14 @@ public class MovementController {
     }
 
     @Operation(summary = "Get a movement by ID",
-            description = "Fetches a movement by its unique ID.")
+            description = "Fetches a movement by its unique ID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Movement found and returned"),
             @ApiResponse(responseCode = "404", description = "Movement not found")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/{id}")
     public ResponseEntity<MovementDTO> getById(@PathVariable UUID id) throws GenericException, ExecutionException, InterruptedException, TimeoutException {
         // return movementFeignClient.getMovementById(id);
@@ -70,7 +81,9 @@ public class MovementController {
     }
 
     @Operation(summary = "Delete a movement by ID",
-            description = "Deletes an existing movement based on the given ID.")
+            description = "Deletes an existing movement based on the given ID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Movement successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Movement not found")
@@ -83,7 +96,9 @@ public class MovementController {
     }
 
     @Operation(summary = "Fetch all movements with pagination",
-            description = "Returns a paginated list of all movements.")
+            description = "Returns a paginated list of all movements.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of movements retrieved"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
@@ -95,7 +110,9 @@ public class MovementController {
     }
 
     @Operation(summary = "Fetch movements by budget type",
-            description = "Retrieves movements filtered by budget type ID.")
+            description = "Retrieves movements filtered by budget type ID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Movements filtered by budget type ID retrieved"),
             @ApiResponse(responseCode = "404", description = "Budget type not found"),
@@ -108,7 +125,9 @@ public class MovementController {
     }
 
     @Operation(summary = "Fetch movements by budget subtype",
-            description = "Retrieves movements filtered by budget subtype ID.")
+            description = "Retrieves movements filtered by budget subtype ID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Movements filtered by budget subtype ID retrieved"),
             @ApiResponse(responseCode = "404", description = "Budget subtype not found"),
@@ -121,7 +140,9 @@ public class MovementController {
     }
 
     @Operation(summary = "Export movements report",
-            description = "Exports a report of movements within a date range and status, sent to the user's email.")
+            description = "Exports a report of movements within a date range and status, sent to the user's email.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Report export initiated"),
             @ApiResponse(responseCode = "400", description = "Invalid date range or status parameters"),

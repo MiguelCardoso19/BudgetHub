@@ -26,5 +26,4 @@ public class ErrorResponse {
         this.status = status;
         this.errorCode = errorCode;
     }
-
 }

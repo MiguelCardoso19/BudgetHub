@@ -13,23 +13,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication API", description = "API for authentication, communicating with the Authentication microservice.")
+@Tag(name = "Authentication Controller", description = "API for authentication, communicating with the Authentication microservice.")
 public class AuthenticationController {
     private final AuthenticationFeignClient authenticationFeignClient;
 
-    /**
-     * TO DELETE LATER
-     */
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @GetMapping("/test-role")
-//    public ResponseEntity<String> testRoleEndpoint() {
-//        return ResponseEntity.ok("Access granted to users with ADMIN role.");
-//    }
     @Operation(
             summary = "Sign in using user credentials",
             description = "Authenticate a user through the proxy and return a JWT token if successful."
@@ -38,6 +31,7 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "200", description = "Authentication successful, returns JWT token"),
             @ApiResponse(responseCode = "400", description = "Invalid user credentials"),
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/sign-in")
     public ResponseEntity<AuthenticationResponseDTO> signIn(
             @Valid @RequestBody @Parameter(description = "User credentials including username and password") SignInRequestDTO signInRequestDTO
@@ -55,6 +49,7 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "400", description = "Invalid or expired refresh token"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/refresh-token")
     public ResponseEntity<AuthenticationResponseDTO> refreshToken(
             @Parameter(description = "Authorization header containing the Bearer token") HttpServletRequest request
@@ -71,6 +66,7 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "204", description = "Sign-out successful, token invalidated"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - Token is missing or invalid")
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/sign-out")
     public ResponseEntity<Void> signOut(
             @Parameter(description = "Authorization header containing the Bearer token") HttpServletRequest request

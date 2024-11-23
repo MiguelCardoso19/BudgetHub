@@ -15,12 +15,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/user-credentials")
 @RequiredArgsConstructor
-@Tag(name = "User Credentials API", description = "API for managing user credentials including registration, update, and deletion.")
+@Tag(name = "User Credentials Controller", description = "API for managing user credentials including registration, update, and deletion.")
 public class UserCredentialsController {
     private final UserCredentialsFeignClient userCredentialsFeignClient;
     private final JwtService jwtService;
@@ -31,6 +32,7 @@ public class UserCredentialsController {
             @ApiResponse(responseCode = "200", description = "User registered successfully, returns authentication response"),
             @ApiResponse(responseCode = "400", description = "Invalid user credentials provided"),
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponseDTO> register(
             @Valid @RequestBody @Parameter(description = "User credentials for registration") UserCredentialsDTO userCredentialsDTO
@@ -46,6 +48,7 @@ public class UserCredentialsController {
             @ApiResponse(responseCode = "400", description = "Invalid credentials update data provided"),
             @ApiResponse(responseCode = "401", description = "Unauthorized access to update credentials"),
     })
+    @PreAuthorize("permitAll()")
     @PutMapping("/update")
     public ResponseEntity<UserCredentialsDTO> update(
             @Valid @RequestBody @Parameter(description = "Updated user credentials") UserCredentialsDTO userCredentialsUpdateDTO
@@ -61,6 +64,7 @@ public class UserCredentialsController {
             @ApiResponse(responseCode = "400", description = "Invalid credentials data for deletion"),
             @ApiResponse(responseCode = "401", description = "Unauthorized access to delete credentials"),
     })
+    @PreAuthorize("permitAll()")
     @DeleteMapping("/delete")
     public ResponseEntity<Void> delete(
             @Valid @RequestBody @Parameter(description = "User credentials to delete") DeleteRequestDTO deleteRequestDTO
@@ -75,6 +79,7 @@ public class UserCredentialsController {
                     @ApiResponse(responseCode = "200", description = "Password recovery email sent successfully"),
                     @ApiResponse(responseCode = "404", description = "Email not found in the system")
             })
+    @PreAuthorize("permitAll()")
     @PostMapping("/recover-password")
     public ResponseEntity<Void> recoverPassword() {
         userCredentialsFeignClient.recoverPassword(jwtService.getEmailFromRequest());
@@ -89,6 +94,7 @@ public class UserCredentialsController {
                     @ApiResponse(responseCode = "400", description = "Invalid password format or request data"),
                     @ApiResponse(responseCode = "404", description = "Invalid or expired token")
             })
+    @PreAuthorize("permitAll()")
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(
             @Valid @RequestBody

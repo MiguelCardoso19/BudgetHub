@@ -29,12 +29,7 @@ public class StripeInvoiceServiceImpl implements StripeInvoiceService {
 
     @Override
     public void sendChargeSucceededInvoice(String receiptUrl, String movementDocumentNumber, String email) {
-        InvoiceDTO invoiceDTO = new InvoiceDTO();
-        invoiceDTO.setDescription("Charge from Stripe succeeded");
-        invoiceDTO.setDateOfEmission(LocalDate.now());
-        invoiceDTO.setStripeReceiptUrl(receiptUrl);
-        invoiceDTO.setMovementDocumentNumber(movementDocumentNumber);
-        kafkaInvoiceTemplate.send("create-invoice", movementDocumentNumber, invoiceDTO);
+        kafkaInvoiceTemplate.send("create-invoice", movementDocumentNumber, createInvoiceDTO("Charge from Stripe succeeded", receiptUrl, movementDocumentNumber));
         kafkaNotificationRequestTemplate.send("notification-stripe-receipt", new NotificationRequestDTO(email, receiptUrl));
     }
 
@@ -44,11 +39,8 @@ public class StripeInvoiceServiceImpl implements StripeInvoiceService {
         pendingMovementRequests.put(movementDocumentNumber, future);
         kafkaStringTemplate.send("get-movement-by-document-number", movementDocumentNumber, movementDocumentNumber);
         MovementDTO movementDTO = future.get(TIMEOUT_DURATION, SECONDS);
-        InvoiceDTO invoiceDTO = new InvoiceDTO();
-        invoiceDTO.setDescription("Charge refund from Stripe succeeded");
-        invoiceDTO.setStripeReceiptUrl(receiptUrl);
+        InvoiceDTO invoiceDTO = createInvoiceDTO("Charge refund from Stripe succeeded", receiptUrl, movementDocumentNumber);
         invoiceDTO.setId(movementDTO.getInvoice().getId());
-        invoiceDTO.setDateOfEmission(LocalDate.now());
         kafkaInvoiceTemplate.send("update-invoice", movementDocumentNumber, invoiceDTO);
         kafkaNotificationRequestTemplate.send("notification-stripe-receipt", new NotificationRequestDTO(email, receiptUrl));
     }
@@ -56,5 +48,14 @@ public class StripeInvoiceServiceImpl implements StripeInvoiceService {
     @Override
     public CompletableFuture<MovementDTO> removePendingMovementRequestByDocumentNumber(String documentNumber) {
         return pendingMovementRequests.remove(documentNumber);
+    }
+
+    private InvoiceDTO createInvoiceDTO(String description, String receiptUrl, String movementDocumentNumber) {
+        InvoiceDTO invoiceDTO = new InvoiceDTO();
+        invoiceDTO.setDescription(description);
+        invoiceDTO.setDateOfEmission(LocalDate.now());
+        invoiceDTO.setStripeReceiptUrl(receiptUrl);
+        invoiceDTO.setMovementDocumentNumber(movementDocumentNumber);
+        return invoiceDTO;
     }
 }

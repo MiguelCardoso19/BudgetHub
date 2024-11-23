@@ -9,10 +9,12 @@ import com.portalMicroservice.service.SupplierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -28,39 +30,48 @@ public class SupplierController {
     private final SupplierFeignClient supplierFeignClient;
 
     @Operation(summary = "Create a new supplier",
-            description = "Creates a new supplier in the system with validated supplier details.")
+            description = "Creates a new supplier in the system with validated supplier details.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully created the supplier"),
             @ApiResponse(responseCode = "400", description = "Bad request, validation failed"),
             @ApiResponse(responseCode = "409", description = "Supplier already exists")
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/create")
     public ResponseEntity<SupplierDTO> create(@RequestBody SupplierDTO supplierDTO)
             throws ExecutionException, InterruptedException, GenericException, TimeoutException {
-        return ResponseEntity.ok(supplierService.create(supplierDTO));
         // return supplierFeignClient.createSupplier(supplierDTO);
+        return ResponseEntity.ok(supplierService.create(supplierDTO));
     }
 
     @Operation(summary = "Update an existing supplier",
-            description = "Updates details of an existing supplier in the system.")
+            description = "Updates details of an existing supplier in the system.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully updated the supplier"),
             @ApiResponse(responseCode = "404", description = "Supplier not found"),
             @ApiResponse(responseCode = "400", description = "Bad request, validation failed")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping("/update")
     public ResponseEntity<SupplierDTO> update(@RequestBody SupplierDTO supplierDTO)
             throws ExecutionException, InterruptedException, GenericException, TimeoutException {
-        return ResponseEntity.ok(supplierService.update(supplierDTO));
         // return supplierFeignClient.updateSupplier(supplierDTO);
+        return ResponseEntity.ok(supplierService.update(supplierDTO));
     }
 
     @Operation(summary = "Delete a supplier",
-            description = "Deletes an existing supplier by its ID.")
+            description = "Deletes an existing supplier by its ID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Successfully deleted the supplier"),
             @ApiResponse(responseCode = "404", description = "Supplier not found")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) throws ExecutionException, InterruptedException, TimeoutException {
         supplierService.delete(id);
@@ -69,24 +80,30 @@ public class SupplierController {
     }
 
     @Operation(summary = "Get supplier by ID",
-            description = "Fetches a specific supplier by its ID.")
+            description = "Fetches a specific supplier by its ID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully fetched the supplier"),
             @ApiResponse(responseCode = "404", description = "Supplier not found")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/{id}")
     public ResponseEntity<SupplierDTO> getById(@PathVariable UUID id)
             throws GenericException, ExecutionException, InterruptedException, TimeoutException, SupplierNotFoundException {
-        return ResponseEntity.ok(supplierService.getById(id));
         // return supplierFeignClient.getSupplierById(id);
+        return ResponseEntity.ok(supplierService.getById(id));
     }
 
     @Operation(summary = "Get all suppliers",
-            description = "Fetches a paginated list of all suppliers.")
+            description = "Fetches a paginated list of all suppliers.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully fetched the list of suppliers"),
             @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/all")
     public ResponseEntity<CustomPageDTO> getAll(Pageable pageable)
             throws GenericException, ExecutionException, InterruptedException, TimeoutException {

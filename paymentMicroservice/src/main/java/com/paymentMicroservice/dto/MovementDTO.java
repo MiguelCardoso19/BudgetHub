@@ -17,19 +17,7 @@ import java.util.UUID;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "DTO representing a financial movement, including details such as the supplier, type, value, associated invoice, and budget information.")
-public class MovementDTO {
-
-    @Schema(description = "Unique correlation ID to trace and associate requests/responses.",
-            example = "f47ac10b-58cc-4372-a567-0e02b2c3d479", required = true)
-    private UUID correlationId;
-
-    @Schema(description = "Unique identifier for the entity, typically assigned upon creation or retrieval.",
-            example = "123e4567-e89b-12d3-a456-426614174000", required = true)
-    private UUID id;
-
-    @Schema(description = "Version number for optimistic locking and concurrent updates management.",
-            example = "1", required = true)
-    private int version;
+public class MovementDTO extends AbstractDTO {
 
     @NotNull
     @NotEmpty

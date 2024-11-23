@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 
 import static com.portalMicroservice.exception.ErrorMessage.FAILED_TO_CANCEL_PAYMENT;
 
-
 @Getter
 public class FailedToCancelPaymentException extends Exception {
     private final String correlationId;
