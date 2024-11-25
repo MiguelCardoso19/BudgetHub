@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RestController
@@ -98,7 +99,7 @@ public class InvoiceController {
             @ApiResponse(responseCode = "404", description = "Invoice not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceDTO> getById(@PathVariable UUID id) throws InvoiceNotFoundException {
+    public ResponseEntity<InvoiceDTO> getById(@PathVariable UUID id) throws InvoiceNotFoundException, IOException {
         return ResponseEntity.ok(invoiceService.findInvoiceDTOById(id));
     }
 }

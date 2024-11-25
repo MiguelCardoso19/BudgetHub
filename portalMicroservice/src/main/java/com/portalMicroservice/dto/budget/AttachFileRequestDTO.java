@@ -17,4 +17,8 @@ public class AttachFileRequestDTO {
     @Schema(description = "The base64 encoded file content to be attached.",
             example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...")
     private String base64File;
+
+    @Schema(description = "The MIME type (Content-Type) of the file being uploaded. For example, 'application/pdf' or 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' for Excel files.",
+            example = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", required = true)
+    private String contentType;
 }

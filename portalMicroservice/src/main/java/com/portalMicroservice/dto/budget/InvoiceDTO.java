@@ -51,4 +51,13 @@ public class InvoiceDTO extends AbstractDTO {
             example = "INV-2024-0001",
             nullable = true)
     private String movementDocumentNumber;
+
+    @Schema(description = "The key for accessing the invoice file stored in S3. This is used to retrieve or delete the file associated with the invoice.",
+            example = "invoice-1234567890-xyz.pdf",
+            nullable = true)
+    private String fileKey;
+
+    @Schema(description = "Base64 encoded content of the invoice file (e.g., PDF), included in the response to display the file.",
+            nullable = true)
+    private String fileBase64;
 }

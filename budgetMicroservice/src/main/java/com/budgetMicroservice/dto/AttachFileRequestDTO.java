@@ -16,4 +16,8 @@ public class AttachFileRequestDTO extends AbstractDTO {
     @Schema(description = "Multipart file for uploading, typically used for larger files or when direct file upload is needed.",
             nullable = true)
     private MultipartFile multipartFile;
+
+    @Schema(description = "The MIME type (Content-Type) of the file being uploaded. For example, 'application/pdf' or 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' for Excel files.",
+            example = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", required = true)
+    private String contentType;
 }

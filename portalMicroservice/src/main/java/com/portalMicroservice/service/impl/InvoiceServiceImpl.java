@@ -82,7 +82,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         try {
             byte[] fileBytes = file.getBytes();
             String base64File = Base64.getEncoder().encodeToString(fileBytes);
-            kafkaAttachFileRequestTemplate.send("attach-base64-file-to-invoice", new AttachFileRequestDTO(invoiceId, base64File));
+            kafkaAttachFileRequestTemplate.send("attach-base64-file-to-invoice", new AttachFileRequestDTO(invoiceId, base64File, file.getContentType()));
         } catch (IOException e) {
             throw new FailedToUploadFileException(invoiceId);
         }

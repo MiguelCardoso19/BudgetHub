@@ -25,8 +25,7 @@ public class Invoice extends AbstractEntity {
     @JoinColumn(name = "movement_id")
     private Movement movement;
 
-    @Column(name = "file", columnDefinition = "bytea")
-    private byte[] file;
+    private String fileKey;
 
     private String stripeReceiptUrl;
 }

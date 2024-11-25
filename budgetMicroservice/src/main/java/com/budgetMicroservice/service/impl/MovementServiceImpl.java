@@ -1,7 +1,6 @@
 package com.budgetMicroservice.service.impl;
 
 import com.budgetMicroservice.dto.*;
-import com.budgetMicroservice.enumerator.MovementStatus;
 import com.budgetMicroservice.exception.*;
 import com.budgetMicroservice.mapper.InvoiceMapper;
 import com.budgetMicroservice.mapper.MovementMapper;
@@ -30,6 +29,7 @@ import static com.budgetMicroservice.enumerator.MovementStatus.*;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
 public class MovementServiceImpl implements MovementService {
+    private final S3Service s3Service;
     private final BudgetSubtypeService budgetSubtypeService;
     private final BudgetTypeService budgetTypeService;
     private final SupplierService supplierService;
@@ -120,6 +120,11 @@ public class MovementServiceImpl implements MovementService {
         if (existingMovement.getStatus().equals(SUCCEEDED)) {
             movementUtils.removeMovementValueFromBudget(existingMovement, budgetSubtypeService, budgetTypeService);
         }
+
+        if (existingMovement.getInvoice() != null && existingMovement.getInvoice().getFileKey() != null) {
+            s3Service.deleteFileFromS3(existingMovement.getInvoice().getFileKey());
+        }
+
         kafkaUuidTemplate.send("movement-delete-success-response", id);
         movementRepository.deleteById(id);
     }
@@ -131,7 +136,6 @@ public class MovementServiceImpl implements MovementService {
         Page<Movement> movementPage = movementRepository.findAll(PageableUtils.convertToPageable(customPageableDTO));
         List<MovementDTO> movementDTOs = movementMapper.toDTOList(movementPage);
         kafkaCustomPageTemplate.send("movement-page-response", PageableUtils.buildCustomPageDTO(customPageableDTO, movementDTOs, movementPage));
-
         return movementPage.map(movementMapper::toDTO);
     }
 

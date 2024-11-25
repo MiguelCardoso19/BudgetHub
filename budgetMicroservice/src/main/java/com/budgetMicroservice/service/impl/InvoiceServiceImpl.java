@@ -6,8 +6,11 @@ import com.budgetMicroservice.mapper.InvoiceMapper;
 import com.budgetMicroservice.model.Invoice;
 import com.budgetMicroservice.model.Movement;
 import com.budgetMicroservice.repository.InvoiceRepository;
+import com.budgetMicroservice.service.S3Service;
+import com.budgetMicroservice.util.Base64DecodedMultipartFile;
 import com.budgetMicroservice.service.InvoiceService;
 import com.budgetMicroservice.service.MovementService;
+import com.budgetMicroservice.util.InvoiceUtils;
 import com.budgetMicroservice.util.PageableUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.InputStream;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
+    private final S3Service s3Service;
     private final InvoiceRepository invoiceRepository;
     private final MovementService movementService;
     private final InvoiceMapper invoiceMapper;
@@ -65,7 +67,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @KafkaListener(topics = "update-invoice", groupId = "invoice_group", concurrency = "10", containerFactory = "invoiceKafkaListenerContainerFactory")
     public InvoiceDTO update(InvoiceDTO invoiceDTO) throws InvoiceNotFoundException {
-        findById(invoiceDTO.getId());
+        Invoice existingInvoice = findById(invoiceDTO.getId());
+
+        if (existingInvoice.getFileKey() != null && invoiceDTO.getFileKey() != null) {
+            s3Service.deleteFileFromS3(existingInvoice.getFileKey());
+        }
+
         Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
         InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(invoiceRepository.save(invoice));
         kafkaInvoiceTemplate.send("invoice-response", savedInvoiceDTO);
@@ -75,10 +82,15 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @KafkaListener(topics = "delete-invoice", groupId = "uuid_group", concurrency = "10")
     public void delete(UUID id) throws InvoiceNotFoundException {
-        if (!invoiceRepository.existsById(id)) {
+        Invoice invoice = invoiceRepository.findById(id).orElseThrow(() -> {
             kafkaInvoiceNotFoundExceptionTemplate.send("invoice-not-found-exception-response", new InvoiceNotFoundException(id));
-            throw new InvoiceNotFoundException(id);
+            return new InvoiceNotFoundException(id);
+        });
+
+        if (invoice.getFileKey() != null) {
+            s3Service.deleteFileFromS3(invoice.getFileKey());
         }
+
         invoiceRepository.deleteById(id);
         kafkaUuidTemplate.send("invoice-delete-success-response", id);
     }
@@ -95,21 +107,33 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @KafkaListener(topics = "get-by-id-invoice", groupId = "uuid_group", concurrency = "10")
-    public InvoiceDTO findInvoiceDTOById(UUID id) throws InvoiceNotFoundException {
-        InvoiceDTO invoiceDTO = invoiceMapper.toDTO(findById(id));
+    public InvoiceDTO findInvoiceDTOById(UUID id) throws InvoiceNotFoundException, IOException {
+        Invoice invoice = findById(id);
+        InvoiceDTO invoiceDTO = invoiceMapper.toDTO(invoice);
+
+        if (invoice.getFileKey() != null) {
+            InputStream fileInputStream = s3Service.getFileFromS3(invoice.getFileKey());
+            invoiceDTO.setFileBase64(Base64.getEncoder().encodeToString(fileInputStream.readAllBytes()));
+        }
+
         kafkaInvoiceTemplate.send("invoice-response", invoiceDTO);
         return invoiceDTO;
     }
 
+    @Override
     public void attachMultipartFileToInvoice(UUID id, MultipartFile file) throws InvoiceNotFoundException, FailedToUploadFileException {
         Invoice invoice = findById(id);
 
+        if (invoice.getFileKey() != null) {
+            s3Service.deleteFileFromS3(invoice.getFileKey());
+        }
+
         try {
-            invoice.setFile(file.getBytes());
+            String fileName = UUID.randomUUID() + InvoiceUtils.getFileExtensionFromContentType(Objects.requireNonNull(file.getContentType()));
+            invoice.setFileKey(s3Service.uploadFileToS3(new Base64DecodedMultipartFile(file.getBytes(), fileName, file.getContentType())));
         } catch (IOException e) {
             throw new FailedToUploadFileException(id);
         }
-
         invoiceRepository.save(invoice);
     }
 
@@ -118,10 +142,16 @@ public class InvoiceServiceImpl implements InvoiceService {
     public void attachBase64FileToInvoice(AttachFileRequestDTO request) throws InvoiceNotFoundException, FailedToUploadFileException {
         Invoice invoice = findById(request.getId());
 
+        if (invoice.getFileKey() != null) {
+            s3Service.deleteFileFromS3(invoice.getFileKey());
+        }
+
         try {
             byte[] fileBytes = Base64.getDecoder().decode(request.getBase64File());
-            invoice.setFile(fileBytes);
-        } catch (IllegalArgumentException e) {
+            String fileName = UUID.randomUUID() + InvoiceUtils.getFileExtensionFromContentType(request.getContentType());
+            String fileKey = s3Service.uploadFileToS3(new Base64DecodedMultipartFile(fileBytes, fileName, request.getContentType()));
+            invoice.setFileKey(fileKey);
+        } catch (IllegalArgumentException | IOException e) {
             kafkaFailedToUploadFileExceptionTemplate.send("failed-to-upload-file-exception-response", new FailedToUploadFileException(request.getId()));
             throw new FailedToUploadFileException(request.getId());
         }

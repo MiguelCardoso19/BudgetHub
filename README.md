@@ -25,7 +25,6 @@
 9. [Payment Microservice](#payment-microservice)
     - [Overview](#overview-5)
     - [Key Features](#key-features-2)
-10. [Portal Microservice Endpoints](#portal-microservice-endpoints)
 
 
 
@@ -60,6 +59,7 @@
 - **Apache Kafka**
 - **Spring Cloud OpenFeign**
 - **Java Mail Sender**
+- **AWS (S3)**
 - **Stripe API**
 - **Liquibase**
 - **Docker**
