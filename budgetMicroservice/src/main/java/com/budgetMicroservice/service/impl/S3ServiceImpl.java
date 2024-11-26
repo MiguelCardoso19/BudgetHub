@@ -26,20 +26,20 @@ public class S3ServiceImpl implements S3Service {
     private String bucketName;
 
     @Override
-    public String uploadFileToS3(MultipartFile file) throws IOException {
+    public String putObject(MultipartFile file) throws IOException {
         File tempFile = convertMultiPartToFile(file);
         s3Client.putObject(new PutObjectRequest(bucketName, file.getOriginalFilename(), tempFile));
         return file.getOriginalFilename();
     }
 
     @Override
-    public InputStream getFileFromS3(String fileKey) {
+    public InputStream getObject(String fileKey) {
         S3Object s3Object = s3Client.getObject(new GetObjectRequest(bucketName, fileKey));
         return s3Object.getObjectContent();
     }
 
     @Override
-    public void deleteFileFromS3(String fileKey) {
+    public void deleteObject(String fileKey) {
         s3Client.deleteObject(new DeleteObjectRequest(bucketName, fileKey));
     }
 

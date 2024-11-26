@@ -70,7 +70,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice existingInvoice = findById(invoiceDTO.getId());
 
         if (existingInvoice.getFileKey() != null && invoiceDTO.getFileKey() != null) {
-            s3Service.deleteFileFromS3(existingInvoice.getFileKey());
+            s3Service.deleteObject(existingInvoice.getFileKey());
         }
 
         Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
@@ -88,7 +88,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         });
 
         if (invoice.getFileKey() != null) {
-            s3Service.deleteFileFromS3(invoice.getFileKey());
+            s3Service.deleteObject(invoice.getFileKey());
         }
 
         invoiceRepository.deleteById(id);
@@ -112,7 +112,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         InvoiceDTO invoiceDTO = invoiceMapper.toDTO(invoice);
 
         if (invoice.getFileKey() != null) {
-            InputStream fileInputStream = s3Service.getFileFromS3(invoice.getFileKey());
+            InputStream fileInputStream = s3Service.getObject(invoice.getFileKey());
             invoiceDTO.setFileBase64(Base64.getEncoder().encodeToString(fileInputStream.readAllBytes()));
         }
 
@@ -125,12 +125,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice invoice = findById(id);
 
         if (invoice.getFileKey() != null) {
-            s3Service.deleteFileFromS3(invoice.getFileKey());
+            s3Service.deleteObject(invoice.getFileKey());
         }
 
         try {
             String fileName = UUID.randomUUID() + InvoiceUtils.getFileExtensionFromContentType(Objects.requireNonNull(file.getContentType()));
-            invoice.setFileKey(s3Service.uploadFileToS3(new Base64DecodedMultipartFile(file.getBytes(), fileName, file.getContentType())));
+            invoice.setFileKey(s3Service.putObject(new Base64DecodedMultipartFile(file.getBytes(), fileName, file.getContentType())));
         } catch (IOException e) {
             throw new FailedToUploadFileException(id);
         }
@@ -143,13 +143,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice invoice = findById(request.getId());
 
         if (invoice.getFileKey() != null) {
-            s3Service.deleteFileFromS3(invoice.getFileKey());
+            s3Service.deleteObject(invoice.getFileKey());
         }
 
         try {
             byte[] fileBytes = Base64.getDecoder().decode(request.getBase64File());
             String fileName = UUID.randomUUID() + InvoiceUtils.getFileExtensionFromContentType(request.getContentType());
-            String fileKey = s3Service.uploadFileToS3(new Base64DecodedMultipartFile(fileBytes, fileName, request.getContentType()));
+            String fileKey = s3Service.putObject(new Base64DecodedMultipartFile(fileBytes, fileName, request.getContentType()));
             invoice.setFileKey(fileKey);
         } catch (IllegalArgumentException | IOException e) {
             kafkaFailedToUploadFileExceptionTemplate.send("failed-to-upload-file-exception-response", new FailedToUploadFileException(request.getId()));

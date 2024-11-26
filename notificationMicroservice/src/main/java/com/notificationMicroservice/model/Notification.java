@@ -55,12 +55,13 @@ public class Notification {
 
     private LocalDateTime sentDate;
 
+    private int retryCount = 0;
+
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 
     @Enumerated(EnumType.STRING)
     private NotificationStatus status;
 
-    @Column(columnDefinition = "TEXT")
-    private String attachment;
+    private String fileKey;
 }

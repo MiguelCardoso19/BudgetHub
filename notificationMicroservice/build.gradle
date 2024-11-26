@@ -40,7 +40,9 @@ dependencies {
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
-	implementation 'org.redisson:redisson:3.17.0'
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.778'
+	implementation 'org.redisson:redisson:3.22.0'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 tasks.named('test') {

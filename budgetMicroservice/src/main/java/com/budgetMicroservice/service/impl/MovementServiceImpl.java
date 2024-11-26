@@ -122,7 +122,7 @@ public class MovementServiceImpl implements MovementService {
         }
 
         if (existingMovement.getInvoice() != null && existingMovement.getInvoice().getFileKey() != null) {
-            s3Service.deleteFileFromS3(existingMovement.getInvoice().getFileKey());
+            s3Service.deleteObject(existingMovement.getInvoice().getFileKey());
         }
 
         kafkaUuidTemplate.send("movement-delete-success-response", id);

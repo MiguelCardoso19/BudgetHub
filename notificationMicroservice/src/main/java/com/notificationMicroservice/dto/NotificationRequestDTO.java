@@ -30,4 +30,9 @@ public class NotificationRequestDTO {
             example = "https://stripe.com/receipts/example123",
             nullable = true)
     private String stripeReceiptUrl;
+
+    @Schema(description = "The key for accessing the invoice file stored in S3. This is used to retrieve or delete the file associated with the invoice.",
+            example = "invoice-1234567890-xyz.pdf",
+            nullable = true)
+    private String fileKey;
 }

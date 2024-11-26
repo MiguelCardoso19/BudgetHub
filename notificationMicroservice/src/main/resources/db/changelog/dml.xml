@@ -12,15 +12,15 @@
             <column name="last_modified_date" value="2023-01-01T00:00:00"/>
             <column name="created_by" value="liquibase"/>
             <column name="last_modified_by" value="liquibase"/>
-            <column name="version" value="1"/>
+            <column name="version" value="0"/>
             <column name="sender" value="expensehub1@gmail.com"/>
             <column name="recipient" value="miguel40cardoso@gmail.com"/>
             <column name="subject" value="Test Email from scheduler"/>
             <column name="body" value="This is a test email body for retry testing."/>
             <column name="sent_date" value="2023-01-01T00:00:00"/>
+            <column name="retry_count" value="0"/>
             <column name="type" value="EMAIL"/>
             <column name="status" value="FAILED"/>
-            <column name="attachment" value=""/>
         </insert>
     </changeSet>
 </databaseChangeLog>

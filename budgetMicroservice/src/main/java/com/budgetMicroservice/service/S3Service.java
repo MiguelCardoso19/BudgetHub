@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public interface S3Service {
-    String uploadFileToS3(MultipartFile file) throws IOException;
-    InputStream getFileFromS3(String fileKey);
-    void deleteFileFromS3(String fileKey);
+    String putObject(MultipartFile file) throws IOException;
+    InputStream getObject(String fileKey);
+    void deleteObject(String fileKey);
 }

@@ -11,18 +11,13 @@
     <property name="varchar.type" value="VARCHAR(255)" dbms="postgresql, mysql"/>
     <property name="varchar.type" value="CLOB" dbms="oracle"/>
 
-    <property name="text.type" value="TEXT" dbms="postgresql, mysql, oracle"/>
-
     <property name="timestamp.type" value="TIMESTAMP" dbms="postgresql, mysql"/>
     <property name="timestamp.type" value="TIMESTAMP" dbms="oracle"/>
 
     <property name="integer.type" value="INTEGER" dbms="postgresql, mysql"/>
     <property name="integer.type" value="NUMBER(10)" dbms="oracle"/>
 
-    <property name="boolean.type" value="BOOLEAN" dbms="postgresql, mysql"/>
-    <property name="boolean.type" value="NUMBER(1)" dbms="oracle"/>
-
-    <changeSet id="1" author="MiguelCardoso">
+    <changeSet id="2" author="MiguelCardoso">
         <createTable tableName="notification">
             <column name="id" type="${uuid.type}">
                 <constraints primaryKey="true" nullable="false"/>
@@ -41,15 +36,18 @@
             <column name="sender" type="${varchar.type}"/>
             <column name="recipient" type="${varchar.type}"/>
             <column name="subject" type="${varchar.type}"/>
-            <column name="body" type="${text.type}"/>
+            <column name="body" type="${varchar.type}"/>
             <column name="sent_date" type="${timestamp.type}"/>
+            <column name="retry_count" type="${integer.type}" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="type" type="${varchar.type}">
                 <constraints nullable="false"/>
             </column>
             <column name="status" type="${varchar.type}">
                 <constraints nullable="false"/>
             </column>
-            <column name="attachment" type="${text.type}"/>
+            <column name="file_key" type="${varchar.type}"/>
         </createTable>
     </changeSet>
 

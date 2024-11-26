@@ -146,7 +146,9 @@
             <column name="stripe_receipt_url" type="${text.type}">
                 <constraints nullable="true"/>
             </column>
-            <column name="file" type="bytea"/>
+            <column name="file_key" type="${varchar.type}">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
     </changeSet>
 
