@@ -138,14 +138,20 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @KafkaListener(topics = "create-card-token-topic", groupId = "create_card_token_group", concurrency = "10", containerFactory = "stripeCardTokenKafkaListenerContainerFactory")
     public void createCardToken(StripeCardTokenDTO model) throws StripeException, StripeCardTokenCreationException {
-        Map<String, Object> card = new HashMap<>();
-        card.put("number", model.getCardNumber());
-        card.put("exp_month", Integer.parseInt(model.getExpMonth()));
-        card.put("exp_year", Integer.parseInt(model.getExpYear()));
-        card.put("cvc", model.getCvc());
-        Map<String, Object> params = new HashMap<>();
-        params.put("card", card);
+        TokenCreateParams params =
+                TokenCreateParams.builder()
+                        .setCard(
+                                TokenCreateParams.Card.builder()
+                                        .setNumber(model.getCardNumber())
+                                        .setExpMonth(model.getExpMonth())
+                                        .setExpYear(model.getExpYear())
+                                        .setCvc(model.getCvc())
+                                        .build()
+                        )
+                        .build();
+
         Token token = Token.create(params);
+
         if (token != null && token.getId() != null) {
             model.setSuccess(true);
             model.setToken(token.getId());
@@ -153,7 +159,8 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
 
-        kafkaStripeCardTokenCreationExceptionTemplate.send("stripe-card-token-creation-exception-response", new StripeCardTokenCreationException(model.getCorrelationId()));
+        kafkaStripeCardTokenCreationExceptionTemplate.send("stripe-card-token-creation-exception-response",
+                new StripeCardTokenCreationException(model.getCorrelationId()));
         throw new StripeCardTokenCreationException();
     }
 
@@ -235,7 +242,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    private Customer findOrCreateCustomer(String email) throws StripeException {
+    public Customer findOrCreateCustomer(String email) throws StripeException {
         CustomerSearchResult search = Customer.search(CustomerSearchParams.builder().setQuery("email:'" + email + "'").build());
         Customer customer;
         if (search.getData().isEmpty()) {
