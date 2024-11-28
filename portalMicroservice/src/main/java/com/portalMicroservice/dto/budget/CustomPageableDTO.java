@@ -3,12 +3,12 @@ package com.portalMicroservice.dto.budget;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "DTO representing pagination details including page number, page size, offset, sort order, and correlation ID.")

@@ -242,7 +242,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    public Customer findOrCreateCustomer(String email) throws StripeException {
+    private Customer findOrCreateCustomer(String email) throws StripeException {
         CustomerSearchResult search = Customer.search(CustomerSearchParams.builder().setQuery("email:'" + email + "'").build());
         Customer customer;
         if (search.getData().isEmpty()) {

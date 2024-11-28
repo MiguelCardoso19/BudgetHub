@@ -1,12 +1,12 @@
 package com.portalMicroservice.dto.budget;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Getter
+@Data
 @NoArgsConstructor
 @Schema(description = "DTO representing a paginated response, containing a list of content items along with pagination details.")
 public class CustomPageDTO<T> {

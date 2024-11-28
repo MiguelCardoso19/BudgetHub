@@ -7,85 +7,83 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import com.paymentMicroservice.dto.*;
 import com.paymentMicroservice.exception.*;
-import com.paymentMicroservice.model.FailedPayment;
-import com.paymentMicroservice.repository.FailedPaymentRepository;
 import com.paymentMicroservice.service.impl.PaymentServiceImpl;
 import com.paymentMicroservice.validator.PaymentValidator;
 import com.stripe.model.*;
 import com.stripe.exception.StripeException;
-import com.stripe.net.RequestOptions;
-import com.stripe.param.CustomerSearchParams;
 import com.stripe.param.PaymentIntentCancelParams;
-import com.stripe.param.PaymentIntentCreateParams;
-import com.stripe.param.TokenCreateParams;
+import com.stripe.param.PaymentIntentConfirmParams;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.*;
 
 @SpringBootTest
-@ExtendWith(SpringExtension.class)
 @EmbeddedKafka(partitions = 1, controlledShutdown = true)
 @EnableKafka
 public class PaymentServiceImplTest {
 
     @Mock
     private PaymentValidator paymentValidator;
-    @Mock
-    private FailedPaymentRepository failedPaymentRepository;
-    @Mock
-    private RedissonClient redissonClient;
-    @Mock
-    private KafkaTemplate<String, CreatePaymentResponseDTO> kafkaCreatePaymentResponseTemplate;
-    @Mock
-    private KafkaTemplate<String, String> kafkaStringTemplate;
-    @Mock
-    private KafkaTemplate<String, StripeCardTokenDTO> kafkaStripeCardTokenTemplate;
-    @Mock
-    private KafkaTemplate<String, StripeSepaTokenDTO> kafkaStripeSepaTokenTemplate;
-    @Mock
-    private KafkaTemplate<String, FailedToCancelPaymentException> kafkaFailedToCancelPaymentExceptionTemplate;
-    @Mock
-    private KafkaTemplate<String, FailedToConfirmPaymentException> kafkaFailedToConfirmPaymentExceptionTemplate;
+
     @Mock
     private KafkaTemplate<String, RefundException> kafkaRefundNotPossibleExceptionTemplate;
-    @Mock
-    private KafkaTemplate<String, StripeCardTokenCreationException> kafkaStripeCardTokenCreationExceptionTemplate;
-    @Mock
-    private KafkaTemplate<String, StripeSepaTokenCreationException> kafkaStripeSepaTokenCreationExceptionTemplate;
-    @Mock
-    private KafkaTemplate<String, SessionResponseDTO> kafkaSessionResponseTemplate;
-    @Mock
-    private KafkaTemplate<String, PaymentSessionException> kafkaPaymentSessionExceptionTemplate;
 
     @InjectMocks
     private PaymentServiceImpl paymentService;
 
+    private PaymentActionRequestDTO paymentActionRequest;
+
+    private RefundChargeRequestDTO refundChargeRequest;
+
     @BeforeEach
     public void setUp() {
         openMocks(this);
+        paymentActionRequest = new PaymentActionRequestDTO();
+        paymentActionRequest.setPaymentIntentId("pi_test");
+        refundChargeRequest = new RefundChargeRequestDTO();
+        refundChargeRequest.setPaymentIntentId("pi_test");
     }
 
     @Test
-    void cancelPaymentIntent_shouldSendCancelSuccessMessage_whenPaymentIntentIsValid() throws StripeException, FailedToCancelPaymentException {
-        PaymentActionRequestDTO request = new PaymentActionRequestDTO();
-        request.setPaymentIntentId("pi_123");
+    void testConfirmPaymentIntent_Success() throws Exception {
+        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+        when(mockPaymentIntent.getStatus()).thenReturn("requires_confirmation");
+        when(mockPaymentIntent.confirm(any(PaymentIntentConfirmParams.class))).thenReturn(mockPaymentIntent);
+        MockedStatic<PaymentIntent> paymentIntentMockedStatic = Mockito.mockStatic(PaymentIntent.class);
+        paymentIntentMockedStatic.when(() -> PaymentIntent.retrieve("pi_test")).thenReturn(mockPaymentIntent);
 
+        paymentService.confirmPaymentIntent(paymentActionRequest);
+
+        verify(mockPaymentIntent).confirm(any(PaymentIntentConfirmParams.class));
+        paymentIntentMockedStatic.close();
+    }
+
+    @Test
+    void testConfirmPaymentIntent_ShouldThrowException() {
+        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+        when(mockPaymentIntent.getStatus()).thenReturn("canceled");
+        MockedStatic<PaymentIntent> paymentIntentMockedStatic = Mockito.mockStatic(PaymentIntent.class);
+        paymentIntentMockedStatic.when(() -> PaymentIntent.retrieve("pi_test")).thenReturn(mockPaymentIntent);
+
+        assertThrows(FailedToConfirmPaymentException.class, () -> paymentService.confirmPaymentIntent(paymentActionRequest));
+
+        paymentIntentMockedStatic.close();
+    }
+
+    @Test
+    void cancelPaymentIntent_Successful() throws StripeException, FailedToCancelPaymentException {
         try (MockedStatic<PaymentIntent> mockedPaymentIntent = mockStatic(PaymentIntent.class)) {
             PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
             when(mockPaymentIntent.getStatus()).thenReturn("requires_payment_method");
-            mockedPaymentIntent.when(() -> PaymentIntent.retrieve("pi_123")).thenReturn(mockPaymentIntent);
+            mockedPaymentIntent.when(() -> PaymentIntent.retrieve("pi_test")).thenReturn(mockPaymentIntent);
 
-            paymentService.cancelPaymentIntent(request);
+            paymentService.cancelPaymentIntent(paymentActionRequest);
 
             verify(mockPaymentIntent, times(1)).cancel(any(PaymentIntentCancelParams.class));
             verify(mockPaymentIntent, times(1)).getStatus();
@@ -93,16 +91,14 @@ public class PaymentServiceImplTest {
     }
 
     @Test
-    void cancelPaymentIntent_shouldThrowException_whenPaymentIntentCannotBeCancelled() throws StripeException {
-        PaymentActionRequestDTO request = new PaymentActionRequestDTO();
-        request.setPaymentIntentId("pi_123");
+    void cancelPaymentIntent_shouldThrowException() {
+        try (MockedStatic<PaymentIntent> paymentIntentMock = mockStatic(PaymentIntent.class)) {
+            PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+            when(mockPaymentIntent.getStatus()).thenReturn("succeeded");
+            paymentIntentMock.when(() -> PaymentIntent.retrieve("pi_test")).thenReturn(mockPaymentIntent);
 
-        MockedStatic<PaymentIntent> paymentIntentMock = mockStatic(PaymentIntent.class);
-        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
-        when(mockPaymentIntent.getStatus()).thenReturn("succeeded");
-        paymentIntentMock.when(() -> PaymentIntent.retrieve("pi_123")).thenReturn(mockPaymentIntent);
-
-        assertThrows(FailedToCancelPaymentException.class, () -> paymentService.cancelPaymentIntent(request));
+            assertThrows(FailedToCancelPaymentException.class, () -> paymentService.cancelPaymentIntent(paymentActionRequest));
+        }
     }
 
     /* Cannot send card data while in production
@@ -126,4 +122,95 @@ public class PaymentServiceImplTest {
         assertEquals("tok_123", model.getToken());
     }
      */
+
+    @Test
+    void createSepaToken_Success() throws StripeException, StripeSepaTokenCreationException {
+        StripeSepaTokenDTO model = new StripeSepaTokenDTO();
+        model.setIban("DE89370400440532013000");
+        model.setAccountHolderName("John Doe");
+        model.setAccountHolderType("individual");
+
+        Token mockToken = mock(Token.class);
+        when(mockToken.getId()).thenReturn("tok_sepa_123");
+
+        MockedStatic<Token> tokenMockedStatic = Mockito.mockStatic(Token.class);
+        tokenMockedStatic.when(() -> Token.create(anyMap())).thenReturn(mockToken);
+
+        paymentService.createSepaToken(model);
+
+        assertTrue(model.isSuccess());
+        assertEquals("tok_sepa_123", model.getToken());
+
+        tokenMockedStatic.close();
+    }
+
+    @Test
+    void refundCharge_Successful() throws Exception {
+        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+        when(mockPaymentIntent.getLatestCharge()).thenReturn("charge_test");
+
+        Charge mockCharge = mock(Charge.class);
+        when(mockCharge.getStatus()).thenReturn("succeeded");
+        when(mockCharge.getId()).thenReturn("charge_test_id");
+
+        MockedStatic<PaymentIntent> paymentIntentMockedStatic = Mockito.mockStatic(PaymentIntent.class);
+        paymentIntentMockedStatic.when(() -> PaymentIntent.retrieve("pi_test")).thenReturn(mockPaymentIntent);
+
+        MockedStatic<Charge> chargeMockedStatic = Mockito.mockStatic(Charge.class);
+        chargeMockedStatic.when(() -> Charge.retrieve("charge_test")).thenReturn(mockCharge);
+
+        MockedStatic<Refund> refundMockedStatic = Mockito.mockStatic(Refund.class);
+        refundMockedStatic.when(() -> Refund.create(anyMap())).thenReturn(null);
+
+        paymentService.refundCharge(refundChargeRequest);
+
+        paymentIntentMockedStatic.close();
+        chargeMockedStatic.close();
+        refundMockedStatic.close();
+    }
+
+    @Test
+    void refundCharge_shouldThrowException() {
+        PaymentIntent mockPaymentIntent = mock(PaymentIntent.class);
+        when(mockPaymentIntent.getLatestCharge()).thenReturn("charge_test");
+
+        Charge mockCharge = mock(Charge.class);
+        when(mockCharge.getStatus()).thenReturn("failed");
+
+        MockedStatic<PaymentIntent> paymentIntentMockedStatic = Mockito.mockStatic(PaymentIntent.class);
+        paymentIntentMockedStatic.when(() -> PaymentIntent.retrieve("pi_test")).thenReturn(mockPaymentIntent);
+
+        MockedStatic<Charge> chargeMockedStatic = Mockito.mockStatic(Charge.class);
+        chargeMockedStatic.when(() -> Charge.retrieve("charge_test")).thenReturn(mockCharge);
+
+        when(kafkaRefundNotPossibleExceptionTemplate.send(anyString(), any(RefundException.class)))
+                .thenReturn(null);
+
+        assertThrows(RefundException.class, () -> paymentService.refundCharge(refundChargeRequest));
+
+        paymentIntentMockedStatic.close();
+        chargeMockedStatic.close();
+    }
+
+    @Test
+    void testCreatePaymentSession_Success() throws Exception {
+        SessionRequestDTO sessionRequestDTO = new SessionRequestDTO();
+        sessionRequestDTO.setCorrelationId(UUID.randomUUID());
+        sessionRequestDTO.setCurrency("eur");
+        sessionRequestDTO.setDescription("Test payment");
+        sessionRequestDTO.setEmail("test@example.com");
+
+        CreatePaymentItemDTO item = new CreatePaymentItemDTO();
+        item.setAmount(100L);
+        item.setBudgetSubtypeId(UUID.randomUUID());
+        item.setSupplierId(UUID.randomUUID());
+        item.setId("fake-id");
+        sessionRequestDTO.setItems(new CreatePaymentItemDTO[]{item});
+
+        doNothing().when(paymentValidator).validateFundsForPayment(any(), any());
+
+        assertDoesNotThrow(() -> paymentService.createPaymentSession(sessionRequestDTO));
+
+        doNothing().when(paymentValidator).validateFundsForPayment(any(), any());
+    }
 }
