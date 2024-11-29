@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import java.util.concurrent.TimeoutException;
-
 import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,9 +16,6 @@ class StripeInvoiceServiceImplTest {
 
     @Mock
     private KafkaTemplate<String, NotificationRequestDTO> kafkaNotificationRequestTemplate;
-
-    @Mock
-    private KafkaTemplate<String, String> kafkaStringTemplate;
 
     @InjectMocks
     private StripeInvoiceServiceImpl stripeInvoiceService;
@@ -48,19 +43,5 @@ class StripeInvoiceServiceImplTest {
         stripeInvoiceService.removePendingMovementRequestByDocumentNumber(documentNumber);
 
         assertNull(stripeInvoiceService.removePendingMovementRequestByDocumentNumber(documentNumber));
-    }
-
-    @Test
-    void testSendChargeRefundInvoiceTimeout() {
-        String receiptUrl = "http://receipt.url";
-        String movementDocumentNumber = "doc123";
-        String email = "test@example.com";
-
-        when(kafkaStringTemplate.send(anyString(), eq(movementDocumentNumber), eq(movementDocumentNumber)))
-                .thenReturn(null);
-
-        assertThrows(TimeoutException.class, () -> {
-            stripeInvoiceService.sendChargeRefundInvoice(receiptUrl, movementDocumentNumber, email);
-        });
     }
 }

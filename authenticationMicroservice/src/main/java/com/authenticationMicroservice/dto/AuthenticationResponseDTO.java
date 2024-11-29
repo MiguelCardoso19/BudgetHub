@@ -2,11 +2,15 @@ package com.authenticationMicroservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Data Transfer Object representing the authentication response, including the JWT token, refresh token and user ID.")
 public class AuthenticationResponseDTO extends AbstractDTO {

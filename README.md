@@ -76,7 +76,7 @@
 ## Architecture
 BudgetHub follows a microservices architecture, with independent services communicating via Kafka or synchronous FeignClient calls. Each service is designed for scalability, reliability, and modularity.
 
-![Expense Hub Architecture](budgethubdiagram.png)
+![Expense Hub Architecture](documentationStuff/budgethubdiagram.png)
 
 ---
 
@@ -135,10 +135,10 @@ The **Portal Microservice** is built with a microservices architecture, where ea
 
 ## Endpoints
 
-![portalMicroserviceEndpoints1](portalMicroserviceEndpoints1.png)
-![portalMicroserviceEndpoints2](portalMicroserviceEndpoints2.png)
-![portalMicroserviceEndpoints3](portalMicroserviceEndpoints3.png)
-![portalMicroserviceEndpoints4](portalMicroserviceEndpoints4.png)
+![portalMicroserviceEndpoints1](documentationStuff/portalMicroserviceEndpoints1.png)
+![portalMicroserviceEndpoints2](documentationStuff/portalMicroserviceEndpoints2.png)
+![portalMicroserviceEndpoints3](documentationStuff/portalMicroserviceEndpoints3.png)
+![portalMicroserviceEndpoints4](documentationStuff/portalMicroserviceEndpoints4.png)
 
 ---
 
