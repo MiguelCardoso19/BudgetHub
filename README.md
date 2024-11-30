@@ -66,6 +66,7 @@
 - **Redis**
 - **Mockito**
 - **JUnit 5**
+- **Hibernate**
 - **Gradle**
 - **Lombok**
 - **Swagger**
