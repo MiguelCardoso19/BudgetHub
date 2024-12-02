@@ -2,12 +2,12 @@ package com.budgetMicroservice.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "DTO representing a request to fetch movements by budget, including a budget ID and pagination details.")

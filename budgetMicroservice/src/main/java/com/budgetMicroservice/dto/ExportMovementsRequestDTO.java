@@ -3,13 +3,13 @@ package com.budgetMicroservice.dto;
 import com.budgetMicroservice.enumerator.MovementStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "DTO representing a request to export movement data for a specific date range and status, associated with a user.")

@@ -37,7 +37,6 @@ class BudgetSubtypeControllerTest {
 
     private UUID id;
 
-
     @BeforeEach
     void setUp() {
         openMocks(this);
