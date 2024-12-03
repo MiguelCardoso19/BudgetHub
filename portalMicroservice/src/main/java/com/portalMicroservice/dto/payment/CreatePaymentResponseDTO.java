@@ -1,15 +1,17 @@
 package com.portalMicroservice.dto.payment;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
 @Schema(name = "CreatePaymentResponseDTO", description = "Response object containing details of the created payment")
 public class CreatePaymentResponseDTO {
 

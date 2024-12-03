@@ -1,13 +1,13 @@
 package com.portalMicroservice.exception.budget;
 
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 
 import java.util.UUID;
 
 import static com.portalMicroservice.exception.ErrorMessage.BUDGET_TYPE_ALREADY_EXISTS;
 
-@Getter
+@Data
 public class BudgetTypeAlreadyExistsException extends Exception {
     private UUID id;
     private final String message;

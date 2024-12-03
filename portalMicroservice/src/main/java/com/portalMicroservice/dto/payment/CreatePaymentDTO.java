@@ -9,11 +9,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "CreatePaymentDTO", description = "DTO for creating a new payment")
 public class CreatePaymentDTO {
@@ -43,11 +46,9 @@ public class CreatePaymentDTO {
     private CreatePaymentItemDTO[] items;
 
     @Schema(description = "Type of movement associated with the payment",
-            example = "EXPENSE",
+            example = "DEBIT",
             required = true,
             allowableValues = {"DEBIT", "CREDIT"})
-    @NotNull
-    @NotEmpty
     @Enumerated(EnumType.STRING)
     private MovementType movementType;
 

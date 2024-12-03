@@ -1,13 +1,13 @@
 package com.portalMicroservice.exception.budget;
 
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 
 import static com.portalMicroservice.exception.ErrorMessage.SUPPLIER_NOT_FOUND;
 
-@Getter
+@Data
 public class SupplierNotFoundException extends Exception {
-    private final String id;
+    private String id;
     private final String message;
     private final HttpStatus status;
     private final String errorCode;

@@ -1,13 +1,13 @@
 package com.portalMicroservice.exception.budget;
 
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 
 import java.util.UUID;
 
 import static com.portalMicroservice.exception.ErrorMessage.MOVEMENT_VALIDATION_ERROR;
 
-@Getter
+@Data
 public class MovementValidationException extends Exception {
     private UUID id;
     private final HttpStatus status;
