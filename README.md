@@ -75,7 +75,7 @@
 
 
 ## Architecture
-BudgetHub follows a microservices architecture, with independent services communicating via Kafka or synchronous FeignClient calls. Each service is designed for scalability, reliability, and modularity.
+BudgetHub follows a microservices architecture, with independent services communicating via Kafka or synchronous FeignClient calls.
 
 ![Expense Hub Architecture](documentationStuff/budgethubdiagram.png)
 

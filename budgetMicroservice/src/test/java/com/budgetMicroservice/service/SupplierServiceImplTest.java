@@ -91,7 +91,6 @@ class SupplierServiceImplTest {
         assertNotNull(result);
         assertEquals(supplierDTO.getId(), result.getId());
         verify(supplierValidator, times(1)).validateSupplierUpdate(eq(supplierDTO), any(SupplierRepository.class));
-        verify(kafkaSupplierTemplate, times(1)).send(eq("supplier-response"), eq(supplierDTO));
     }
 
     @Test

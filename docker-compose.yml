@@ -84,6 +84,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+    depends_on:
+      - authentication-microservice
+
 
   budget-microservice:
     build:
@@ -150,7 +155,7 @@ services:
   stripe-cli:
     image: stripe/stripe-cli:latest
     container_name: stripe-cli
-    command: [ "listen", "--forward-to", "http://host.docker.internal:8084/webhook", "--verbose" ]
+    command: [ "listen", "--forward-to", "http://host.docker.internal:8084/api/v1/webhook/stripe"]
     environment:
       STRIPE_API_KEY: ${STRIPE_PRIVATE_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_KEY}
