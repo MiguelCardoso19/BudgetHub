@@ -93,7 +93,7 @@ class BudgetTypeServiceImplTest {
 
         budgetTypeService.deleteBudgetType(id);
 
-        verify(kafkaUuidTemplate, times(0)).send("budget-type-delete-success-response", id);
+        verify(budgetTypeRepository, times(1)).deleteById(id);
     }
 
     @Test
@@ -128,7 +128,9 @@ class BudgetTypeServiceImplTest {
         when(budgetTypeRepository.findById(id)).thenReturn(Optional.of(budgetType));
         when(budgetMapper.toDTO(budgetType)).thenReturn(budgetTypeDTO);
 
-        assertEquals(budgetTypeDTO, budgetTypeService.findBudgetTypeDTOById(id));
-        verify(kafkaBudgetTypeTemplate, times(2));
+        BudgetTypeDTO result = budgetTypeService.findBudgetTypeDTOById(id);
+
+        assertNotNull(result);
+        assertEquals(budgetTypeDTO, result);
     }
 }

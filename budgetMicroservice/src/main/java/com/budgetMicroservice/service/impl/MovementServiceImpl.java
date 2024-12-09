@@ -159,7 +159,7 @@ public class MovementServiceImpl implements MovementService {
     public MovementDTO updateMovementStatus(MovementUpdateStatusRequestDTO movementUpdateStatusRequestDTO) throws MovementNotFoundException, BudgetExceededException, DocumentNumberNotFoundException {
         Movement movement;
 
-        if (movementUpdateStatusRequestDTO.getId() != null) {
+        if (movementUpdateStatusRequestDTO.getId() != null || movementUpdateStatusRequestDTO.getCorrelationId() != null) {
             movement = findById(movementUpdateStatusRequestDTO.getId());
         } else {
             movement = getMovementByDocumentNumber(movementUpdateStatusRequestDTO.getDocumentNumber());

@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import static com.paymentMicroservice.enumerators.MovementStatus.*;
+import static com.paymentMicroservice.enumerators.MovementType.DEBIT;
 
 @Service
 @Slf4j
@@ -68,20 +69,20 @@ public class WebhookServiceImpl implements WebhookService {
         }
     }
 
-    private void handleEvent(Event event, StripeObject stripeObject) throws JsonProcessingException, StripeException, ExecutionException, InterruptedException, TimeoutException {
+    private void handleEvent(Event event, StripeObject stripeObject) throws JsonProcessingException, ExecutionException, InterruptedException, TimeoutException {
         switch (event.getType()) {
             case "payment_intent.created" -> handlePaymentIntentCreated((PaymentIntent) stripeObject);
             case "payment_intent.succeeded" -> handlePaymentIntentSucceeded((PaymentIntent) stripeObject);
-            case "charge.succeeded" -> handleChargeSucceeded((Charge) stripeObject);
+          //  case "charge.succeeded" -> handleChargeApprovedAction((Charge) stripeObject);
             case "charge.refunded" -> handleChargeRefund((Charge) stripeObject);
-            case "charge.updated" -> handleChargeUpdated((Charge) stripeObject);
+            case "charge.updated" -> handleChargeApprovedAction((Charge) stripeObject);
             case "payment_intent.canceled" -> handlePaymentIntentCanceled((PaymentIntent) stripeObject);
             case "payment_method.attached" -> handlePaymentMethodAttached((PaymentMethod) stripeObject);
             default -> log.warn("Unhandled event type: {}", event.getType());
         }
     }
 
-    private void handlePaymentIntentCreated(PaymentIntent paymentIntent) throws JsonProcessingException, StripeException {
+    private void handlePaymentIntentCreated(PaymentIntent paymentIntent) throws JsonProcessingException {
         log.info("Payment for intent {} created.", paymentIntent.getId());
         Map<String, String> metadata = paymentIntent.getMetadata();
         Map<String, UUID> parsedItems = WebhookUtils.parseItemsMetadata(metadata);
@@ -90,7 +91,12 @@ public class WebhookServiceImpl implements WebhookService {
         movementDTO.setDescription(metadata.get("description"));
         movementDTO.setDocumentNumber(paymentIntent.getId());
         movementDTO.setDateOfEmission(LocalDate.now());
-        movementDTO.setType(MovementType.valueOf(metadata.get("movement_type")));
+
+        if(metadata.containsKey("movement_type")){
+            movementDTO.setType(MovementType.valueOf(metadata.get("movement_type")));
+        } else {
+            movementDTO.setType(DEBIT);
+        }
         movementDTO.setIvaRate(Double.parseDouble(metadata.get("iva_rate")));
         movementDTO.setValueWithoutIva(Double.parseDouble(metadata.get("total_amount")));
 
@@ -115,8 +121,8 @@ public class WebhookServiceImpl implements WebhookService {
                 WebhookUtils.buildMovementUpdateRequestDTO(PROCESSING, paymentIntent.getId()));
     }
 
-    private void handleChargeSucceeded(Charge charge) {
-        log.info("Charge of payment intent {} succeeded ", charge.getPaymentIntent());
+    private void handleChargeApprovedAction(Charge charge) {
+        log.info("Charge action of payment intent {} ", charge.getPaymentIntent());
         stripeInvoiceService.sendChargeSucceededInvoice(charge.getReceiptUrl(), charge.getPaymentIntent(), charge.getReceiptEmail());
         kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status", charge.getPaymentIntent(),
                 WebhookUtils.buildMovementUpdateRequestDTO(SUCCEEDED, charge.getPaymentIntent()));
@@ -127,10 +133,6 @@ public class WebhookServiceImpl implements WebhookService {
         stripeInvoiceService.sendChargeRefundInvoice(charge.getReceiptUrl(), charge.getPaymentIntent(), charge.getReceiptEmail());
         kafkaMovementUpdateStatusRequestTemplate.send("update-movement-status", charge.getPaymentIntent(),
                 WebhookUtils.buildMovementUpdateRequestDTO(REFUNDED, charge.getPaymentIntent()));
-    }
-
-    private void handleChargeUpdated(Charge charge) {
-        log.info("Charge updated with ID: {}", charge.getPaymentIntent());
     }
 
     private void handlePaymentMethodAttached(PaymentMethod paymentMethod) {

@@ -1,12 +1,13 @@
 package com.paymentMicroservice.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
+@Setter
+@Getter
+@NoArgsConstructor
 @AllArgsConstructor
 @Schema(name = "CreatePaymentResponseDTO", description = "Response object containing details of the created payment")
 public class CreatePaymentResponseDTO {

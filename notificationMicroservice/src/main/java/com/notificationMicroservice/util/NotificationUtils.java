@@ -4,14 +4,10 @@ import com.notificationMicroservice.dto.NotificationRequestDTO;
 import com.notificationMicroservice.mapper.NotificationMapper;
 import com.notificationMicroservice.model.Notification;
 import com.notificationMicroservice.repository.NotificationRepository;
-import org.springframework.beans.factory.annotation.Value;
 
 import static com.notificationMicroservice.enumerators.NotificationType.EMAIL;
 
 public class NotificationUtils {
-
-    @Value("${spring.mail.username}")
-    private static String SENDER_EMAIL;
 
     public static Notification findOrInitializeNotification(NotificationRequestDTO notificationRequestDTO, NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
         return notificationRequestDTO.getId() != null ?
@@ -37,7 +33,6 @@ public class NotificationUtils {
 
     private static void prepareExportReportNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
         notification.setType(EMAIL);
-        notification.setSender(SENDER_EMAIL);
         notification.setRecipient(notificationRequestDTO.getRecipient());
         notification.setSubject("Movements Report");
         notification.setBody("Please find attached the movements report for the specified period.");
@@ -45,7 +40,6 @@ public class NotificationUtils {
 
     private static void prepareResetPasswordNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
         notification.setType(EMAIL);
-        notification.setSender(SENDER_EMAIL);
         notification.setRecipient(notificationRequestDTO.getRecipient());
         notification.setSubject("Password Reset Request");
 
@@ -61,7 +55,6 @@ public class NotificationUtils {
 
     private static void prepareStripeReceiptNotification(Notification notification, NotificationRequestDTO notificationRequestDTO) {
         notification.setType(EMAIL);
-        notification.setSender(SENDER_EMAIL);
         notification.setRecipient(notificationRequestDTO.getRecipient());
         notification.setSubject("Your Receipt from Stripe");
 

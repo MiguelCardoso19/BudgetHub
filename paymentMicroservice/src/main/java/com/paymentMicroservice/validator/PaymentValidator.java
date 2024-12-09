@@ -2,7 +2,6 @@ package com.paymentMicroservice.validator;
 
 import com.paymentMicroservice.dto.BudgetSubtypeDTO;
 import com.paymentMicroservice.dto.BudgetTypeDTO;
-import com.paymentMicroservice.dto.CreatePaymentDTO;
 import com.paymentMicroservice.dto.CreatePaymentItemDTO;
 import com.paymentMicroservice.exception.BudgetExceededException;
 import lombok.Data;

@@ -14,6 +14,7 @@ import org.mockito.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -39,10 +40,23 @@ class InvoiceServiceImplTest {
     @Mock
     private InvoiceMapper invoiceMapper;
 
+    @Mock
+    private KafkaTemplate<String, InvoiceDTO> kafkaInvoiceTemplate;
+
+    @Mock
+    private KafkaTemplate<String, CustomPageDTO> kafkaCustomPageTemplate;
+
+    @Mock
+    private KafkaTemplate<String, UUID> kafkaUuidTemplate;
+
+    @Mock
+    private KafkaTemplate<String, InvoiceNotFoundException> kafkaInvoiceNotFoundExceptionTemplate;
+
+    @Mock
+    private KafkaTemplate<String, FailedToUploadFileException> kafkaFailedToUploadFileExceptionTemplate;
+
     private InvoiceDTO invoiceDTO;
-
     private Invoice invoice;
-
     private UUID id;
 
     @BeforeEach
@@ -123,7 +137,6 @@ class InvoiceServiceImplTest {
         assertEquals(invoiceDTO, result.getContent().get(0));
         verify(invoiceRepository, times(1)).findAll(pageable);
         verify(invoiceMapper, times(1)).toDTOList(invoicePage);
-
     }
 
     @Test

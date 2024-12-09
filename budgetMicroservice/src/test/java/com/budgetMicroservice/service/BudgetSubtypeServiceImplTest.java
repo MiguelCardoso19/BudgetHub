@@ -106,7 +106,7 @@ class BudgetSubtypeServiceImplTest {
 
         budgetSubtypeService.deleteBudgetSubtype(id);
 
-        verify(kafkaUuidTemplate, times(0)).send(eq("budget-subtype-delete-success-response"), any(UUID.class));
+        verify(kafkaUuidTemplate, times(1)).send(eq("budget-subtype-delete-success-response"), any(UUID.class));
     }
 
     @Test

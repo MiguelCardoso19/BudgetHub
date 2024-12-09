@@ -44,6 +44,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Value("${EMAIL_RETRY_MAX_ATTEMPTS}")
     private int EMAIL_RETRY_MAX_ATTEMPTS;
 
+    @Value("${mail.username}")
+    private String SENDER_EMAIL;
+
     @Override
     @KafkaListener(topics = "notification-reset-password-topic", groupId = "notification_group", concurrency = "10", containerFactory = "notificationRequestKafkaListenerContainerFactory")
     public void handleEmailNotificationResetPassword(NotificationRequestDTO notificationRequestDTO) throws FailedToSendEmailException {
@@ -117,6 +120,7 @@ public class NotificationServiceImpl implements NotificationService {
 
             NotificationUtils.prepareNotification(notification, notificationRequestDTO, notificationType);
             sendEmail(notification);
+            notification.setSender(SENDER_EMAIL);
             notification.setStatus(SENT);
         } catch (MessagingException | IOException e) {
             notification.setStatus(FAILED);

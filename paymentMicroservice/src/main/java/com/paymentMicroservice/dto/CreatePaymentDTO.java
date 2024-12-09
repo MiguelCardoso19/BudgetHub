@@ -7,13 +7,17 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "CreatePaymentDTO", description = "DTO for creating a new payment")
+@AllArgsConstructor
+@NoArgsConstructor
 public class CreatePaymentDTO {
 
     @Schema(description = "Currency for the payment (e.g., USD, EUR)", example = "USD", required = true)
@@ -40,7 +44,6 @@ public class CreatePaymentDTO {
             example = "EXPENSE",
             required = true,
             allowableValues = {"DEBIT", "CREDIT"})
-    @NotNull
     @Enumerated(EnumType.STRING)
     private MovementType movementType;
 
