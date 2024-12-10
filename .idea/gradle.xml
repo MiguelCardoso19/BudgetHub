@@ -4,47 +4,47 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/authenticationMicroservice" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/server/authenticationMicroservice" />
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/authenticationMicroservice" />
+            <option value="$PROJECT_DIR$/server/authenticationMicroservice" />
           </set>
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/budgetmicroservice" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/server/budgetMicroservice" />
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/budgetMicroservice" />
+            <option value="$PROJECT_DIR$/server/budgetMicroservice" />
           </set>
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/notificationMicroservice" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/server/notificationMicroservice" />
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/notificationMicroservice" />
+            <option value="$PROJECT_DIR$/server/notificationMicroservice" />
           </set>
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/paymentMicroservice" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/server/paymentMicroservice" />
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/paymentMicroservice" />
+            <option value="$PROJECT_DIR$/server/paymentMicroservice" />
           </set>
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/portalMicroservice" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/server/portalMicroservice" />
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/portalMicroservice" />
+            <option value="$PROJECT_DIR$/server/portalMicroservice" />
           </set>
         </option>
       </GradleProjectSettings>

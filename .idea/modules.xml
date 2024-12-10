@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ExpenseHub.iml" filepath="$PROJECT_DIR$/.idea/ExpenseHub.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/authenticationMicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/authenticationMicroservice.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/budgetmicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/budgetmicroservice.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/notificationMicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/notificationMicroservice.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/paymentMicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/paymentMicroservice.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/portalMicroservice.main.iml" filepath="$PROJECT_DIR$/.idea/modules/portalMicroservice.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/BudgetHub.iml" filepath="$PROJECT_DIR$/.idea/BudgetHub.iml" />
     </modules>
   </component>
 </project>

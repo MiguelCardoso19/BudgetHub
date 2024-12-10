@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
-    <file type="web" url="file://$PROJECT_DIR$/authenticationMicroservice" />
-    <file type="web" url="file://$PROJECT_DIR$/budgetMicroservice" />
-    <file type="web" url="file://$PROJECT_DIR$/notificationMicroservice" />
-    <file type="web" url="file://$PROJECT_DIR$/paymentMicroservice" />
-    <file type="web" url="file://$PROJECT_DIR$/portalMicroservice" />
+    <file type="web" url="file://$PROJECT_DIR$/server/authenticationMicroservice" />
+    <file type="web" url="file://$PROJECT_DIR$/server/budgetMicroservice" />
+    <file type="web" url="file://$PROJECT_DIR$/server/notificationMicroservice" />
+    <file type="web" url="file://$PROJECT_DIR$/server/paymentMicroservice" />
+    <file type="web" url="file://$PROJECT_DIR$/server/portalMicroservice" />
   </component>
   <component name="ProjectRootManager">
     <output url="file://$PROJECT_DIR$/out" />

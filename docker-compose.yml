@@ -86,12 +86,10 @@ services:
       - "8080:8080"
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9093
-    depends_on:
-      - authentication-microservice
 
   budget-microservice:
     build:
-      context: ./budgetMicroservice/
+      context: ./server/budgetMicroservice/
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
@@ -105,7 +103,7 @@ services:
 
   notification-microservice:
     build:
-      context: ./notificationMicroservice/
+      context: ./server/notificationMicroservice/
       dockerfile: Dockerfile
     ports:
       - "8083:8083"
@@ -122,7 +120,7 @@ services:
 
   payment-microservice:
     build:
-      context: ./paymentMicroservice/
+      context: ./server/paymentMicroservice/
       dockerfile: Dockerfile
     ports:
       - "8084:8084"
@@ -139,7 +137,7 @@ services:
 
   authentication-microservice:
     build:
-      context: ./authenticationMicroservice/
+      context: ./server/authenticationMicroservice/
       dockerfile: Dockerfile
     ports:
       - "8081:8081"

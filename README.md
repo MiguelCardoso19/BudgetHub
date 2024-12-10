@@ -51,6 +51,7 @@
 ## Tech Stack
 
 - **Java 21**
+- **Angular 19**
 - **Spring Boot 3**
 - **Spring Data JPA**
 - **Spring Security**
@@ -68,6 +69,7 @@
 - **JUnit 5**
 - **Hibernate**
 - **Gradle**
+- **Bootstrap**
 - **Lombok**
 - **Swagger**
 - **MapStruct**

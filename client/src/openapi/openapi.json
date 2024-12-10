@@ -1,0 +1,3613 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "OpenApi specification - Portal Microservice",
+        "description": "OpenApi documentation for Portal Microservice",
+        "contact": {
+            "name": "Miguel Cardoso",
+            "url": "https://www.linkedin.com/in/miguelcardoso19/",
+            "email": "miguel40cardoso@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Local env"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Budget Type Controller",
+            "description": "Operations related to Budget Types"
+        },
+        {
+            "name": "User Credentials Controller",
+            "description": "API for managing user credentials including registration, update, and deletion."
+        },
+        {
+            "name": "Budget Subtype Controller",
+            "description": "Operations related to budget subtypes"
+        },
+        {
+            "name": "Payment Controller",
+            "description": "Operations related to Payments"
+        },
+        {
+            "name": "Supplier Controller",
+            "description": "Operations related to suppliers management"
+        },
+        {
+            "name": "Invoice Controller",
+            "description": "Operations related to Invoices"
+        },
+        {
+            "name": "Movement Controller",
+            "description": "Operations related to financial movements"
+        },
+        {
+            "name": "Authentication Controller",
+            "description": "API for authentication, communicating with the Authentication microservice."
+        }
+    ],
+    "paths": {
+        "/api/v1/user-credentials/update": {
+            "put": {
+                "tags": [
+                    "User Credentials Controller"
+                ],
+                "summary": "Update user credentials",
+                "description": "Updates the user credentials and returns the updated credentials.",
+                "operationId": "update",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentialsDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid credentials update data provided",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserCredentialsDTO"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access to update credentials",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserCredentialsDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "User credentials updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserCredentialsDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/supplier/update": {
+            "put": {
+                "tags": [
+                    "Supplier Controller"
+                ],
+                "summary": "Update an existing supplier",
+                "description": "Updates details of an existing supplier in the system.",
+                "operationId": "update_1",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupplierDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Supplier not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, validation failed",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully updated the supplier",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/movement/update": {
+            "put": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Update an existing movement",
+                "description": "Updates an existing movement by providing updated details.",
+                "operationId": "update_2",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MovementDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Movement not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Movement successfully updated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid update data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/invoice/update": {
+            "put": {
+                "tags": [
+                    "Invoice Controller"
+                ],
+                "summary": "Update an invoice",
+                "description": "Updates an existing invoice record.",
+                "operationId": "updateInvoice",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InvoiceDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid invoice data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invoice not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Invoice updated successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/type/update": {
+            "put": {
+                "tags": [
+                    "Budget Type Controller"
+                ],
+                "summary": "Update an existing Budget Type",
+                "description": "Updates an existing Budget Type. If the Budget Type does not exist or a conflict occurs, the operation will throw appropriate errors.",
+                "operationId": "updateBudgetType",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BudgetTypeDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated the Budget Type",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Budget Type already exists",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Budget Type data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Budget Type not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/subtype/update": {
+            "put": {
+                "tags": [
+                    "Budget Subtype Controller"
+                ],
+                "summary": "Update an existing budget subtype",
+                "description": "Updates the details of an existing budget subtype.",
+                "operationId": "updateSubtype",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "409": {
+                        "description": "Budget subtype already exists",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Budget exceeded",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully updated the budget subtype",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Budget subtype not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-credentials/reset-password": {
+            "post": {
+                "tags": [
+                    "User Credentials Controller"
+                ],
+                "summary": "Reset the user's password using the provided reset token",
+                "description": "This method resets the user's password after validating the reset token and setting the new password.",
+                "operationId": "resetPassword",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResetPasswordRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully"
+                    },
+                    "400": {
+                        "description": "Invalid password format or request data"
+                    },
+                    "404": {
+                        "description": "Invalid or expired token"
+                    }
+                }
+            }
+        },
+        "/api/v1/user-credentials/register": {
+            "post": {
+                "tags": [
+                    "User Credentials Controller"
+                ],
+                "summary": "Register a new user",
+                "description": "Registers a new user with provided credentials and returns an authentication response containing a JWT token.",
+                "operationId": "register",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCredentialsDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid user credentials provided",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthenticationResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "User registered successfully, returns authentication response",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthenticationResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user-credentials/recover-password": {
+            "post": {
+                "tags": [
+                    "User Credentials Controller"
+                ],
+                "summary": "Recover password by sending a reset link to the logged user's email",
+                "description": "Sends a password recovery email to the user with a reset token.",
+                "operationId": "recoverPassword",
+                "responses": {
+                    "200": {
+                        "description": "Password recovery email sent successfully"
+                    },
+                    "404": {
+                        "description": "Email not found in the system"
+                    }
+                }
+            }
+        },
+        "/api/v1/supplier/create": {
+            "post": {
+                "tags": [
+                    "Supplier Controller"
+                ],
+                "summary": "Create a new supplier",
+                "description": "Creates a new supplier in the system with validated supplier details.",
+                "operationId": "create",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupplierDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "409": {
+                        "description": "Supplier already exists",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, validation failed",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully created the supplier",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payment/refund": {
+            "post": {
+                "tags": [
+                    "Payment Controller"
+                ],
+                "summary": "Refund Charge",
+                "description": "Initiates a refund for a charge based on the provided refund request.",
+                "operationId": "refundCharge",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RefundChargeRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid refund details",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Successfully refunded charge",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payment/create-sepa-token": {
+            "post": {
+                "tags": [
+                    "Payment Controller"
+                ],
+                "summary": "Create SEPA Token",
+                "description": "Creates a Stripe SEPA token from the provided bank account details.",
+                "operationId": "createSepaToken",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StripeSepaTokenDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully created SEPA token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StripeSepaTokenDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid bank details",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StripeSepaTokenDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payment/create-payment-session": {
+            "post": {
+                "tags": [
+                    "Payment Controller"
+                ],
+                "summary": "Create Payment Session",
+                "description": "Creates a payment session to handle the payment process.",
+                "operationId": "createPaymentSession",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SessionRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully created payment session",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid session details",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payment/create-payment-intent": {
+            "post": {
+                "tags": [
+                    "Payment Controller"
+                ],
+                "summary": "Create a Payment Intent",
+                "description": "Creates a payment intent based on the provided payment details. The payment intent is a payment request that can later be confirmed or canceled.",
+                "operationId": "createPaymentIntent",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreatePaymentDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid payment details",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreatePaymentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully created payment intent",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreatePaymentResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payment/create-card-token": {
+            "post": {
+                "tags": [
+                    "Payment Controller"
+                ],
+                "summary": "Create Card Token",
+                "description": "Creates a Stripe card token from the provided card details.",
+                "operationId": "createCardToken",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StripeCardTokenDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully created card token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StripeCardTokenDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card details",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StripeCardTokenDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payment/confirm": {
+            "post": {
+                "tags": [
+                    "Payment Controller"
+                ],
+                "summary": "Confirm Payment",
+                "description": "Confirms a pending payment based on the provided payment action request.",
+                "operationId": "confirmPayment",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PaymentActionRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid payment details",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Successfully confirmed payment",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payment/cancel": {
+            "post": {
+                "tags": [
+                    "Payment Controller"
+                ],
+                "summary": "Cancel Payment",
+                "description": "Cancels a pending payment based on the provided payment action request.",
+                "operationId": "cancelPayment",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PaymentActionRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Invalid payment details"
+                    },
+                    "204": {
+                        "description": "Successfully canceled payment"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/movement/export-movements-report": {
+            "post": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Export movements report",
+                "description": "Exports a report of movements within a date range and status, sent to the user's email.",
+                "operationId": "exportMovementsReport",
+                "parameters": [
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ACCEPTED",
+                                "PROCESSING",
+                                "REFUSED",
+                                "CANCELED",
+                                "FAILED",
+                                "REFUNDED",
+                                "SUCCEEDED"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Report export initiated"
+                    },
+                    "500": {
+                        "description": "Error generating or exporting the report"
+                    },
+                    "400": {
+                        "description": "Invalid date range or status parameters"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/movement/create": {
+            "post": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Create a new movement",
+                "description": "Creates a new financial movement.",
+                "operationId": "create_1",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MovementDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Movement successfully created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/invoice/create": {
+            "post": {
+                "tags": [
+                    "Invoice Controller"
+                ],
+                "summary": "Create a new invoice",
+                "description": "Creates a new invoice record.",
+                "operationId": "createInvoice",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InvoiceDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Invoice created successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid invoice data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/invoice/attach-multipart-file/{invoiceId}": {
+            "post": {
+                "tags": [
+                    "Invoice Controller"
+                ],
+                "summary": "Attach multipart file to invoice",
+                "description": "Attaches a file to an existing invoice using Feign client.",
+                "operationId": "attachMultipartFileToInvoice",
+                "parameters": [
+                    {
+                        "name": "invoiceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Failed to upload file"
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    },
+                    "204": {
+                        "description": "File successfully uploaded"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/invoice/attach-base64-file/{invoiceId}": {
+            "post": {
+                "tags": [
+                    "Invoice Controller"
+                ],
+                "summary": "Attach base64 file to invoice",
+                "description": "Attaches a base64 encoded file to an invoice.",
+                "operationId": "attachBase64FileToInvoice",
+                "parameters": [
+                    {
+                        "name": "invoiceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Failed to upload file"
+                    },
+                    "204": {
+                        "description": "File successfully uploaded"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/type/create": {
+            "post": {
+                "tags": [
+                    "Budget Type Controller"
+                ],
+                "summary": "Create a new Budget Type",
+                "description": "Creates a new Budget Type. This operation will check for existing budget types and throw an error if a duplicate is found.",
+                "operationId": "createBudgetType",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BudgetTypeDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "409": {
+                        "description": "Budget Type already exists",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Budget Type data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully created a new Budget Type",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/subtype/create": {
+            "post": {
+                "tags": [
+                    "Budget Subtype Controller"
+                ],
+                "summary": "Create a new budget subtype",
+                "description": "Creates a new budget subtype for a given budget type.",
+                "operationId": "addSubtype",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully created a new budget subtype",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Budget subtype already exists",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Budget exceeded",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Budget type not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/sign-out": {
+            "post": {
+                "tags": [
+                    "Authentication Controller"
+                ],
+                "summary": "Sign out and invalidate the user",
+                "description": "Invalidates the current user by communicating with the Authentication microservice.",
+                "operationId": "signOut",
+                "responses": {
+                    "204": {
+                        "description": "Sign-out successful, token invalidated"
+                    },
+                    "401": {
+                        "description": "Unauthorized - Token is missing or invalid"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/sign-in": {
+            "post": {
+                "tags": [
+                    "Authentication Controller"
+                ],
+                "summary": "Sign in using user credentials",
+                "description": "Authenticate a user through the proxy and return a JWT token if successful.",
+                "operationId": "signIn",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SignInRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentication successful, returns JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthenticationResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user credentials",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthenticationResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/refresh-token": {
+            "post": {
+                "tags": [
+                    "Authentication Controller"
+                ],
+                "summary": "Refresh JWT token",
+                "description": "Refresh the JWT token using the Authorization header through the proxy.",
+                "operationId": "refreshToken",
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthenticationResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired refresh token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthenticationResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthenticationResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/supplier/{id}": {
+            "get": {
+                "tags": [
+                    "Supplier Controller"
+                ],
+                "summary": "Get supplier by ID",
+                "description": "Fetches a specific supplier by its ID.",
+                "operationId": "getById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Supplier not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully fetched the supplier",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Supplier Controller"
+                ],
+                "summary": "Delete a supplier",
+                "description": "Deletes an existing supplier by its ID.",
+                "operationId": "delete_1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Supplier not found"
+                    },
+                    "204": {
+                        "description": "Successfully deleted the supplier"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/supplier/all": {
+            "get": {
+                "tags": [
+                    "Supplier Controller"
+                ],
+                "summary": "Get all suppliers",
+                "description": "Fetches a paginated list of all suppliers.",
+                "operationId": "getAll",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched the list of suppliers",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/movement/{id}": {
+            "get": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Get a movement by ID",
+                "description": "Fetches a movement by its unique ID.",
+                "operationId": "getById_1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Movement found and returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Movement not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MovementDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Delete a movement by ID",
+                "description": "Deletes an existing movement based on the given ID.",
+                "operationId": "delete_2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Movement successfully deleted"
+                    },
+                    "404": {
+                        "description": "Movement not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/movement/budget-type/{budgetTypeId}": {
+            "get": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Fetch movements by budget type",
+                "description": "Retrieves movements filtered by budget type ID.",
+                "operationId": "getByBudgetType",
+                "parameters": [
+                    {
+                        "name": "budgetTypeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Invalid budget type ID or pagination parameters",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Movements filtered by budget type ID retrieved",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Budget type not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/movement/budget-subtype/{budgetSubtypeId}": {
+            "get": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Fetch movements by budget subtype",
+                "description": "Retrieves movements filtered by budget subtype ID.",
+                "operationId": "getByBudgetSubtype",
+                "parameters": [
+                    {
+                        "name": "budgetSubtypeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Movements filtered by budget subtype ID retrieved",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid budget subtype ID or pagination parameters",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Budget subtype not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/movement/all": {
+            "get": {
+                "tags": [
+                    "Movement Controller"
+                ],
+                "summary": "Fetch all movements with pagination",
+                "description": "Returns a paginated list of all movements.",
+                "operationId": "getAll_1",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of movements retrieved",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/invoice/{id}": {
+            "get": {
+                "tags": [
+                    "Invoice Controller"
+                ],
+                "summary": "Get an invoice by ID",
+                "description": "Fetches an invoice by its unique identifier.",
+                "operationId": "getInvoiceById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Invoice not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Invoice fetched successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Invoice Controller"
+                ],
+                "summary": "Delete an invoice",
+                "description": "Deletes an invoice by its ID.",
+                "operationId": "deleteInvoice",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Invoice not found"
+                    },
+                    "204": {
+                        "description": "Invoice deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/invoice/all": {
+            "get": {
+                "tags": [
+                    "Invoice Controller"
+                ],
+                "summary": "Get all invoices",
+                "description": "Fetches a paginated list of all invoices.",
+                "operationId": "getAllInvoices",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Invoices fetched successfully",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/budget/type/{id}": {
+            "get": {
+                "tags": [
+                    "Budget Type Controller"
+                ],
+                "summary": "Get a Budget Type by ID",
+                "description": "Fetches a specific Budget Type by its unique ID. Returns a 404 if the Budget Type is not found.",
+                "operationId": "findBudgetTypeById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched the Budget Type",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Budget Type not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetTypeDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/type/all": {
+            "get": {
+                "tags": [
+                    "Budget Type Controller"
+                ],
+                "summary": "Get all Budget Types",
+                "description": "Retrieves all Budget Types, supporting pagination. Returns a paginated list of Budget Types.",
+                "operationId": "findAllBudgetTypes",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully fetched the list of Budget Types",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/subtype/{id}": {
+            "get": {
+                "tags": [
+                    "Budget Subtype Controller"
+                ],
+                "summary": "Get a budget subtype by ID",
+                "description": "Fetches a budget subtype by its ID.",
+                "operationId": "findSubtypeById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched the budget subtype",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Budget subtype not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/subtype/all": {
+            "get": {
+                "tags": [
+                    "Budget Subtype Controller"
+                ],
+                "summary": "Get all budget subtypes",
+                "description": "Fetches all budget subtypes, paginated.",
+                "operationId": "findAllSubtypes",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Invalid pagination parameters",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Successfully fetched the list of budget subtypes",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomPageDTOObject"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-credentials/delete": {
+            "delete": {
+                "tags": [
+                    "User Credentials Controller"
+                ],
+                "summary": "Delete user credentials",
+                "description": "Deletes the provided user credentials from the system.",
+                "operationId": "delete",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeleteRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "User credentials deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized access to delete credentials"
+                    },
+                    "400": {
+                        "description": "Invalid credentials data for deletion"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/type/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Budget Type Controller"
+                ],
+                "summary": "Delete a Budget Type",
+                "description": "Deletes a Budget Type by its unique ID. Throws a 404 error if the Budget Type is not found.",
+                "operationId": "deleteBudgetType",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "404": {
+                        "description": "Budget Type not found"
+                    },
+                    "204": {
+                        "description": "Successfully deleted the Budget Type"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/subtype/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Budget Subtype Controller"
+                ],
+                "summary": "Delete a budget subtype",
+                "description": "Deletes a budget subtype by its ID.",
+                "operationId": "deleteSubtype",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "404": {
+                        "description": "Budget subtype not found"
+                    },
+                    "204": {
+                        "description": "Successfully deleted the budget subtype"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UserCredentialsDTO": {
+                "required": [
+                    "dateOfBirth",
+                    "email",
+                    "firstName",
+                    "gender",
+                    "lastName",
+                    "nationality",
+                    "nif",
+                    "password",
+                    "phoneNumber",
+                    "roles"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier (UUID) for each entity instance",
+                        "format": "uuid",
+                        "example": "e12a567d-32f8-4e9a-9073-6781f9d5e423"
+                    },
+                    "firstName": {
+                        "type": "string",
+                        "description": "First name of the user",
+                        "example": "John"
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "description": "Last name of the user",
+                        "example": "Keen"
+                    },
+                    "nif": {
+                        "type": "string",
+                        "description": "Tax Identification Number (NIF) of the user",
+                        "example": "123456789"
+                    },
+                    "email": {
+                        "pattern": "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$",
+                        "type": "string",
+                        "description": "Email address of the user",
+                        "example": "john.keen@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "Password of the user",
+                        "example": "P@ssw0rd123"
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "description": "New password for updating credentials (if applicable)",
+                        "example": "NewP@ssw0rd123"
+                    },
+                    "dateOfBirth": {
+                        "type": "string",
+                        "description": "Date of birth of the user in YYYY-MM-DD format",
+                        "format": "date",
+                        "example": "1990-01-01"
+                    },
+                    "nationality": {
+                        "type": "string",
+                        "description": "Nationality of the user",
+                        "example": "Portuguese",
+                        "enum": [
+                            "Afghan",
+                            "Albanian",
+                            "Algerian",
+                            "Andorran",
+                            "Angolan",
+                            "Argentine",
+                            "Armenian",
+                            "Australian",
+                            "Austrian",
+                            "Azerbaijani",
+                            "Bahraini",
+                            "Bangladeshi",
+                            "Belarusian",
+                            "Belgian",
+                            "Belizean",
+                            "Beninese",
+                            "Bhutanese",
+                            "Bolivian",
+                            "Bosnian",
+                            "Botswanan",
+                            "Brazilian",
+                            "Bruneian",
+                            "Bulgarian",
+                            "Burkinabe",
+                            "Burundian",
+                            "Cambodian",
+                            "Cameroonian",
+                            "Canadian",
+                            "Capeverdean",
+                            "Centralafrican",
+                            "Chadian",
+                            "Chilean",
+                            "Chinese",
+                            "Colombian",
+                            "Comorian",
+                            "Congolese",
+                            "CongoleseDRC",
+                            "Costarican",
+                            "Ivorian",
+                            "Croatian",
+                            "Cuban",
+                            "Cypriot",
+                            "Czech",
+                            "Danish",
+                            "Djiboutian",
+                            "Dominican",
+                            "DominicanRep",
+                            "Ecuadorian",
+                            "Egyptian",
+                            "Salvadoran",
+                            "Equatorialguinean",
+                            "Eritrean",
+                            "Estonian",
+                            "Ethiopian",
+                            "Fijian",
+                            "Finnish",
+                            "French",
+                            "Gabonese",
+                            "Gambian",
+                            "Georgian",
+                            "German",
+                            "Ghanaian",
+                            "Greek",
+                            "Grenadian",
+                            "Guatemalan",
+                            "Guinean",
+                            "Bissaugunean",
+                            "Guyanese",
+                            "Haitian",
+                            "Honduran",
+                            "Hungarian",
+                            "Icelandic",
+                            "Indian",
+                            "Indonesian",
+                            "Iranian",
+                            "Iraqi",
+                            "Irish",
+                            "Israeli",
+                            "Italian",
+                            "Jamaican",
+                            "Japanese",
+                            "Jordanian",
+                            "Kazakh",
+                            "Kenyan",
+                            "Kiribati",
+                            "Korean",
+                            "Kuwaiti",
+                            "Kyrgyz",
+                            "Lao",
+                            "Latvian",
+                            "Lebanese",
+                            "Basotho",
+                            "Liberian",
+                            "Libyan",
+                            "Liechtenstein",
+                            "Lithuanian",
+                            "Luxembourgish",
+                            "Malagasy",
+                            "Malawian",
+                            "Malaysian",
+                            "Maldivian",
+                            "Malian",
+                            "Maltese",
+                            "Marshallese",
+                            "Mauritanian",
+                            "Mauritian",
+                            "Mexican",
+                            "Micronesian",
+                            "Moldovan",
+                            "Monacan",
+                            "Mongolian",
+                            "Montenegrin",
+                            "Moroccan",
+                            "Mozambican",
+                            "Namibian",
+                            "Nauruan",
+                            "Nepali",
+                            "Dutch",
+                            "Newzealander",
+                            "Nicaraguan",
+                            "Nigerien",
+                            "Nigerian",
+                            "Norwegian",
+                            "Omani",
+                            "Pakistani",
+                            "Palauan",
+                            "Panamanian",
+                            "Papuanewguinean",
+                            "Paraguayan",
+                            "Peruvian",
+                            "Filipino",
+                            "Polish",
+                            "Portuguese",
+                            "Qatari",
+                            "Romanian",
+                            "Russian",
+                            "Rwandan",
+                            "Kittitian",
+                            "Saintlucian",
+                            "Vincentian",
+                            "Samoan",
+                            "Sanmarinese",
+                            "Saotomean",
+                            "Saudi",
+                            "Senegalese",
+                            "Serbian",
+                            "Seychellois",
+                            "Sierraleonean",
+                            "Singaporean",
+                            "Slovak",
+                            "Slovenian",
+                            "Solomonislander",
+                            "Somali",
+                            "Southafrican",
+                            "Spanish",
+                            "Srilankan",
+                            "Sudanese",
+                            "Surinamese",
+                            "Swazi",
+                            "Swedish",
+                            "Swiss",
+                            "Syrian",
+                            "Taiwanese",
+                            "Tajik",
+                            "Tanzanian",
+                            "Thai",
+                            "Togolese",
+                            "Tongan",
+                            "Trinidadian",
+                            "Tunisian",
+                            "Turkish",
+                            "Turkmen",
+                            "Tuvaluan",
+                            "Ugandan",
+                            "Ukrainian",
+                            "Emirati",
+                            "British",
+                            "American",
+                            "Uruguayan",
+                            "Uzbek",
+                            "Nivanuatu",
+                            "Venezuelan",
+                            "Vietnamese",
+                            "Yemeni",
+                            "Zambian",
+                            "Zimbabwean"
+                        ]
+                    },
+                    "gender": {
+                        "type": "string",
+                        "description": "Gender of the user",
+                        "example": "Male",
+                        "enum": [
+                            "Male",
+                            "Female"
+                        ]
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "description": "Phone number of the user",
+                        "example": "912954239"
+                    },
+                    "roles": {
+                        "uniqueItems": true,
+                        "type": "array",
+                        "description": "Roles assigned to the user",
+                        "example": [
+                            "ADMIN",
+                            "EMPLOYEE"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "description": "Roles assigned to the user",
+                            "example": "[\"ADMIN\",\"EMPLOYEE\"]"
+                        }
+                    }
+                },
+                "description": "User credentials for registration"
+            },
+            "SupplierDTO": {
+                "required": [
+                    "companyName",
+                    "correlationId",
+                    "id",
+                    "nif",
+                    "responsibleName",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Unique correlation ID to trace and associate requests/responses.",
+                        "format": "uuid",
+                        "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the entity, typically assigned upon creation or retrieval.",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "description": "Version number for optimistic locking and concurrent updates management.",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "companyName": {
+                        "type": "string",
+                        "description": "The name of the supplier company.",
+                        "example": "Tech Solutions Ltd."
+                    },
+                    "responsibleName": {
+                        "type": "string",
+                        "description": "The name of the person responsible for the supplier.",
+                        "example": "John Doe"
+                    },
+                    "nif": {
+                        "type": "string",
+                        "description": "The NIF (Tax Identification Number) of the supplier.",
+                        "example": "123456789"
+                    },
+                    "phoneNumber": {
+                        "type": "string",
+                        "description": "The phone number of the supplier.",
+                        "example": "+1234567890"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "The email address of the supplier.",
+                        "example": "supplier@example.com"
+                    }
+                },
+                "description": "Data Transfer Object representing a supplier, containing details about the company, responsible person, and contact information."
+            },
+            "BudgetSubtypeDTO": {
+                "required": [
+                    "correlationId",
+                    "description",
+                    "id",
+                    "name",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Unique correlation ID to trace and associate requests/responses.",
+                        "format": "uuid",
+                        "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the entity, typically assigned upon creation or retrieval.",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "description": "Version number for optimistic locking and concurrent updates management.",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the budget subtype.",
+                        "example": "Marketing"
+                    },
+                    "availableFunds": {
+                        "type": "number",
+                        "description": "Total amount spent for this budget subtype.",
+                        "format": "double",
+                        "nullable": true,
+                        "example": 1200.5
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the budget subtype.",
+                        "example": "Budget allocated for marketing activities."
+                    },
+                    "budgetTypeId": {
+                        "type": "string",
+                        "description": "UUID of the associated budget type.",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "budgetType": {
+                        "$ref": "#/components/schemas/BudgetTypeDTO"
+                    }
+                },
+                "description": "DTO representing a budget subtype, containing details about the subtype and its associated budget type.",
+                "nullable": true
+            },
+            "BudgetTypeDTO": {
+                "required": [
+                    "correlationId",
+                    "description",
+                    "id",
+                    "name",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Unique correlation ID to trace and associate requests/responses.",
+                        "format": "uuid",
+                        "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the entity, typically assigned upon creation or retrieval.",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "description": "Version number for optimistic locking and concurrent updates management.",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the budget type.",
+                        "example": "Operational"
+                    },
+                    "availableFunds": {
+                        "type": "number",
+                        "description": "Total amount spent for this budget type.",
+                        "format": "double",
+                        "nullable": true,
+                        "example": 5000.0
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the budget type.",
+                        "example": "Budget for operational expenses."
+                    },
+                    "subtypes": {
+                        "type": "array",
+                        "description": "List of associated budget subtypes for this budget type.",
+                        "nullable": true,
+                        "items": {
+                            "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                        }
+                    }
+                },
+                "description": "DTO representing a budget type, including its name, description, total spent, and associated subtypes.",
+                "nullable": true
+            },
+            "InvoiceDTO": {
+                "required": [
+                    "correlationId",
+                    "dateOfEmission",
+                    "description",
+                    "id",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Unique correlation ID to trace and associate requests/responses.",
+                        "format": "uuid",
+                        "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the entity, typically assigned upon creation or retrieval.",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "description": "Version number for optimistic locking and concurrent updates management.",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "dateOfEmission": {
+                        "type": "string",
+                        "description": "The date when the invoice was emitted.",
+                        "format": "date",
+                        "example": "2024-11-10"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A brief description of the invoice.",
+                        "example": "Invoice for marketing services"
+                    },
+                    "movementId": {
+                        "type": "string",
+                        "description": "UUID of the associated movement, if any.",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "file": {
+                        "type": "array",
+                        "description": "The file content of the invoice, stored as a byte array.",
+                        "nullable": true,
+                        "items": {
+                            "type": "string",
+                            "description": "The file content of the invoice, stored as a byte array.",
+                            "format": "byte",
+                            "nullable": true
+                        }
+                    },
+                    "movement": {
+                        "$ref": "#/components/schemas/MovementDTO"
+                    },
+                    "stripeReceiptUrl": {
+                        "type": "string",
+                        "description": "The URL to the receipt generated by Stripe for the transaction",
+                        "nullable": true,
+                        "example": "https://pay.stripe.com/receipts/acct_1234/ch_1JN3zd2eZvKYlo2C0Yabc123/rcpt_12345"
+                    },
+                    "movementDocumentNumber": {
+                        "type": "string",
+                        "description": "The unique document number associated with the payment movement",
+                        "nullable": true,
+                        "example": "INV-2024-0001"
+                    },
+                    "fileKey": {
+                        "type": "string",
+                        "description": "The key for accessing the invoice file stored in S3. This is used to retrieve or delete the file associated with the invoice.",
+                        "nullable": true,
+                        "example": "invoice-1234567890-xyz.pdf"
+                    },
+                    "fileBase64": {
+                        "type": "string",
+                        "description": "Base64 encoded content of the invoice file (e.g., PDF), included in the response to display the file.",
+                        "nullable": true
+                    }
+                },
+                "description": "DTO representing an invoice, including details such as the date of emission, description, associated movement, and file data.",
+                "nullable": true
+            },
+            "MovementDTO": {
+                "required": [
+                    "correlationId",
+                    "dateOfEmission",
+                    "description",
+                    "id",
+                    "status",
+                    "supplierId",
+                    "type",
+                    "valueWithoutIva",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Unique correlation ID to trace and associate requests/responses.",
+                        "format": "uuid",
+                        "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the entity, typically assigned upon creation or retrieval.",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "description": "Version number for optimistic locking and concurrent updates management.",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "supplierId": {
+                        "type": "string",
+                        "description": "UUID of the supplier associated with the movement.",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "budgetTypeId": {
+                        "type": "string",
+                        "description": "UUID of the associated budget type, if applicable.",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "987e6543-e89b-12d3-a456-426614174111"
+                    },
+                    "budgetSubtypeId": {
+                        "type": "string",
+                        "description": "UUID of the associated budget subtype, if applicable.",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "987e6543-e89b-12d3-a456-426614174222"
+                    },
+                    "invoiceId": {
+                        "type": "string",
+                        "description": "UUID of the associated invoice for the movement, if applicable.",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "a1f8b87f-e8c9-4702-92d4-c60ff15c99ab"
+                    },
+                    "documentNumber": {
+                        "type": "string",
+                        "description": "Document number associated with the movement.",
+                        "nullable": true,
+                        "example": "INV-2024-0001"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "Type of the movement (e.g., INCOME, EXPENSE).",
+                        "example": "EXPENSE",
+                        "enum": [
+                            "DEBIT",
+                            "CREDIT"
+                        ]
+                    },
+                    "dateOfEmission": {
+                        "type": "string",
+                        "description": "Date of emission for the movement.",
+                        "format": "date",
+                        "example": "2024-11-10"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the movement.",
+                        "example": "Payment for marketing services"
+                    },
+                    "valueWithoutIva": {
+                        "type": "number",
+                        "description": "Value of the movement excluding VAT (IVA).",
+                        "format": "double",
+                        "example": 1000.0
+                    },
+                    "ivaRate": {
+                        "type": "number",
+                        "description": "IVA (VAT) rate applied to the movement, default is 0.0 if not specified.",
+                        "format": "double",
+                        "nullable": true,
+                        "example": 0.21
+                    },
+                    "ivaValue": {
+                        "type": "number",
+                        "description": "Calculated IVA (VAT) value for the movement, based on the IVA rate and value.",
+                        "format": "double",
+                        "nullable": true,
+                        "example": 210.0
+                    },
+                    "totalValue": {
+                        "type": "number",
+                        "description": "Total value of the movement, including IVA (VAT).",
+                        "format": "double",
+                        "nullable": true,
+                        "example": 1210.0
+                    },
+                    "invoice": {
+                        "$ref": "#/components/schemas/InvoiceDTO"
+                    },
+                    "budgetType": {
+                        "$ref": "#/components/schemas/BudgetTypeDTO"
+                    },
+                    "budgetSubtype": {
+                        "$ref": "#/components/schemas/BudgetSubtypeDTO"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/SupplierDTO"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Status of the movement, such as ACCEPTED, PENDING, etc. Default is 'ACCEPTED'.",
+                        "example": "ACCEPTED",
+                        "enum": [
+                            "ACCEPTED",
+                            "PROCESSING",
+                            "REFUSED",
+                            "CANCELED",
+                            "FAILED",
+                            "REFUNDED",
+                            "SUCCEEDED"
+                        ]
+                    }
+                },
+                "description": "DTO representing a financial movement, including details such as the supplier, type, value, associated invoice, and budget information."
+            },
+            "ResetPasswordRequestDTO": {
+                "required": [
+                    "newPassword",
+                    "token"
+                ],
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "description": "The password reset token, usually sent via email for validation.",
+                        "example": "abc123xyz"
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "description": "The new password to set for the user.",
+                        "example": "NewSecurePassword123!"
+                    }
+                },
+                "description": "Reset password request containing the reset token and the new password"
+            },
+            "AuthenticationResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the user",
+                        "format": "uuid",
+                        "example": "e12a567d-32f8-4e9a-9073-6781f9d5e423"
+                    },
+                    "token": {
+                        "type": "string",
+                        "description": "JWT token used for authenticating API requests",
+                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "refreshToken": {
+                        "type": "string",
+                        "description": "Refresh token used for obtaining a new JWT token",
+                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                },
+                "description": "Data Transfer Object representing the authentication response, including the JWT token, refresh token and user ID."
+            },
+            "RefundChargeRequestDTO": {
+                "required": [
+                    "paymentIntentId"
+                ],
+                "type": "object",
+                "properties": {
+                    "paymentIntentId": {
+                        "type": "string",
+                        "description": "The unique identifier of the payment intent to be refunded",
+                        "example": "pi_1JN3zd2eZvKYlo2CvZJZ1234"
+                    }
+                },
+                "description": "Request object to initiate a refund for a payment intent"
+            },
+            "StripeSepaTokenDTO": {
+                "required": [
+                    "accountHolderName",
+                    "accountHolderType",
+                    "iban"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Correlation ID to track the request",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "iban": {
+                        "type": "string",
+                        "description": "IBAN (International Bank Account Number) associated with the SEPA account",
+                        "example": "DE89370400440532013000"
+                    },
+                    "accountHolderName": {
+                        "type": "string",
+                        "description": "Name of the account holder for the SEPA account",
+                        "example": "John Doe"
+                    },
+                    "accountHolderType": {
+                        "type": "string",
+                        "description": "Type of the account holder (e.g., individual or company)",
+                        "example": "individual"
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "description": "Indicates whether the SEPA tokenization was successful",
+                        "nullable": true,
+                        "example": true
+                    },
+                    "token": {
+                        "type": "string",
+                        "description": "Token generated by Stripe after successful SEPA account processing",
+                        "nullable": true,
+                        "example": "sepa_tok_visa"
+                    }
+                },
+                "description": "DTO containing details for Stripe SEPA token generation."
+            },
+            "CreatePaymentItemDTO": {
+                "required": [
+                    "amount",
+                    "supplierId"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the payment item",
+                        "nullable": true,
+                        "example": "item_12345"
+                    },
+                    "amount": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Amount associated with the payment item. Must be at least 1.",
+                        "format": "int64",
+                        "example": 5000
+                    },
+                    "budgetSubtypeId": {
+                        "type": "string",
+                        "description": "Budget Subtype ID associated with the item (if applicable)",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    },
+                    "budgetTypeId": {
+                        "type": "string",
+                        "description": "Budget Type ID associated with the item (if applicable)",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "c123d456-78e9-0123-4567-890ab123cdef"
+                    },
+                    "supplierId": {
+                        "type": "string",
+                        "description": "Supplier ID associated with the item",
+                        "format": "uuid",
+                        "example": "f123a456-78e9-0123-4567-890cd123efab"
+                    },
+                    "ivaRate": {
+                        "type": "number",
+                        "description": "IVA rate applied to the item (default is 0.0)",
+                        "format": "double",
+                        "nullable": true,
+                        "example": 0.23
+                    }
+                },
+                "description": "DTO representing a single item in a payment"
+            },
+            "SessionRequestDTO": {
+                "required": [
+                    "currency",
+                    "description",
+                    "items"
+                ],
+                "type": "object",
+                "properties": {
+                    "currency": {
+                        "type": "string",
+                        "description": "The currency for the payment session",
+                        "example": "USD"
+                    },
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Optional correlation ID to track the session",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the user initiating the payment session",
+                        "nullable": true,
+                        "example": "customer@example.com"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the payment session",
+                        "nullable": true,
+                        "example": "Order #12345"
+                    },
+                    "items": {
+                        "type": "array",
+                        "description": "Array of items included in the payment session",
+                        "items": {
+                            "$ref": "#/components/schemas/CreatePaymentItemDTO"
+                        }
+                    }
+                },
+                "description": "Request object to create a payment session"
+            },
+            "SessionResponseDTO": {
+                "required": [
+                    "sessionId",
+                    "sessionUrl"
+                ],
+                "type": "object",
+                "properties": {
+                    "sessionId": {
+                        "type": "string",
+                        "description": "Unique identifier for the payment session",
+                        "example": "sess_123456789"
+                    },
+                    "sessionUrl": {
+                        "type": "string",
+                        "description": "URL to the payment session",
+                        "example": "https://paymentgateway.com/session/sess_123456789"
+                    },
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Correlation ID to track the session",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    }
+                },
+                "description": "Response containing session ID, URL, and correlation ID."
+            },
+            "CreatePaymentDTO": {
+                "required": [
+                    "currency",
+                    "description",
+                    "items",
+                    "movementType",
+                    "paymentMethodId"
+                ],
+                "type": "object",
+                "properties": {
+                    "currency": {
+                        "type": "string",
+                        "description": "Currency for the payment (e.g., USD, EUR)",
+                        "example": "USD"
+                    },
+                    "paymentMethodId": {
+                        "type": "string",
+                        "description": "Payment method identifier from the payment provider",
+                        "example": "pm_1Jgghy2eZvKYlo2CQ0rZdmKZ"
+                    },
+                    "receiptEmail": {
+                        "type": "string",
+                        "description": "Email address to send the payment receipt to",
+                        "nullable": true,
+                        "example": "customer@example.com"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the payment's purpose",
+                        "example": "Payment for invoice #12345"
+                    },
+                    "items": {
+                        "type": "array",
+                        "description": "Array of items associated with the payment",
+                        "items": {
+                            "$ref": "#/components/schemas/CreatePaymentItemDTO"
+                        }
+                    },
+                    "movementType": {
+                        "type": "string",
+                        "description": "Type of movement associated with the payment",
+                        "example": "DEBIT",
+                        "enum": [
+                            "DEBIT",
+                            "CREDIT",
+                            "DEBIT",
+                            "CREDIT"
+                        ]
+                    },
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Correlation ID for tracking the payment across services",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    }
+                },
+                "description": "DTO for creating a new payment"
+            },
+            "CreatePaymentResponseDTO": {
+                "required": [
+                    "correlationId",
+                    "paymentIntentId"
+                ],
+                "type": "object",
+                "properties": {
+                    "paymentIntentId": {
+                        "type": "string",
+                        "description": "Unique identifier for the payment intent generated by the payment gateway",
+                        "example": "pi_1JN3zd2eZvKYlo2CvZJZ1234"
+                    },
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Unique correlation ID for tracking the payment request",
+                        "format": "uuid",
+                        "example": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    }
+                },
+                "description": "Response object containing details of the created payment"
+            },
+            "StripeCardTokenDTO": {
+                "required": [
+                    "cardNumber",
+                    "cvc",
+                    "email",
+                    "expMonth",
+                    "expYear"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Correlation ID to track the request",
+                        "format": "uuid",
+                        "nullable": true,
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "cardNumber": {
+                        "type": "string",
+                        "description": "Card number (no spaces or dashes)",
+                        "example": "4242424242424242"
+                    },
+                    "expMonth": {
+                        "type": "string",
+                        "description": "Expiration month of the card",
+                        "example": "12"
+                    },
+                    "expYear": {
+                        "type": "string",
+                        "description": "Expiration year of the card",
+                        "example": "2025"
+                    },
+                    "cvc": {
+                        "type": "string",
+                        "description": "CVC (Card Verification Code) of the card",
+                        "example": "123"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "Email associated with the card",
+                        "example": "user@example.com"
+                    },
+                    "token": {
+                        "type": "string",
+                        "description": "Token generated by Stripe after successful card processing",
+                        "nullable": true,
+                        "example": "tok_visa"
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "description": "Indicates whether the card tokenization was successful",
+                        "nullable": true,
+                        "example": true
+                    }
+                },
+                "description": "DTO containing details for Stripe card token generation."
+            },
+            "PaymentActionRequestDTO": {
+                "required": [
+                    "paymentIntentId",
+                    "receiptEmail"
+                ],
+                "type": "object",
+                "properties": {
+                    "paymentIntentId": {
+                        "type": "string",
+                        "description": "The unique identifier of the payment intent",
+                        "example": "pi_1JN3zd2eZvKYlo2CvZJZ1234"
+                    },
+                    "receiptEmail": {
+                        "type": "string",
+                        "description": "The email address to send the payment receipt to",
+                        "nullable": true,
+                        "example": "customer@example.com"
+                    },
+                    "returnUrl": {
+                        "type": "string",
+                        "description": "The URL to redirect the user after payment is completed",
+                        "nullable": true,
+                        "example": "https://example.com/return"
+                    },
+                    "paymentMethodId": {
+                        "type": "string",
+                        "description": "The identifier of the payment method used for this transaction",
+                        "nullable": true,
+                        "example": "pm_1JN3zd2eZvKYlo2CvXAb1234"
+                    }
+                },
+                "description": "Request object to perform an action on a payment intent"
+            },
+            "SignInRequestDTO": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "description": "Email address of the user",
+                        "example": "john.keen@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "Password of the user, used for authentication",
+                        "example": "P@ssw0rd123"
+                    }
+                },
+                "description": "User credentials including username and password"
+            },
+            "Pageable": {
+                "type": "object",
+                "properties": {
+                    "page": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "CustomPageDTOObject": {
+                "required": [
+                    "content",
+                    "empty",
+                    "first",
+                    "last",
+                    "numberOfElements",
+                    "pageSize",
+                    "pageable",
+                    "totalElements",
+                    "totalPages"
+                ],
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of content items for the current page.",
+                        "items": {
+                            "type": "object",
+                            "description": "List of content items for the current page."
+                        }
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "description": "The number of items per page.",
+                        "format": "int32",
+                        "example": 20
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "description": "Total number of elements in the entire data set.",
+                        "format": "int64",
+                        "example": 1000
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "description": "Total number of pages in the data set.",
+                        "format": "int32",
+                        "example": 50
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/CustomPageableDTO"
+                    },
+                    "last": {
+                        "type": "boolean",
+                        "description": "Indicates whether the current page is the last page.",
+                        "example": false
+                    },
+                    "first": {
+                        "type": "boolean",
+                        "description": "Indicates whether the current page is the first page.",
+                        "example": true
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "description": "The number of elements in the current page.",
+                        "format": "int32",
+                        "example": 20
+                    },
+                    "empty": {
+                        "type": "boolean",
+                        "description": "Indicates whether the current page contains any content.",
+                        "example": false
+                    }
+                },
+                "description": "DTO representing a paginated response, containing a list of content items along with pagination details."
+            },
+            "CustomPageableDTO": {
+                "required": [
+                    "correlationId",
+                    "offset",
+                    "pageNumber",
+                    "pageSize",
+                    "paged",
+                    "unpaged"
+                ],
+                "type": "object",
+                "properties": {
+                    "correlationId": {
+                        "type": "string",
+                        "description": "Unique correlation ID to trace and associate requests/responses.",
+                        "format": "uuid",
+                        "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                    },
+                    "pageNumber": {
+                        "type": "integer",
+                        "description": "Page number of the requested data.",
+                        "format": "int32",
+                        "example": 1
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "description": "Page size specifying the number of items per page.",
+                        "format": "int32",
+                        "example": 20
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "description": "Offset of the requested page in relation to the total data set.",
+                        "format": "int32",
+                        "example": 0
+                    },
+                    "paged": {
+                        "type": "boolean",
+                        "description": "Indicates whether pagination is enabled.",
+                        "example": true
+                    },
+                    "unpaged": {
+                        "type": "boolean",
+                        "description": "Indicates whether pagination is disabled (for unpaged data requests).",
+                        "example": false
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortDTO"
+                    }
+                },
+                "description": "DTO representing pagination details including page number, page size, offset, sort order, and correlation ID."
+            },
+            "SortDTO": {
+                "required": [
+                    "direction",
+                    "field"
+                ],
+                "type": "object",
+                "properties": {
+                    "sorted": {
+                        "type": "boolean",
+                        "description": "Indicates whether the data is sorted.",
+                        "example": true
+                    },
+                    "unsorted": {
+                        "type": "boolean",
+                        "description": "Indicates whether the data is unsorted.",
+                        "example": false
+                    },
+                    "empty": {
+                        "type": "boolean",
+                        "description": "Indicates whether the data is empty (i.e., no sorting applied).",
+                        "example": false
+                    },
+                    "field": {
+                        "type": "string",
+                        "description": "The field by which the data should be sorted.",
+                        "example": "dateOfEmission"
+                    },
+                    "direction": {
+                        "type": "string",
+                        "description": "The direction of sorting (ASC or DESC).",
+                        "example": "ASC",
+                        "enum": [
+                            "ASC",
+                            "DESC"
+                        ]
+                    }
+                },
+                "description": "Data Transfer Object representing sorting options, including sorting direction and field for a query.",
+                "nullable": true
+            },
+            "DeleteRequestDTO": {
+                "required": [
+                    "password"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier (UUID) for each entity instance",
+                        "format": "uuid",
+                        "example": "e12a567d-32f8-4e9a-9073-6781f9d5e423"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "Password of the user, required to authorize deletion",
+                        "example": "P@ssw0rd123"
+                    }
+                },
+                "description": "User credentials to delete"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Insert the JWT bearer token",
+                "in": "header",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
