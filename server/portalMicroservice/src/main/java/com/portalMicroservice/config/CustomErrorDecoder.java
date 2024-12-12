@@ -48,7 +48,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
         String[] pathParts = path.split("/");
         Optional<String> optionalId = Optional.ofNullable(pathParts[pathParts.length - 1]).filter(id -> !id.isEmpty());
 
-        if (methodKey.contains("refreshToken") || methodKey.contains("delete") || methodKey.contains("update")) {
+        if (methodKey.contains("refreshToken") || methodKey.contains("delete") || methodKey.contains("update") || methodKey.contains("getUserById")) {
             throw new UserNotFoundException((UUID) request.getAttribute("id"));
         } else if (methodKey.contains("signIn")) {
             throw new EmailNotFoundException((String) request.getAttribute("email"));

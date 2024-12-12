@@ -19,6 +19,7 @@ import { ResetPassword$Params } from '../fn/user-credentials-controller/reset-pa
 import { update } from '../fn/user-credentials-controller/update';
 import { Update$Params } from '../fn/user-credentials-controller/update';
 import { UserCredentialsDto } from '../models/user-credentials-dto';
+import {findById, FindById$Params} from '../fn/user-credentials-controller/find-by-id';
 
 
 /**
@@ -195,4 +196,37 @@ export class UserCredentialsControllerService extends BaseService {
     );
   }
 
+
+  /** Path part for operation `getUserById()` */
+  static readonly GetUserByIdPath = '/api/v1/user-credentials/get-user-by-id';
+
+  /**
+   * Retrieve user credentials by ID.
+   *
+   * Fetches user credentials based on the unique user ID provided.
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getUserById()` instead.
+   *
+   * This method expects a query parameter `id` (UUID).
+   */
+  getUserById$Response(params: FindById$Params, context?: HttpContext): Observable<StrictHttpResponse<UserCredentialsDto>> {
+    return findById(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Retrieve user credentials by ID.
+   *
+   * Fetches user credentials based on the unique user ID provided.
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getUserById$Response()` instead.
+   *
+   * This method expects a query parameter `id` (UUID).
+   */
+  getUserById(params: FindById$Params, context?: HttpContext): Observable<UserCredentialsDto> {
+    return this.getUserById$Response(params, context).pipe(
+      map((r: StrictHttpResponse<UserCredentialsDto>): UserCredentialsDto => r.body)
+    );
+  }
 }

@@ -1,25 +1,22 @@
-import { HttpClient, HttpContext } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-import { BaseService } from '../base-service';
-import { ApiConfiguration } from '../api-configuration';
-import { StrictHttpResponse } from '../strict-http-response';
-
-import { AuthenticationResponseDto } from '../models/authentication-response-dto';
-import { refreshToken } from '../fn/authentication-controller/refresh-token';
-import { RefreshToken$Params } from '../fn/authentication-controller/refresh-token';
-import { signIn } from '../fn/authentication-controller/sign-in';
-import { SignIn$Params } from '../fn/authentication-controller/sign-in';
-import { signOut } from '../fn/authentication-controller/sign-out';
-import { SignOut$Params } from '../fn/authentication-controller/sign-out';
-
+import {HttpClient, HttpContext, HttpHeaders, HttpResponse} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {BaseService} from '../base-service';
+import {ApiConfiguration} from '../api-configuration';
+import {StrictHttpResponse} from '../strict-http-response';
+import {AuthenticationResponseDto} from '../models/authentication-response-dto';
+import {refreshToken} from '../fn/authentication-controller/refresh-token';
+import {RefreshToken$Params} from '../fn/authentication-controller/refresh-token';
+import {signIn} from '../fn/authentication-controller/sign-in';
+import {SignIn$Params} from '../fn/authentication-controller/sign-in';
+import {signOut} from '../fn/authentication-controller/sign-out';
+import {SignOut$Params} from '../fn/authentication-controller/sign-out';
 
 /**
  * API for authentication, communicating with the Authentication microservice.
  */
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class AuthenticationControllerService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
     super(config, http);
@@ -38,8 +35,8 @@ export class AuthenticationControllerService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  signOut$Response(params?: SignOut$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
-    return signOut(this.http, this.rootUrl, params, context);
+  signOut$Response(params: SignOut$Params, context?: HttpContext, headers?: HttpHeaders): Observable<StrictHttpResponse<void>> {
+    return signOut(this.http, this.rootUrl, params, context, headers);
   }
 
   /**
@@ -48,12 +45,10 @@ export class AuthenticationControllerService extends BaseService {
    * Invalidates the current user by communicating with the Authentication microservice.
    *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `signOut$Response()` instead.
-   *
-   * This method doesn't expect any request body.
+   * To access the full response (for headers, for example), use `signOut$Response()` instead.
    */
-  signOut(params?: SignOut$Params, context?: HttpContext): Observable<void> {
-    return this.signOut$Response(params, context).pipe(
+  signOut(params: SignOut$Params, context?: HttpContext, headers?: HttpHeaders): Observable<void> {
+    return this.signOut$Response(params, context, headers).pipe(
       map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
@@ -123,5 +118,4 @@ export class AuthenticationControllerService extends BaseService {
       map((r: StrictHttpResponse<AuthenticationResponseDto>): AuthenticationResponseDto => r.body)
     );
   }
-
 }

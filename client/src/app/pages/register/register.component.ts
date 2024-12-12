@@ -7,10 +7,11 @@ import { UserCredentialsControllerService } from '../../services/services/user-c
 import { NationalityEnum } from '../../services/enums/NationalityEnum';
 import { UserGenderEnum } from '../../services/enums/UserGenderEnum';
 import { UserRoleEnum } from '../../services/enums/UserRoleEnum';
+import {ErrorHandlingService} from '../../services/errorHandling/error-handling.service';
 
 @Component({
   selector: 'app-register',
-  imports: [NgForOf, NgIf, ReactiveFormsModule, FormsModule, NgClass],
+  imports: [NgForOf, NgIf, ReactiveFormsModule, FormsModule],
   templateUrl: './register.component.html',
   standalone: true,
   styleUrl: './register.component.scss'
@@ -28,7 +29,8 @@ export class RegisterComponent {
 
   constructor(
     private router: Router,
-    private userCredentialsService: UserCredentialsControllerService
+    private userCredentialsService: UserCredentialsControllerService,
+  private errorHandlingService: ErrorHandlingService
   ) {}
 
   register() {
@@ -37,10 +39,10 @@ export class RegisterComponent {
       body: this.userCredentialsDto
     }).subscribe({
       next: () => {
-        this.router.navigate(['home']);
+        this.router.navigate(['login']);
       },
       error: (err) => {
-        this.handleError(err);
+        this.errorMsg = this.errorHandlingService.handleError(err);
       }
     });
   }
@@ -52,28 +54,5 @@ export class RegisterComponent {
   formatText(value: string): string {
     if (!value) return '';
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
-  }
-
-  handleError(err: any) {
-    if (err.error instanceof Blob) {
-      err.error.text().then((errorText: string) => {
-        try {
-          const parsedError = JSON.parse(errorText);
-          if (parsedError) {
-            for (let key in parsedError) {
-              if (parsedError.hasOwnProperty(key)) {
-                if (key !== 'status' && key !== 'errorCode') {
-                  this.errorMsg.push(parsedError[key]);
-                }
-              }
-            }
-          }
-        } catch (e) {
-          this.errorMsg.push(errorText);
-        }
-      });
-    } else {
-      this.errorMsg.push(err.error);
-    }
   }
 }

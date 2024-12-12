@@ -10,6 +10,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @FeignClient(name = "userCredentialsFeignClient", url = "${authentication-microservice-user-credentials.url}", configuration = CustomErrorDecoder.class)
 public interface UserCredentialsFeignClient {
 
@@ -30,4 +32,7 @@ public interface UserCredentialsFeignClient {
 
     @GetMapping("/status")
     UserStatus getUserStatus(@RequestParam("nif") String nif);
+
+    @GetMapping("/get-user-by-id")
+    ResponseEntity<UserCredentialsDTO> getUserById(@RequestParam("id") UUID id);
 }

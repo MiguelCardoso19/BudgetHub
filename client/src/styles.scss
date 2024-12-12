@@ -2,7 +2,15 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
-.login-container{
-    width: 800px !important;
-    margin-top: 15%;
+.login-container {
+  width: 800px;
+  margin-top: 5%;
+  margin-bottom: 5%;
+}
+
+@media (max-width: 900px) {
+  .login-container {
+    width: 90%;
+    margin-top: 10%;
+  }
 }

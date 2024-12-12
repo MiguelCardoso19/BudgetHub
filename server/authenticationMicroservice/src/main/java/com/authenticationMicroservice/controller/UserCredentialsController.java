@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/user-credentials")
 @RequiredArgsConstructor
@@ -117,5 +119,21 @@ public class UserCredentialsController {
             @RequestParam("nif")
             @Parameter(description = "The user's NIF to check their current login status", required = true) String nif) {
         return ResponseEntity.ok(userCredentialsService.getUserStatus(nif));
+    }
+
+    @Operation(
+            summary = "Retrieve user credentials by ID",
+            description = "Fetch user credentials using the unique user ID provided as a query parameter.",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User credentials retrieved successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
+    @GetMapping("/get-user-by-id")
+    public ResponseEntity<UserCredentialsDTO> getUserById(
+            @RequestParam
+            @Parameter(description = "Unique user ID as a query parameter", required = true) UUID id) throws UserNotFoundException {
+        return ResponseEntity.ok(userCredentialsService.findById(id));
     }
 }

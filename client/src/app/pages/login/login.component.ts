@@ -1,10 +1,12 @@
-import {Component} from '@angular/core';
+import {Component, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {SignInRequestDto} from '../../services/models';
 import {AuthenticationControllerService} from '../../services/services/authentication-controller.service';
 import {Router} from '@angular/router';
 import {TokenService} from '../../services/token/token.service';
+import {ErrorHandlingService} from '../../services/errorHandling/error-handling.service';
+import {IdService} from '../../services/id/id.service';
 
 @Component({
   selector: 'app-login',
@@ -14,14 +16,15 @@ import {TokenService} from '../../services/token/token.service';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-
   signInRequest: SignInRequestDto = {email: '', password: ''};
   errorMsg: Array<string> = [];
 
   constructor(
     private router: Router,
     private authService: AuthenticationControllerService,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private errorHandlingService: ErrorHandlingService,
+    private idService: IdService
   ) {
   }
 
@@ -36,33 +39,15 @@ export class LoginComponent {
             const parsedResponse = JSON.parse(text);
             this.tokenService.token = parsedResponse.token as string;
             this.tokenService.refreshToken = parsedResponse.refreshToken as string;
-            this.router.navigate(['home']);
+            this.idService.id = parsedResponse.id as string;
+            this.router.navigate(['dashboard']);
           }).catch((err) => {
             this.errorMsg.push('Error reading the Blob response: ' + err.message);
           });
         }
       },
       error: (err) => {
-        if (err.error instanceof Blob) {
-          err.error.text().then((errorText: string) => {
-            try {
-              const parsedError = JSON.parse(errorText);
-              if (parsedError) {
-                for (let key in parsedError) {
-                  if (parsedError.hasOwnProperty(key)) {
-                    if (key !== 'status' && key !== 'errorCode') {
-                      this.errorMsg.push(parsedError[key]);
-                    }
-                  }
-                }
-              }
-            } catch (e) {
-              this.errorMsg.push(errorText);
-            }
-          });
-        } else {
-          this.errorMsg.push(err.error);
-        }
+        this.errorMsg = this.errorHandlingService.handleError(err);
       }
     });
   }

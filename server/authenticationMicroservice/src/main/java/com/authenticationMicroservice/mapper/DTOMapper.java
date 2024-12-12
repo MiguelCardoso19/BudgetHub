@@ -14,6 +14,7 @@ import java.util.UUID;
 @Mapper(componentModel = "spring")
 public interface DTOMapper {
 
+    @Mapping(target = "password", ignore = true)
     UserCredentialsDTO toDTO(UserCredentials userCredentials);
 
     @Mapping(target = "password", expression = "java(encodePassword(userCredentialsDTO.getPassword(), passwordEncoder))")

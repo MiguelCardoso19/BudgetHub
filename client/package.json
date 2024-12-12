@@ -23,6 +23,7 @@
     "@fortawesome/fontawesome-free": "^6.7.1",
     "@ng-select/ng-select": "^14.1.0",
     "bootstrap": "^5.3.3",
+    "jwt-decode": "^4.0.0",
     "ng-openapi-gen": "^0.52.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

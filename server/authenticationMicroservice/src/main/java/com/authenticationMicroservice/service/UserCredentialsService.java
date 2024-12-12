@@ -9,9 +9,11 @@ import com.authenticationMicroservice.exception.*;
 import com.authenticationMicroservice.model.UserCredentials;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserCredentialsService {
     Optional<UserCredentials> findByNif(String nif);
+    UserCredentialsDTO findById(UUID id) throws UserNotFoundException;
     Optional<UserCredentials> findByEmail(String email);
     AuthenticationResponseDTO register(UserCredentialsDTO userCredentialsDTO) throws UserCredentialsValidationException;
     void delete(DeleteRequestDTO deleteRequestDTO) throws InvalidPasswordException, UserNotFoundException;

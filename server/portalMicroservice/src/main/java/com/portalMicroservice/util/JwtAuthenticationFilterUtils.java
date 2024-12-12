@@ -19,6 +19,7 @@ public class JwtAuthenticationFilterUtils {
     public static boolean isExemptEndpoint(String requestURI) {
         return requestURI.startsWith("/api/v1/auth/sign-in") ||
                 requestURI.startsWith("/api/v1/user-credentials/register") ||
+                requestURI.startsWith("/api/v1/user-credentials/get-user-by-id") ||
                 requestURI.startsWith("/v3/api-docs") ||
                 requestURI.startsWith("/swagger-ui") ||
                 requestURI.startsWith("/swagger-resources") ||

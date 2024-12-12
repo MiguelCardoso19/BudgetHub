@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/user-credentials")
 @RequiredArgsConstructor
@@ -103,5 +105,21 @@ public class UserCredentialsController {
     ) {
         userCredentialsFeignClient.resetPassword(resetPasswordRequestDTO);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "Retrieve user credentials by ID",
+            description = "Fetches user credentials using the unique user ID provided as a request parameter.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User credentials retrieved successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            })
+    @PreAuthorize("permitAll()")
+    @GetMapping("/get-user-by-id")
+    public ResponseEntity<UserCredentialsDTO> getUserById(
+            @RequestParam
+            @Parameter(description = "User ID as a parameter", required = true) UUID id
+    ) {
+        return userCredentialsFeignClient.getUserById(id);
     }
 }
