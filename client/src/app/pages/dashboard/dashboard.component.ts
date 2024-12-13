@@ -7,8 +7,7 @@ import {catchError} from 'rxjs/operators';
 import {of} from 'rxjs';
 import {ErrorHandlingService} from '../../services/errorHandling/error-handling.service';
 import {NgForOf, NgIf} from '@angular/common';
-import {IdService} from '../../services/id/id.service';
-import {UserCredentialsControllerService} from '../../services/services/user-credentials-controller.service';
+import {StorageService} from '../../services/storage/storage.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,7 +17,6 @@ import {UserCredentialsControllerService} from '../../services/services/user-cre
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent {
-  nif: string = '';
   errorMsg: Array<string> = [];
   firstName: string = '';
 
@@ -27,27 +25,9 @@ export class DashboardComponent {
     private tokenService: TokenService,
     private router: Router,
     private errorHandlingService: ErrorHandlingService,
-    private idService: IdService,
-    private userCredentialsService: UserCredentialsControllerService
+    private storageService: StorageService,
   ) {
-  }
-
-  ngOnInit(): void {
-      this.fetchUserCredentials();
-  }
-
-  fetchUserCredentials(): void {
-    this.userCredentialsService.getUserById({ id: this.idService.id }).pipe(
-      catchError(error => {
-        this.errorHandlingService.handleError(error);
-        return of(null);
-      })
-    ).subscribe((userCredentials) => {
-      if (userCredentials) {
-        this.firstName = userCredentials.firstName;
-        this.nif = userCredentials.nif;
-      }
-    });
+    this.firstName =  this.getNameFromStorage();
   }
 
   logout() {
@@ -55,7 +35,7 @@ export class DashboardComponent {
 
     const headers = new HttpHeaders({
       'Authorization': 'Bearer ' + this.tokenService.token,
-      'Nif': this.nif
+      'Nif': this.storageService.getNif() as string
     });
 
     this.authService.signOut({}, undefined, headers).pipe(
@@ -66,7 +46,9 @@ export class DashboardComponent {
     ).subscribe(() => {
       this.tokenService.removeToken();
       this.tokenService.removeRefreshToken();
-      this.idService.removeId();
+      this.storageService.removeId();
+      this.storageService.removeName();
+      this.storageService.removeNif();
       this.router.navigate(['/login']);
     });
   }
@@ -74,5 +56,9 @@ export class DashboardComponent {
   formatText(value: string): string {
     if (!value) return '';
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  }
+
+  private getNameFromStorage(): string {
+    return this.storageService.getName() as string;
   }
 }

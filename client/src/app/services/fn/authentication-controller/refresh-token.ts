@@ -1,27 +1,36 @@
-import { HttpClient, HttpContext, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
-import { StrictHttpResponse } from '../../strict-http-response';
+import { HttpClient, HttpContext, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { filter, map, catchError } from 'rxjs/operators';
 import { RequestBuilder } from '../../request-builder';
+import { AuthenticationControllerService } from '../../services';
 
-import { AuthenticationResponseDto } from '../../models/authentication-response-dto';
+export function refreshToken(
+  http: HttpClient,
+  rootUrl: string,
+  params?: any,
+  context?: HttpContext,
+  headers?: HttpHeaders
+): Observable<{ token: string; refreshToken: string }> {
+  const rb = new RequestBuilder(rootUrl, AuthenticationControllerService.RefreshTokenPath, 'post');
 
-export interface RefreshToken$Params {
-}
-
-export function refreshToken(http: HttpClient, rootUrl: string, params?: RefreshToken$Params, context?: HttpContext): Observable<StrictHttpResponse<AuthenticationResponseDto>> {
-  const rb = new RequestBuilder(rootUrl, refreshToken.PATH, 'post');
-  if (params) {
+  if (headers) {
+    rb.header('Authorization', headers.get('Authorization') || '');
+    rb.header('Nif', headers.get('Nif') || '');
   }
 
   return http.request(
-    rb.build({ responseType: 'blob', accept: '*/*', context })
+    rb.build({ responseType: 'json', accept: 'application/json', context })
   ).pipe(
-    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-    map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<AuthenticationResponseDto>;
+    filter((event: any): event is HttpResponse<any> => event instanceof HttpResponse),
+    map((response: HttpResponse<any>) => {
+      return {
+        token: response.body?.token,
+        refreshToken: response.body?.refreshToken
+      };
+    }),
+    catchError(err => {
+      console.error('Error during refreshToken:', err);
+      return throwError(() => err);
     })
   );
 }
-
-refreshToken.PATH = '/api/v1/auth/refresh-token';

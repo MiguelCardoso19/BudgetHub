@@ -36,7 +36,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         user.setStatus(LOGGED_IN);
         userCredentialsService.save(user);
-        return dtoMapper.toDTO(jwtService.generateToken(user), jwtService.generateRefreshToken(user), user.getId());
+        return dtoMapper.toDTO(jwtService.generateToken(user), jwtService.generateRefreshToken(user), user.getId(), user.getNif(), user.getFirstName());
     }
 
     @Override

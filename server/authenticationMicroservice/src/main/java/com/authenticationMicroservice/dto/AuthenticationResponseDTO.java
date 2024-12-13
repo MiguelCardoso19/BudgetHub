@@ -20,4 +20,10 @@ public class AuthenticationResponseDTO extends AbstractDTO {
 
     @Schema(description = "Refresh token used for obtaining a new JWT token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private String refreshToken;
+
+    @Schema(description = "Tax Identification Number (NIF) of the user", example = "123456789", required = true)
+    private String nif;
+
+    @Schema(description = "First name of the user", example = "John", required = true)
+    private String firstName;
 }

@@ -7,7 +7,6 @@ import {ApiConfiguration} from '../api-configuration';
 import {StrictHttpResponse} from '../strict-http-response';
 import {AuthenticationResponseDto} from '../models/authentication-response-dto';
 import {refreshToken} from '../fn/authentication-controller/refresh-token';
-import {RefreshToken$Params} from '../fn/authentication-controller/refresh-token';
 import {signIn} from '../fn/authentication-controller/sign-in';
 import {SignIn$Params} from '../fn/authentication-controller/sign-in';
 import {signOut} from '../fn/authentication-controller/sign-out';
@@ -99,23 +98,19 @@ export class AuthenticationControllerService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  refreshToken$Response(params?: RefreshToken$Params, context?: HttpContext): Observable<StrictHttpResponse<AuthenticationResponseDto>> {
-    return refreshToken(this.http, this.rootUrl, params, context);
+  refreshToken$Response(params?: any, context?: HttpContext, headers?: HttpHeaders): Observable<any> {
+    return refreshToken(this.http, this.rootUrl, params, context, headers);
   }
 
   /**
-   * Refresh JWT token.
-   *
-   * Refresh the JWT token using the Authorization header through the proxy.
+   * Refresh JWT token with custom headers.
    *
    * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `refreshToken$Response()` instead.
-   *
-   * This method doesn't expect any request body.
+   * To access the full response (for headers, for example), use `refreshToken$Response()` instead.
    */
-  refreshToken(params?: RefreshToken$Params, context?: HttpContext): Observable<AuthenticationResponseDto> {
-    return this.refreshToken$Response(params, context).pipe(
-      map((r: StrictHttpResponse<AuthenticationResponseDto>): AuthenticationResponseDto => r.body)
+  refreshToken(params?: any, context?: HttpContext, headers?: HttpHeaders): Observable<any> {
+    return this.refreshToken$Response(params, context, headers).pipe(
+      map((response: any) => response)
     );
   }
 }

@@ -28,6 +28,8 @@ public interface DTOMapper {
 
     AuthenticationResponseDTO toDTO(String token, String refreshToken, UUID id);
 
+    AuthenticationResponseDTO toDTO(String token, String refreshToken, UUID id, String nif, String firstName);
+
     default String encodePassword(String password, PasswordEncoder passwordEncoder) {
         return (password != null && !password.isEmpty()) ? passwordEncoder.encode(password) : null;
     }

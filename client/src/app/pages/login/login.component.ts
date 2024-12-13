@@ -6,7 +6,7 @@ import {AuthenticationControllerService} from '../../services/services/authentic
 import {Router} from '@angular/router';
 import {TokenService} from '../../services/token/token.service';
 import {ErrorHandlingService} from '../../services/errorHandling/error-handling.service';
-import {IdService} from '../../services/id/id.service';
+import {StorageService} from '../../services/storage/storage.service';
 
 @Component({
   selector: 'app-login',
@@ -24,7 +24,7 @@ export class LoginComponent {
     private authService: AuthenticationControllerService,
     private tokenService: TokenService,
     private errorHandlingService: ErrorHandlingService,
-    private idService: IdService
+    private storageService: StorageService
   ) {
   }
 
@@ -39,7 +39,9 @@ export class LoginComponent {
             const parsedResponse = JSON.parse(text);
             this.tokenService.token = parsedResponse.token as string;
             this.tokenService.refreshToken = parsedResponse.refreshToken as string;
-            this.idService.id = parsedResponse.id as string;
+            this.storageService.id = parsedResponse.id as string;
+            this.storageService.nif = parsedResponse.nif as string;
+            this.storageService.name = parsedResponse.firstName as string;
             this.router.navigate(['dashboard']);
           }).catch((err) => {
             this.errorMsg.push('Error reading the Blob response: ' + err.message);
