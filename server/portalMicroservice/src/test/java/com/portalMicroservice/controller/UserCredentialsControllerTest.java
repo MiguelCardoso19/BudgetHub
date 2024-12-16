@@ -86,7 +86,7 @@ class UserCredentialsControllerTest {
         ResponseEntity<Void> expectedResponse = ResponseEntity.noContent().build();
         when(userCredentialsFeignClient.recoverPassword(email)).thenReturn(expectedResponse);
 
-        ResponseEntity<Void> response = userCredentialsController.recoverPassword();
+        ResponseEntity<Void> response = userCredentialsController.recoverPassword(email);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(jwtService, times(1)).getEmailFromRequest();

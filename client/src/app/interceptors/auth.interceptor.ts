@@ -4,7 +4,7 @@ import { TokenService } from '../services/token/token.service';
 import { catchError, switchMap } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import {StorageService} from '../services/id/storage.service';
+import {StorageService} from '../services/storage/storage.service';
 
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
   const authService = inject(TokenService);

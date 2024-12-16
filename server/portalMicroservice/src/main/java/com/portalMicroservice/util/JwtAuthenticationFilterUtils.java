@@ -20,6 +20,8 @@ public class JwtAuthenticationFilterUtils {
         return requestURI.startsWith("/api/v1/auth/sign-in") ||
                 requestURI.startsWith("/api/v1/user-credentials/register") ||
                 requestURI.startsWith("/api/v1/user-credentials/get-user-by-id") ||
+                requestURI.startsWith("/api/v1/user-credentials/recover-password") ||
+                requestURI.startsWith("/api/v1/user-credentials/reset-password") ||
                 requestURI.startsWith("/v3/api-docs") ||
                 requestURI.startsWith("/swagger-ui") ||
                 requestURI.startsWith("/swagger-resources") ||

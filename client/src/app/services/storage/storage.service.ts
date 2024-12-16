@@ -1,58 +1,58 @@
 import {Injectable} from '@angular/core';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class StorageService {
 
-    constructor() {
-    }
+  constructor() {
+  }
 
-    setItem(key: string, value: string): void {
-        localStorage.setItem(key, value);
-    }
+  setItem(key: string, value: string): void {
+    localStorage.setItem(key, value);
+  }
 
-    getItem(key: string): string | null {
-        return localStorage.getItem(key);
-    }
+  getItem(key: string): string | null {
+    return localStorage.getItem(key);
+  }
 
-    removeItem(key: string): void {
-        localStorage.removeItem(key);
-    }
+  removeItem(key: string): void {
+    localStorage.removeItem(key);
+  }
 
-    set id(id: string) {
-        this.setItem('id', id);
-    }
+  set id(id: string) {
+    this.setItem('id', id);
+  }
 
-    getId(): string | null {
-        return this.getItem('id');
-    }
+  get id() {
+    return this.getItem('id') as string;;
+  }
 
-    removeId(): void {
-        this.removeItem('id');
-    }
+  removeId(): void {
+    this.removeItem('id');
+  }
 
-    set nif(nif: string) {
-        this.setItem('nif', nif);
-    }
+  set nif(nif: string) {
+    this.setItem('nif', nif);
+  }
 
-    getNif(): string | null {
-        return this.getItem('nif');
-    }
+  get nif() {
+    return localStorage.getItem('nif') as string;
+  }
 
-    removeNif(): void {
-        this.removeItem('nif');
-    }
+  removeNif(): void {
+    this.removeItem('nif');
+  }
 
-    set name(name: string) {
-        this.setItem('name', name);
-    }
+  set name(name: string) {
+    this.setItem('name', name);
+  }
 
-    getName(): string | null {
-        return this.getItem('name');
-    }
+  getName(): string | null {
+    return this.getItem('name');
+  }
 
-    removeName(): void {
-        this.removeItem('name');
-    }
+  removeName(): void {
+    this.removeItem('name');
+  }
 }

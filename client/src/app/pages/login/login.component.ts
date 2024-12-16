@@ -5,7 +5,7 @@ import {SignInRequestDto} from '../../services/models';
 import {AuthenticationControllerService} from '../../services/services/authentication-controller.service';
 import {Router} from '@angular/router';
 import {TokenService} from '../../services/token/token.service';
-import {ErrorHandlingService} from '../../services/errorHandling/error-handling.service';
+import {ErrorHandlingService} from '../../services/error-handling/error-handling.service';
 import {StorageService} from '../../services/storage/storage.service';
 
 @Component({

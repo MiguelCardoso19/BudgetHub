@@ -7,7 +7,7 @@ import { UserCredentialsControllerService } from '../../services/services/user-c
 import { NationalityEnum } from '../../services/enums/NationalityEnum';
 import { UserGenderEnum } from '../../services/enums/UserGenderEnum';
 import { UserRoleEnum } from '../../services/enums/UserRoleEnum';
-import {ErrorHandlingService} from '../../services/errorHandling/error-handling.service';
+import {ErrorHandlingService} from '../../services/error-handling/error-handling.service';
 
 @Component({
   selector: 'app-register',

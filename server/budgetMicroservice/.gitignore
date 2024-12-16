@@ -36,6 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 
-src/java/com/budgetMicroservice/atest
-
 src/main/resources/app.secret.properties

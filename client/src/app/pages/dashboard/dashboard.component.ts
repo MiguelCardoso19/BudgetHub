@@ -5,7 +5,7 @@ import {TokenService} from '../../services/token/token.service';
 import {AuthenticationControllerService} from '../../services/services/authentication-controller.service';
 import {catchError} from 'rxjs/operators';
 import {of} from 'rxjs';
-import {ErrorHandlingService} from '../../services/errorHandling/error-handling.service';
+import {ErrorHandlingService} from '../../services/error-handling/error-handling.service';
 import {NgForOf, NgIf} from '@angular/common';
 import {StorageService} from '../../services/storage/storage.service';
 
@@ -35,7 +35,7 @@ export class DashboardComponent {
 
     const headers = new HttpHeaders({
       'Authorization': 'Bearer ' + this.tokenService.token,
-      'Nif': this.storageService.getNif() as string
+      'Nif': this.storageService.nif
     });
 
     this.authService.signOut({}, undefined, headers).pipe(

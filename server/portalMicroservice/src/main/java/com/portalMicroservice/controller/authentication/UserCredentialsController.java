@@ -75,7 +75,7 @@ public class UserCredentialsController {
     }
 
     @Operation(
-            summary = "Recover password by sending a reset link to the logged user's email",
+            summary = "Recover password by sending a reset link to the user's email",
             description = "Sends a password recovery email to the user with a reset token.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Password recovery email sent successfully"),
@@ -83,10 +83,11 @@ public class UserCredentialsController {
             })
     @PreAuthorize("permitAll()")
     @PostMapping("/recover-password")
-    public ResponseEntity<Void> recoverPassword() {
-        userCredentialsFeignClient.recoverPassword(jwtService.getEmailFromRequest());
+    public ResponseEntity<Void> recoverPassword(@RequestParam("email") String email) {
+        userCredentialsFeignClient.recoverPassword(email);
         return ResponseEntity.noContent().build();
     }
+
 
     @Operation(
             summary = "Reset the user's password using the provided reset token",

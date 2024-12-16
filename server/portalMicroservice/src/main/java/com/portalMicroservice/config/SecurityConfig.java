@@ -28,6 +28,8 @@ public class SecurityConfig {
             "/api/v1/auth/sign-in",
             "/api/v1/user-credentials/register",
             "/api/v1/user-credentials/get-user-by-id",
+            "/api/v1/user-credentials/recover-password",
+            "/api/v1/user-credentials/reset-password",
             "/v3/api-docs/**",
             "/swagger-ui/**"
     };
