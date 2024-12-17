@@ -1,25 +1,25 @@
-import { HttpHandlerFn, HttpRequest } from '@angular/common/http';
+import {HttpHandlerFn, HttpRequest} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { TokenService } from '../services/token/token.service';
 import { catchError, switchMap } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import {StorageService} from '../services/storage/storage.service';
+import {AuthenticationControllerService} from '../services/services';
 
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
-  const authService = inject(TokenService);
-  const storageService = inject(StorageService);
+  const tokenService: TokenService = inject(TokenService);
+  const storageService: StorageService = inject(StorageService);
 
   if (req.url.includes('/sign-in') || req.url.includes('/register') || req.url.includes('/refresh-token')) {
     return next(req);
   }
 
-  if (authService.isAuthenticatedAndNotExpired()) {
-    const token = authService.token;
-    req = addHeaders(req, token, storageService.nif);
+  if (tokenService.isAuthenticatedAndNotExpired()) {
+    req = addHeaders(req, tokenService.token, storageService.nif);
     return next(req);
   } else {
-    return handleExpiredToken(req, next);
+    return handleExpiredToken(req, next, tokenService, storageService);
   }
 }
 
@@ -32,12 +32,11 @@ function addHeaders(req: HttpRequest<unknown>, token: string, nif: string) {
   });
 }
 
-function handleExpiredToken(req: HttpRequest<unknown>, next: HttpHandlerFn) {
-  const tokenService = inject(TokenService);
-  const router = inject(Router);
-  const storageService = inject(StorageService);
+function handleExpiredToken(req: HttpRequest<unknown>, next: HttpHandlerFn, tokenService: TokenService, storageService: StorageService) {
+  const router: Router = inject(Router);
+  const authService: AuthenticationControllerService = inject(AuthenticationControllerService);
 
-  return tokenService.refreshTokenRequest(storageService.nif).pipe(
+  return authService.refreshToken({}, undefined).pipe(
     switchMap((res: any) => {
       const { token, refreshToken } = res;
       tokenService.token = token;
@@ -45,14 +44,16 @@ function handleExpiredToken(req: HttpRequest<unknown>, next: HttpHandlerFn) {
       req = addHeaders(req, token, storageService.nif);
       return next(req);
     }),
-    catchError(err => {
-      tokenService.removeToken();
-      tokenService.removeRefreshToken();
-      storageService.removeId();
-      storageService.removeName();
-      storageService.removeNif();
-      router.navigate(['login']);
-      return throwError(() => err);
-    })
+     catchError(err => {
+       if (err.status === 403) {
+         tokenService.removeToken();
+         tokenService.removeRefreshToken();
+         storageService.removeId();
+         storageService.removeName();
+         storageService.removeNif();
+         router.navigate(['login']);
+       }
+       return throwError(() => err);
+   })
   );
 }

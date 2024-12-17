@@ -23,6 +23,9 @@ public interface DTOMapper {
     @Mapping(target = "password", expression = "java(encodePassword(userCredentialsDTO.getNewPassword(), passwordEncoder))")
     void updateFromDTO(UserCredentialsDTO userCredentialsDTO, @MappingTarget UserCredentials entity, @Context PasswordEncoder passwordEncoder);
 
+    @Mapping(target = "password", ignore = true)
+    void updateFromDTO(UserCredentialsDTO userCredentialsDTO, @MappingTarget UserCredentials entity);
+
     @Mapping(target = "id", ignore = true)
     AuthenticationResponseDTO toDTOWithoutUserID(String token, String refreshToken);
 

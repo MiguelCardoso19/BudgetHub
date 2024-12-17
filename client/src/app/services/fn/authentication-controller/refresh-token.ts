@@ -3,20 +3,27 @@ import { Observable, throwError } from 'rxjs';
 import { filter, map, catchError } from 'rxjs/operators';
 import { RequestBuilder } from '../../request-builder';
 import { AuthenticationControllerService } from '../../services';
+import { TokenService } from '../../token/token.service';
+import { StorageService } from '../../storage/storage.service';
 
 export function refreshToken(
+  tokenService: TokenService,
+  storageService: StorageService,
   http: HttpClient,
   rootUrl: string,
   params?: any,
   context?: HttpContext,
-  headers?: HttpHeaders
 ): Observable<{ token: string; refreshToken: string }> {
+
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${tokenService.refreshToken}`,
+    'Nif': storageService.nif || ''
+  });
+
   const rb = new RequestBuilder(rootUrl, AuthenticationControllerService.RefreshTokenPath, 'post');
 
-  if (headers) {
-    rb.header('Authorization', headers.get('Authorization') || '');
-    rb.header('Nif', headers.get('Nif') || '');
-  }
+  rb.header('Authorization', headers.get('Authorization') || '');
+  rb.header('Nif', headers.get('Nif') || '');
 
   return http.request(
     rb.build({ responseType: 'json', accept: 'application/json', context })
@@ -29,7 +36,11 @@ export function refreshToken(
       };
     }),
     catchError(err => {
-      console.error('Error during refreshToken:', err);
+      tokenService.removeToken();
+      tokenService.removeRefreshToken();
+      storageService.removeId();
+      storageService.removeName();
+      storageService.removeNif();
       return throwError(() => err);
     })
   );

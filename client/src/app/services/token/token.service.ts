@@ -1,9 +1,6 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, tap, throwError} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {jwtDecode} from 'jwt-decode';
-import {HttpHeaders} from '@angular/common/http';
-import {catchError} from 'rxjs/operators';
-import {AuthenticationControllerService} from '../services/authentication-controller.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +9,7 @@ export class TokenService {
 
   tokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(localStorage.getItem('token'));
 
-  constructor(private authenticationControllerService: AuthenticationControllerService) {
+  constructor() {
     const token = localStorage.getItem('token');
     this.tokenSubject.next(token);
   }
@@ -63,24 +60,5 @@ export class TokenService {
     } catch (error) {
       return true;
     }
-  }
-
-  refreshTokenRequest(nif: string): Observable<any> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.refreshToken}`,
-      'Nif': nif
-    });
-
-    return this.authenticationControllerService.refreshToken({}, undefined, headers).pipe(
-      tap((res: any) => {
-        if (res && res.token && res.refreshToken) {
-          this.token = res.token;
-          this.refreshToken = res.refreshToken;
-        }
-      }),
-      catchError(err => {
-        return throwError(() => err);
-      })
-    );
   }
 }

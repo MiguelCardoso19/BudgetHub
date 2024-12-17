@@ -60,7 +60,12 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
         }
 
         UserCredentialsValidator.validateUserCredentialsUpdate(userCredentialsDTO, userCredentialsRepository);
-        dtoMapper.updateFromDTO(userCredentialsDTO, existingUser, passwordEncoder);
+
+        if (userCredentialsDTO.getNewPassword() != null) {
+            dtoMapper.updateFromDTO(userCredentialsDTO, existingUser, passwordEncoder);
+        } else {
+            dtoMapper.updateFromDTO(userCredentialsDTO, existingUser);
+        }
         return dtoMapper.toDTO(userCredentialsRepository.save(existingUser));
     }
 

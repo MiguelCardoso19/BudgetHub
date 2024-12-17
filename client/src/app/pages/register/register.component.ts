@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { UserCredentialsDto } from '../../services/models/user-credentials-dto';
-import {NgClass, NgForOf, NgIf} from '@angular/common';
+import { NgForOf, NgIf } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserCredentialsControllerService } from '../../services/services/user-credentials-controller.service';
@@ -30,7 +30,7 @@ export class RegisterComponent {
   constructor(
     private router: Router,
     private userCredentialsService: UserCredentialsControllerService,
-  private errorHandlingService: ErrorHandlingService
+    private errorHandlingService: ErrorHandlingService
   ) {}
 
   register() {
