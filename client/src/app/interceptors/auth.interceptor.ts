@@ -11,7 +11,7 @@ export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) 
   const tokenService: TokenService = inject(TokenService);
   const storageService: StorageService = inject(StorageService);
 
-  if (req.url.includes('/sign-in') || req.url.includes('/register') || req.url.includes('/refresh-token')) {
+  if (req.url.includes('/sign-in') || req.url.includes('/register') || req.url.includes('/refresh-token') || req.url.includes('/reset-password') || req.url.includes('/recover-password')) {
     return next(req);
   }
 

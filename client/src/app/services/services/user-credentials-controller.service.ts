@@ -20,6 +20,7 @@ import { update } from '../fn/user-credentials-controller/update';
 import { Update$Params } from '../fn/user-credentials-controller/update';
 import { UserCredentialsDto } from '../models/user-credentials-dto';
 import {findById, FindById$Params} from '../fn/user-credentials-controller/find-by-id';
+import {TokenService} from '../token/token.service';
 
 
 /**
@@ -27,7 +28,7 @@ import {findById, FindById$Params} from '../fn/user-credentials-controller/find-
  */
 @Injectable({ providedIn: 'root' })
 export class UserCredentialsControllerService extends BaseService {
-  constructor(config: ApiConfiguration, http: HttpClient) {
+  constructor(config: ApiConfiguration, http: HttpClient, private tokenService: TokenService) {
     super(config, http);
   }
 
@@ -143,7 +144,7 @@ export class UserCredentialsControllerService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  recoverPassword$Response(params?: RecoverPassword$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+  recoverPassword$Response(params: RecoverPassword$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
     return recoverPassword(this.http, this.rootUrl, params, context);
   }
 
@@ -157,7 +158,7 @@ export class UserCredentialsControllerService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  recoverPassword(params?: RecoverPassword$Params, context?: HttpContext): Observable<void> {
+  recoverPassword(params: RecoverPassword$Params, context?: HttpContext): Observable<void> {
     return this.recoverPassword$Response(params, context).pipe(
       map((r: StrictHttpResponse<void>): void => r.body)
     );
@@ -177,7 +178,7 @@ export class UserCredentialsControllerService extends BaseService {
    * This method sends `application/json` and handles request body of type `application/json`.
    */
   delete$Response(params: Delete$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
-    return delete$(this.http, this.rootUrl, params, context);
+    return delete$(this.http, this.rootUrl, params, context, this.tokenService);
   }
 
   /**

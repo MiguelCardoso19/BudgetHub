@@ -28,6 +28,7 @@ export class UserCredentialsComponent implements OnInit {
   // @ts-ignore
   userCredentialsDto: UserCredentialsDto = { email: '', firstName: '', password: '', dateOfBirth: '', gender: '', lastName: '', nif: '', roles: [], nationality: '', phoneNumber: '' };
   errorMsg: Array<string> = [];
+  successMsg: string = '';
 
   nationalities = Object.values(NationalityEnum);
   genders = Object.values(UserGenderEnum);
@@ -90,12 +91,22 @@ export class UserCredentialsComponent implements OnInit {
     }
   }
 
+  async deleteAccount(): Promise<void> {
+    const modalResult = await this.passwordPopUpComponent.openModalAsync('confirm');
+
+    if (modalResult) {
+      this.userCredentialsDto.password = this.passwordPopUpComponent.password;
+      this.delete();
+    }
+  }
+
   update(): void {
     this.errorMsg = [];
     this.userCredentialsService.update({
       body: this.userCredentialsDto
     }).subscribe({
       next: () => {
+        this.setSuccessMessage('Account settings saved successfully');
       },
       error: (err) => {
         console.log(err)
@@ -116,18 +127,48 @@ export class UserCredentialsComponent implements OnInit {
     });
   }
 
-  recoverPassword(){
+  recoverPassword(): void {
     this.errorMsg = [];
+    const email = this.userCredentialsDto.email;
 
+    this.userCredentialsService.recoverPassword({ email }).subscribe({
+      next: () => {
+        this.setSuccessMessage('Recover password email sent successfully');
+      },
+      error: (err) => {
+        this.errorMsg = this.errorHandlingService.handleError(err);
+      }
+    });
   }
 
-  delete() {
-    this.errorMsg = [];
 
+  delete(): void {
+    this.errorMsg = [];
+    const deleteRequestDto = {
+      id: this.userCredentialsDto.id,
+      password: this.userCredentialsDto.password
+    };
+
+    this.userCredentialsService.delete({body: deleteRequestDto}).subscribe({
+      next: () => {
+        this.router.navigate(['login']);
+      },
+      error: (err) => {
+        this.errorMsg = this.errorHandlingService.handleError(err);
+      }
+    });
   }
 
   formatText(value: string): string {
     if (!value) return '';
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  }
+
+  setSuccessMessage(message: string): void {
+    this.successMsg = message;
+
+    setTimeout(() => {
+      this.successMsg = '';
+    }, 4000);
   }
 }

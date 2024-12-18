@@ -81,14 +81,14 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
         tokenEntity.setUser(user);
         passwordResetTokenRepository.save(tokenEntity);
 
-        String resetLink = "http://localhost:8080/api/v1/auth/reset-password?token=" + resetToken;
+        String resetLink = "http://localhost:4200/reset-password?token=" + resetToken;
         kafkaNotificationRequestTemplate.send("notification-reset-password-topic", new NotificationRequestDTO(user.getEmail(), resetLink));
     }
 
     @Override
     public void resetPassword(ResetPasswordRequestDTO resetPasswordRequestDTO) throws InvalidTokenException {
         PasswordResetToken tokenEntity = passwordResetTokenRepository.findByToken(resetPasswordRequestDTO.getToken())
-                .orElseThrow(() -> new InvalidTokenException());
+                .orElseThrow(InvalidTokenException::new);
 
         if (tokenEntity.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new InvalidTokenException();
@@ -97,7 +97,6 @@ public class UserCredentialsServiceImpl implements UserCredentialsService {
         UserCredentials user = tokenEntity.getUser();
         user.setPassword(passwordEncoder.encode(resetPasswordRequestDTO.getNewPassword()));
         userCredentialsRepository.save(user);
-        passwordResetTokenRepository.delete(tokenEntity);
     }
 
     @Override

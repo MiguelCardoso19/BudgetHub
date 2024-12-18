@@ -6,6 +6,7 @@ import {LayoutComponent} from './shared/layout/layout.component';
 import {authGuard} from './core/guards/auth.guard';
 import {guestGuard} from './core/guards/guest.guard';
 import {UserCredentialsComponent} from './pages/user-credentials/user-credentials.component';
+import {ResetPasswordComponent} from './pages/reset-password/reset-password.component';
 
 export const routes: Routes = [
   { path: '', component: LayoutComponent,
@@ -15,6 +16,7 @@ export const routes: Routes = [
       { path: 'account', canActivate:[authGuard], component: UserCredentialsComponent },
       { path: 'login', canActivate:[guestGuard], component: LoginComponent },
       { path: 'register', canActivate:[guestGuard], component: RegisterComponent },
+      { path: 'reset-password', component: ResetPasswordComponent },
     ]
   }
 ];

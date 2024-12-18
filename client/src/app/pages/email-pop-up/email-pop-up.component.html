@@ -1,0 +1,41 @@
+<div class="alert alert-danger" role="alert" *ngIf="errorMsg.length">
+  <p *ngFor="let msg of errorMsg">{{ msg }}</p>
+</div>
+<div class="alert alert-success" role="alert" *ngIf="successMsg.length">
+  <p>{{ successMsg }}</p>
+</div>
+<div class="modal-overlay" *ngIf="showModal"></div>
+<div class="modal fade show d-block" *ngIf="showModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Forgot Password</h5>
+        <button type="button" class="btn ms-auto p-0" (click)="closeModal()" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="onSubmit()">
+          <div class="form-group mb-3">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              [(ngModel)]="email"
+              name="email"
+              placeholder="Enter your email"
+            />
+          </div>
+          <div *ngIf="emailEmpty" class="text-danger mb-3">
+            Email is required!
+          </div>
+          <div *ngIf="emailInvalid" class="text-danger mb-3">
+            Please enter a valid email address!
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
