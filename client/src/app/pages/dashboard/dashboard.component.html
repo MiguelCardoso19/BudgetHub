@@ -1,11 +1,12 @@
-<div class="card mt-5">
-  <div class="card-body">
-    <hr>
-    <div class="alert alert-danger" role="alert" *ngIf="errorMsg.length">
-      <p *ngFor="let msg of errorMsg">{{ msg }}</p>
-    </div>
-    <h5 class="card-title">Welcome, {{ formatText(firstName) }}!</h5>
-    <h6 class="card-subtitle mb-2 text-body-secondary">Card subtitle</h6>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+<div class="container mt-5">
+  <div class="text-center mb-4">
+    <h1>Welcome, {{ formatText(firstName) }}!</h1>
+  </div>
+  <div class="mt-4 text-center">
+    <button class="btn btn-primary mx-2" (click)="navigateTo('budget-type')">Budget Type</button>
+    <button class="btn btn-secondary mx-2" (click)="navigateTo('budget-subtype')">Budget Subtype</button>
+    <button class="btn btn-success mx-2" (click)="navigateTo('movements')">Movements</button>
+    <button class="btn btn-danger mx-2" (click)="navigateTo('invoices')">Invoices</button>
+    <button class="btn btn-primary mx-2" (click)="navigateTo('payments')">Payments</button>
   </div>
 </div>

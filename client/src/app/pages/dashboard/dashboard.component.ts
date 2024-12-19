@@ -1,12 +1,12 @@
 import {Component} from '@angular/core';
-import {NgForOf, NgIf} from '@angular/common';
 import {StorageService} from '../../services/storage/storage.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   standalone: true,
-  imports: [NgForOf, NgIf],
+  imports: [],
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent {
@@ -15,6 +15,7 @@ export class DashboardComponent {
 
   constructor(
     private storageService: StorageService,
+    private router: Router,
   ) {
     this.firstName =  this.getNameFromStorage();
   }
@@ -22,6 +23,10 @@ export class DashboardComponent {
   formatText(value: string): string {
     if (!value) return '';
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  }
+
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
   }
 
   private getNameFromStorage(): string {
