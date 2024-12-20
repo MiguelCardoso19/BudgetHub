@@ -19,6 +19,8 @@ import { findBudgetTypeById } from '../fn/budget-type-controller/find-budget-typ
 import { FindBudgetTypeById$Params } from '../fn/budget-type-controller/find-budget-type-by-id';
 import { updateBudgetType } from '../fn/budget-type-controller/update-budget-type';
 import { UpdateBudgetType$Params } from '../fn/budget-type-controller/update-budget-type';
+import {TokenService} from '../token/token.service';
+import {StorageService} from '../storage/storage.service';
 
 
 /**
@@ -26,7 +28,7 @@ import { UpdateBudgetType$Params } from '../fn/budget-type-controller/update-bud
  */
 @Injectable({ providedIn: 'root' })
 export class BudgetTypeControllerService extends BaseService {
-  constructor(config: ApiConfiguration, http: HttpClient) {
+  constructor(config: ApiConfiguration, http: HttpClient, private tokenService: TokenService, private storageService: StorageService) {
     super(config, http);
   }
 
@@ -44,7 +46,7 @@ export class BudgetTypeControllerService extends BaseService {
    * This method sends `application/json` and handles request body of type `application/json`.
    */
   updateBudgetType$Response(params: UpdateBudgetType$Params, context?: HttpContext): Observable<StrictHttpResponse<BudgetTypeDto | null>> {
-    return updateBudgetType(this.http, this.rootUrl, params, context);
+    return updateBudgetType(this.tokenService, this.storageService, this.http, this.rootUrl, params, context);
   }
 
   /**

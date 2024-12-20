@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { BudgetTypeControllerService } from '../../services/services/budget-type-controller.service';
 import { BudgetTypeDto } from '../../services/models/budget-type-dto';
 import { ErrorHandlingService } from '../../services/error-handling/error-handling.service';
+import { Pageable } from '../../services/models/pageable';
 
 @Component({
   selector: 'app-budget-type',
@@ -12,22 +13,128 @@ import { ErrorHandlingService } from '../../services/error-handling/error-handli
   imports: [FormsModule, CommonModule],
   styleUrls: ['./budget-type.component.scss']
 })
-export class BudgetTypeComponent {
-  budgetTypes: string[] = ['Housing', 'Food', 'Transportation', 'Utilities', 'Healthcare', 'Education', 'Entertainment', 'Miscellaneous'];
+export class BudgetTypeComponent implements OnInit {
+  budgetTypes: BudgetTypeDto[] = [];
   newBudgetType: BudgetTypeDto = { correlationId: '', id: '', version: 0, name: '', description: '', availableFunds: 0 };
-  selectedBudgetType: string | null = null;
+  selectedBudgetType: BudgetTypeDto | null = null;
 
   currentPage: number = 1;
-  itemsPerPage: number = 3;
+  itemsPerPage: number = 5;
+  totalItems: number = 0;
 
-  errorMsg: Array<string> = [];
+  errorMsg: string[] = [];
   successMsg: string = '';
   showCreateForm: boolean = false;
+
+  isEditable = false;
+
+  sortBy: string = 'name';
+  sortDirection: string = 'asc';
+
+  showDeleteModal: boolean = false;
+  showInfoForm: boolean = false;
 
   constructor(
     private budgetTypeService: BudgetTypeControllerService,
     private errorHandlingService: ErrorHandlingService
   ) {}
+
+  ngOnInit(): void {
+    this.loadBudgetTypes();
+  }
+
+  loadBudgetTypes(): void {
+    // @ts-ignore
+    const pageable: Pageable = {page: this.currentPage - 1, size: this.itemsPerPage, sort: `${this.sortBy},${this.sortDirection}`};
+    this.budgetTypeService.findAllBudgetTypes({ pageable }).subscribe({
+      next: (response) => this.handleBudgetTypeResponse(response),
+      error: (err) => this.errorHandlingService.handleError(err),
+    });
+  }
+
+  create(): void {
+    // @ts-ignore
+    if (this.newBudgetType.name.trim() && this.newBudgetType.description.trim() && this.newBudgetType.availableFunds > 0) {
+      this.budgetTypeService.createBudgetType({ body: this.newBudgetType }).subscribe({
+        next: () => {
+          this.setSuccessMessage('Budget Type created successfully!');
+          this.closeCreateForm();
+          this.loadBudgetTypes();
+        },
+        error: (err) => {
+          this.errorMsg = this.errorHandlingService.handleError(err);
+        }
+      });
+    } else {
+      this.errorMsg = ['Please fill in all fields correctly'];
+    }
+  }
+
+  update(): void {
+    if (this.selectedBudgetType) {
+      this.budgetTypeService.updateBudgetType({ body: this.selectedBudgetType }).subscribe({
+        next: () => {
+          this.setSuccessMessage('Budget Type updated successfully!');
+          this.selectedBudgetType = null;
+          this.loadBudgetTypes();
+        },
+        error: (err) => {
+          this.errorMsg = this.errorHandlingService.handleError(err);
+        }
+      });
+    }
+  }
+
+  delete(id: string): void {
+    this.showDeleteModal = true;
+    this.selectedBudgetType = this.budgetTypes.find(b => b.id === id) || null;
+    this.confirmDelete();
+  }
+
+  confirmDelete(): void {
+    if (this.selectedBudgetType) {
+      this.budgetTypeService.deleteBudgetType({ id: this.selectedBudgetType.id }).subscribe({
+        next: () => {
+          this.setSuccessMessage('Budget Type deleted successfully!');
+          this.loadBudgetTypes();
+          this.showDeleteModal = false;
+        },
+        error: (err) => {
+          this.errorMsg = this.errorHandlingService.handleError(err);
+          this.showDeleteModal = false;
+        }
+      });
+    }
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+    this.selectedBudgetType = null;
+  }
+
+  resetForm(): void {
+    this.newBudgetType = { correlationId: '', id: '', version: 0, name: '', description: '', availableFunds: 0 };
+  }
+
+  setSuccessMessage(msg: string): void {
+    this.successMsg = msg;
+    setTimeout(() => this.successMsg = '', 4000);
+  }
+
+
+  get totalPages(): number {
+    return Math.ceil(this.totalItems / this.itemsPerPage);
+  }
+
+  changePageSize(): void {
+    this.currentPage = 1;
+    this.loadBudgetTypes();
+  }
+
+  applySort(): void {
+    this.currentPage = 1;
+    this.loadBudgetTypes();
+  }
 
   openCreateForm(): void {
     this.showCreateForm = true;
@@ -39,73 +146,75 @@ export class BudgetTypeComponent {
     this.errorMsg = [];
   }
 
-  create(): void {
-    // @ts-ignore
-    if (this.newBudgetType.name.trim() && this.newBudgetType.description.trim() && this.newBudgetType.availableFunds > 0) {
-      this.budgetTypeService.createBudgetType({ body: this.newBudgetType }).subscribe({
-        next: (response) => {
-          if (response) {
-            this.budgetTypes.push(response.name);
-            this.setSuccessMessage('Budget Type created successfully!');
-            this.closeCreateForm();
-          }
-        },
-        error: (err) => {
-          this.errorMsg = this.errorHandlingService.handleError(err);
-        }
-      });
-    } else {
-      this.errorMsg = ['Please fill in all fields correctly'];
-    }
-  }
-
-  resetForm(): void {
-    this.newBudgetType = { correlationId: '', id: '', version: 0, name: '', description: '', availableFunds: 0 };
-  }
-
-  get paginatedBudgetTypes(): string[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    return this.budgetTypes.slice(startIndex, startIndex + this.itemsPerPage);
-  }
-
   changePage(page: number): void {
     this.currentPage = page;
+    this.loadBudgetTypes();
   }
 
-  addBudgetType(): void {
-    if (this.newBudgetType.name.trim()) {
-      this.budgetTypes.push(this.newBudgetType.name.trim());
-      this.newBudgetType.name = '';
-    }
-  }
-
-  updateBudgetType(updatedName: string | null): void {
-    if (updatedName && this.selectedBudgetType) {
-      const index = this.budgetTypes.indexOf(this.selectedBudgetType);
-      if (index !== -1) {
-        this.budgetTypes[index] = updatedName.trim();
-        this.selectedBudgetType = null;
-      }
-    }
-  }
-
-  deleteBudgetType(budgetType: string): void {
-    this.budgetTypes = this.budgetTypes.filter(bt => bt !== budgetType);
-  }
-
-  selectBudgetType(budgetType: string): void {
+  viewBudgetTypeInfo(budgetType: any) {
     this.selectedBudgetType = budgetType;
+    this.showInfoForm = true;
   }
 
-  get totalPages(): number {
-    return Math.ceil(this.budgetTypes.length / this.itemsPerPage);
+  closeInfoForm() {
+    this.showInfoForm = false;
+    this.selectedBudgetType = null;
   }
 
-  setSuccessMessage(message: string): void {
-    this.successMsg = message;
+  enableEdit() {
+    this.isEditable = true;
+  }
 
-    setTimeout(() => {
-      this.successMsg = '';
-    }, 4000);
+  cancelEdit() {
+    this.isEditable = false;
+  }
+
+  confirmEdit() {
+    this.update();
+    this.isEditable = false;
+  }
+
+  private handleBudgetTypeResponse(response: any): void {
+    if (response instanceof Blob) {
+      this.parseBlobResponse(response);
+    } else {
+      this.processResponseContent(response);
+    }
+  }
+
+  private parseBlobResponse(blob: Blob): void {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const jsonResponse = JSON.parse(reader.result as string);
+        this.processResponseContent(jsonResponse);
+      } catch (error) {
+        console.error('Error parsing JSON from Blob', error);
+        this.resetBudgetTypeData();
+      }
+    };
+    reader.readAsText(blob);
+  }
+
+  private processResponseContent(response: any): void {
+    if (response && response.content) {
+      this.budgetTypes = response.content.map((item: any) => ({
+        id: item.id || '',
+        version: item.version || 0,
+        name: item.name || '',
+        availableFunds: item.availableFunds || 0,
+        description: item.description || '',
+        correlationId: item.correlationId || ''
+      }));
+      this.totalItems = response.totalElements || 0;
+    } else {
+      console.error('Unexpected API response:', response);
+      this.resetBudgetTypeData();
+    }
+  }
+
+  private resetBudgetTypeData(): void {
+    this.budgetTypes = [];
+    this.totalItems = 0;
   }
 }
