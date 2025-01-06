@@ -38,43 +38,47 @@
     <p *ngFor="let msg of errorMsg">{{ msg }}</p>
   </div>
 
-  <div *ngIf="showInfoForm && selectedBudgetType" class="mb-4">
-    <h4>Budget Type Info</h4>
+  <div *ngIf="selectedBudgetType" class="mb-4">
+    <h4>{{ isEditable ? 'Edit Budget Type' : 'Budget Type Info' }}</h4>
     <div class="mb-3">
       <label for="name" class="form-label">Name</label>
-      <input type="text" class="form-control" id="name2" [value]="selectedBudgetType.name" disabled />
+      <input
+        type="text"
+        class="form-control"
+        id="name2"
+        [(ngModel)]="selectedBudgetType.name"
+        [disabled]="!isEditable"
+        placeholder="Enter new name" />
     </div>
     <div class="mb-3">
       <label for="description" class="form-label">Description</label>
-      <input type="text" class="form-control" id="description2" [value]="selectedBudgetType.description" disabled />
+      <input
+        type="text"
+        class="form-control"
+        id="description2"
+        [(ngModel)]="selectedBudgetType.description"
+        [disabled]="!isEditable"
+        placeholder="Enter new description" />
     </div>
     <div class="mb-3">
       <label for="availableFunds" class="form-label">Available Funds</label>
-      <input type="number" class="form-control" id="availableFunds2" [value]="selectedBudgetType.availableFunds" disabled />
-    </div>
-    <button class="btn btn-secondary" (click)="closeInfoForm()">Close</button>
-    <button *ngIf="!isEditable" class="btn btn-warning" (click)="enableEdit()">Edit</button>
-  </div>
-
-  <div *ngIf="isEditable && selectedBudgetType" class="mb-4">
-    <h4>Edit Budget Type</h4>
-    <div class="mb-3">
-      <label for="name" class="form-label">Name</label>
-      <input type="text" class="form-control" [(ngModel)]="selectedBudgetType.name" placeholder="Enter new name" />
-    </div>
-    <div class="mb-3">
-      <label for="description" class="form-label">Description</label>
-      <input type="text" class="form-control" [(ngModel)]="selectedBudgetType.description" placeholder="Enter new description" />
-    </div>
-    <div class="mb-3">
-      <label for="availableFunds" class="form-label">Available Funds</label>
-      <input type="number" class="form-control" [(ngModel)]="selectedBudgetType.availableFunds" placeholder="Enter new available funds" />
+      <input
+        type="number"
+        class="form-control"
+        id="availableFunds2"
+        [(ngModel)]="selectedBudgetType.availableFunds"
+        [disabled]="!isEditable"
+        placeholder="Enter new available funds" />
     </div>
     <div class="d-flex justify-content-between">
-      <button class="btn btn-success" (click)="confirmEdit()">Confirm</button>
-      <button class="btn btn-secondary" (click)="cancelEdit()">Cancel</button>
+      <button *ngIf="isEditable" class="btn btn-success" (click)="confirmEdit()">Confirm</button>
+      <button *ngIf="isEditable" class="btn btn-secondary" (click)="cancelEdit()">Cancel</button>
+      <button *ngIf="!isEditable" class="btn btn-warning" (click)="enableEdit()">Edit</button>
+      <button *ngIf="!isEditable" class="btn btn-danger" (click)="delete(selectedBudgetType.id)">Delete</button>
+      <button *ngIf="!isEditable" class="btn btn-secondary" (click)="closeInfoForm()">Close</button>
     </div>
   </div>
+
 
   <div *ngIf="showCreateForm" class="mb-4">
     <div class="mb-3">
@@ -99,8 +103,7 @@
     <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let budgetType of budgetTypes">
       {{ budgetType.name }}
       <div>
-        <button class="btn btn-info btn-sm mx-1" (click)="viewBudgetTypeInfo(budgetType)">Info</button>
-        <button class="btn btn-danger btn-sm mx-1" (click)="delete(budgetType.id)">Delete</button>
+        <button class="btn btn-info btn-sm mx-1" (click)="viewBudgetTypeInfo(budgetType)">Manage</button>
       </div>
     </li>
   </ul>
@@ -118,4 +121,11 @@
       </li>
     </ul>
   </nav>
+
+  <app-confirm-pop-up
+    [showModal]="showDeleteModal"
+    [message]="'Are you sure you want to delete this budget type?'"
+    (confirm)="confirmDelete()"
+    (cancel)="cancelDelete()">
+  </app-confirm-pop-up>
 </div>

@@ -5,32 +5,29 @@ import { BudgetTypeControllerService } from '../../services/services/budget-type
 import { BudgetTypeDto } from '../../services/models/budget-type-dto';
 import { ErrorHandlingService } from '../../services/error-handling/error-handling.service';
 import { Pageable } from '../../services/models/pageable';
+import {ConfirmPopUpComponent} from '../confirm-pop-up/confirm-pop-up.component';
 
 @Component({
   selector: 'app-budget-type',
   templateUrl: './budget-type.component.html',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, ConfirmPopUpComponent],
   styleUrls: ['./budget-type.component.scss']
 })
 export class BudgetTypeComponent implements OnInit {
   budgetTypes: BudgetTypeDto[] = [];
   newBudgetType: BudgetTypeDto = { correlationId: '', id: '', version: 0, name: '', description: '', availableFunds: 0 };
   selectedBudgetType: BudgetTypeDto | null = null;
-
+  editableBudgetType: BudgetTypeDto | null = null;
   currentPage: number = 1;
   itemsPerPage: number = 5;
   totalItems: number = 0;
-
   errorMsg: string[] = [];
   successMsg: string = '';
   showCreateForm: boolean = false;
-
   isEditable = false;
-
   sortBy: string = 'name';
   sortDirection: string = 'asc';
-
   showDeleteModal: boolean = false;
   showInfoForm: boolean = false;
 
@@ -71,8 +68,8 @@ export class BudgetTypeComponent implements OnInit {
   }
 
   update(): void {
-    if (this.selectedBudgetType) {
-      this.budgetTypeService.updateBudgetType({ body: this.selectedBudgetType }).subscribe({
+    if (this.editableBudgetType) {
+      this.budgetTypeService.updateBudgetType({ body: this.editableBudgetType }).subscribe({
         next: () => {
           this.setSuccessMessage('Budget Type updated successfully!');
           this.selectedBudgetType = null;
@@ -85,10 +82,10 @@ export class BudgetTypeComponent implements OnInit {
     }
   }
 
+
   delete(id: string): void {
     this.showDeleteModal = true;
     this.selectedBudgetType = this.budgetTypes.find(b => b.id === id) || null;
-    this.confirmDelete();
   }
 
   confirmDelete(): void {
@@ -98,6 +95,7 @@ export class BudgetTypeComponent implements OnInit {
           this.setSuccessMessage('Budget Type deleted successfully!');
           this.loadBudgetTypes();
           this.showDeleteModal = false;
+          this.closeInfoForm();
         },
         error: (err) => {
           this.errorMsg = this.errorHandlingService.handleError(err);
@@ -107,9 +105,14 @@ export class BudgetTypeComponent implements OnInit {
     }
   }
 
-  cancelDelete(): void {
-    this.showDeleteModal = false;
+  closeInfoForm() {
+    this.showInfoForm = false;
     this.selectedBudgetType = null;
+  }
+
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.isEditable = false;
   }
 
   resetForm(): void {
@@ -120,7 +123,6 @@ export class BudgetTypeComponent implements OnInit {
     this.successMsg = msg;
     setTimeout(() => this.successMsg = '', 4000);
   }
-
 
   get totalPages(): number {
     return Math.ceil(this.totalItems / this.itemsPerPage);
@@ -156,23 +158,27 @@ export class BudgetTypeComponent implements OnInit {
     this.showInfoForm = true;
   }
 
-  closeInfoForm() {
-    this.showInfoForm = false;
-    this.selectedBudgetType = null;
-  }
-
-  enableEdit() {
+  enableEdit(): void {
     this.isEditable = true;
+    if (this.selectedBudgetType) {
+      this.editableBudgetType = { ...this.selectedBudgetType };
+    }
   }
 
-  cancelEdit() {
+  cancelEdit(): void {
     this.isEditable = false;
+    if (this.selectedBudgetType && this.editableBudgetType) {
+      Object.assign(this.selectedBudgetType, this.editableBudgetType);
+    }
   }
 
-  confirmEdit() {
-    this.update();
-    this.isEditable = false;
+  confirmEdit(): void {
+    if (this.editableBudgetType) {
+      this.update();
+      this.isEditable = false;
+    }
   }
+
 
   private handleBudgetTypeResponse(response: any): void {
     if (response instanceof Blob) {

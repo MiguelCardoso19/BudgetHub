@@ -1,0 +1,20 @@
+<div class="modal-overlay" *ngIf="showModal"></div>
+<div class="modal" tabindex="-1" [ngClass]="{ 'show': showModal }" style="display: block;" *ngIf="showModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header d-flex justify-content-between align-items-center">
+        <h5 class="modal-title">Confirmation</h5>
+        <button type="button" class="close" (click)="onCancel()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="onConfirm()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>

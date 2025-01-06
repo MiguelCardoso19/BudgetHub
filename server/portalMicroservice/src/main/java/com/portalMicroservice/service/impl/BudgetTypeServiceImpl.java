@@ -45,7 +45,7 @@ public class BudgetTypeServiceImpl implements BudgetTypeService {
     @Override
     public BudgetTypeDTO update(BudgetTypeDTO budgetTypeDTO) throws ExecutionException, InterruptedException, GenericException, TimeoutException {
         CompletableFuture<BudgetTypeDTO> future = new CompletableFuture<>();
-        pendingRequests.put(budgetTypeDTO.getCorrelationId(), future);
+        pendingRequests.put(budgetTypeDTO.getId(), future);
         kafkaBudgetTypeTemplate.send("update-budget-type", budgetTypeDTO);
         return future.get(TIMEOUT_DURATION, SECONDS);
     }

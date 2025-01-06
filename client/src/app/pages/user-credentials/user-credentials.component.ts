@@ -27,8 +27,12 @@ export class UserCredentialsComponent implements OnInit {
 
   // @ts-ignore
   userCredentialsDto: UserCredentialsDto = { email: '', firstName: '', password: '', dateOfBirth: '', gender: '', lastName: '', nif: '', roles: [], nationality: '', phoneNumber: '' };
+
+  // @ts-ignore
+  originalUserCredentialsDto: UserCredentialsDto = { email: '', firstName: '', password: '', dateOfBirth: '', gender: '', lastName: '', nif: '', roles: [], nationality: '', phoneNumber: '' };
   errorMsg: Array<string> = [];
   successMsg: string = '';
+  isEditable: boolean = false;
 
   nationalities = Object.values(NationalityEnum);
   genders = Object.values(UserGenderEnum);
@@ -66,6 +70,7 @@ export class UserCredentialsComponent implements OnInit {
           nationality: userCredentials.nationality,
           phoneNumber: userCredentials.phoneNumber
         };
+        this.originalUserCredentialsDto = { ...this.userCredentialsDto };
       }
     });
   }
@@ -107,6 +112,7 @@ export class UserCredentialsComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.setSuccessMessage('Account settings saved successfully');
+        this.isEditable = false;
       },
       error: (err) => {
         console.log(err)
@@ -141,7 +147,6 @@ export class UserCredentialsComponent implements OnInit {
     });
   }
 
-
   delete(): void {
     this.errorMsg = [];
     const deleteRequestDto = {
@@ -170,5 +175,14 @@ export class UserCredentialsComponent implements OnInit {
     setTimeout(() => {
       this.successMsg = '';
     }, 4000);
+  }
+
+  cancelEdit(): void {
+    this.userCredentialsDto = { ...this.originalUserCredentialsDto };
+    this.isEditable = false;
+  }
+
+  toggleEdit(): void {
+    this.isEditable = !this.isEditable;
   }
 }
