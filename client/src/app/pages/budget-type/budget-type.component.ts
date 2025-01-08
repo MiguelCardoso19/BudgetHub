@@ -38,6 +38,7 @@ export class BudgetTypeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBudgetTypes();
+    this.editableBudgetType = { name: '', description: '', availableFunds: 0, correlationId: '0', id: '0', version:0};
   }
 
   loadBudgetTypes(): void {
@@ -67,25 +68,23 @@ export class BudgetTypeComponent implements OnInit {
     }
   }
 
-  update(): void {
-    if (this.editableBudgetType) {
-      this.budgetTypeService.updateBudgetType({ body: this.editableBudgetType }).subscribe({
-        next: () => {
-          this.setSuccessMessage('Budget Type updated successfully!');
-          this.selectedBudgetType = null;
-          this.loadBudgetTypes();
-        },
-        error: (err) => {
-          this.errorMsg = this.errorHandlingService.handleError(err);
-        }
-      });
-    }
-  }
-
-
   delete(id: string): void {
     this.showDeleteModal = true;
     this.selectedBudgetType = this.budgetTypes.find(b => b.id === id) || null;
+  }
+
+  update(): void {
+    this.budgetTypeService.updateBudgetType({ body: this.editableBudgetType }).subscribe({
+      next: () => {
+        this.setSuccessMessage('Budget type updated successfully.');
+        this.isEditable = false;
+        this.closeInfoForm();
+        this.loadBudgetTypes();
+      },
+      error: (err) => {
+        this.errorMsg = this.errorHandlingService.handleError(err);
+      }
+    });
   }
 
   confirmDelete(): void {
@@ -173,12 +172,14 @@ export class BudgetTypeComponent implements OnInit {
   }
 
   confirmEdit(): void {
-    if (this.editableBudgetType) {
-      this.update();
-      this.isEditable = false;
+    if (!this.editableBudgetType) {
+      this.errorMsg = ['No budget type selected for editing.'];
+      return;
     }
-  }
 
+    this.errorMsg = [];
+    this.update();
+  }
 
   private handleBudgetTypeResponse(response: any): void {
     if (response instanceof Blob) {

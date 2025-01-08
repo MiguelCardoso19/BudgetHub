@@ -38,60 +38,74 @@
     <p *ngFor="let msg of errorMsg">{{ msg }}</p>
   </div>
 
-  <div *ngIf="selectedBudgetType" class="mb-4">
-    <h4>{{ isEditable ? 'Edit Budget Type' : 'Budget Type Info' }}</h4>
-    <div class="mb-3">
-      <label for="name" class="form-label">Name</label>
-      <input
-        type="text"
-        class="form-control"
-        id="name2"
-        [(ngModel)]="selectedBudgetType.name"
-        [disabled]="!isEditable"
-        placeholder="Enter new name" />
-    </div>
-    <div class="mb-3">
-      <label for="description" class="form-label">Description</label>
-      <input
-        type="text"
-        class="form-control"
-        id="description2"
-        [(ngModel)]="selectedBudgetType.description"
-        [disabled]="!isEditable"
-        placeholder="Enter new description" />
-    </div>
-    <div class="mb-3">
-      <label for="availableFunds" class="form-label">Available Funds</label>
-      <input
-        type="number"
-        class="form-control"
-        id="availableFunds2"
-        [(ngModel)]="selectedBudgetType.availableFunds"
-        [disabled]="!isEditable"
-        placeholder="Enter new available funds" />
-    </div>
+  <div *ngIf="editableBudgetType && isEditable" class="mb-4">
+    <h4>Edit Budget Type</h4>
+    <form>
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          [(ngModel)]="editableBudgetType.name"
+          name="name"
+          placeholder="Enter new name"
+          [readonly]="!isEditable"/>
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input
+          type="text"
+          class="form-control"
+          id="description"
+          [(ngModel)]="editableBudgetType.description"
+          name="description"
+          placeholder="Enter new description"
+          [readonly]="!isEditable"/>
+      </div>
+      <div class="mb-3">
+        <label for="availableFunds" class="form-label">Available Funds</label>
+        <input
+          type="number"
+          class="form-control"
+          id="availableFunds"
+          [(ngModel)]="editableBudgetType.availableFunds"
+          name="availableFunds"
+          placeholder="Enter new available funds"
+          [readonly]="!isEditable"/>
+      </div>
+      <div class="d-flex justify-content-between">
+        <button class="btn btn-success" (click)="confirmEdit()" [disabled]="!isEditable">Confirm</button>
+        <button class="btn btn-secondary" (click)="cancelEdit()" [disabled]="!isEditable">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="selectedBudgetType && !isEditable" class="mb-4">
+    <h4>Budget Type Info</h4>
+    <p><strong>Name:</strong> {{ selectedBudgetType.name }}</p>
+    <p><strong>Description:</strong> {{ selectedBudgetType.description }}</p>
+    <p><strong>Available Funds:</strong> {{ selectedBudgetType.availableFunds }}</p>
     <div class="d-flex justify-content-between">
-      <button *ngIf="isEditable" class="btn btn-success" (click)="confirmEdit()">Confirm</button>
-      <button *ngIf="isEditable" class="btn btn-secondary" (click)="cancelEdit()">Cancel</button>
-      <button *ngIf="!isEditable" class="btn btn-warning" (click)="enableEdit()">Edit</button>
-      <button *ngIf="!isEditable" class="btn btn-danger" (click)="delete(selectedBudgetType.id)">Delete</button>
-      <button *ngIf="!isEditable" class="btn btn-secondary" (click)="closeInfoForm()">Close</button>
+      <button class="btn btn-warning" (click)="enableEdit()">Edit</button>
+      <button class="btn btn-danger" (click)="delete(selectedBudgetType.id)">Delete</button>
+      <button class="btn btn-secondary" (click)="closeInfoForm()">Close</button>
     </div>
   </div>
 
-
   <div *ngIf="showCreateForm" class="mb-4">
+    <h4>Create Budget Type</h4>
     <div class="mb-3">
       <label for="name" class="form-label">Name</label>
-      <input type="text" class="form-control" id="name" [(ngModel)]="newBudgetType.name" placeholder="Enter budget type name" />
+      <input type="text" class="form-control" id="name2" [(ngModel)]="newBudgetType.name" placeholder="Enter budget type name" />
     </div>
     <div class="mb-3">
       <label for="description" class="form-label">Description</label>
-      <input type="text" class="form-control" id="description" [(ngModel)]="newBudgetType.description" placeholder="Enter budget type description" />
+      <input type="text" class="form-control" id="description2" [(ngModel)]="newBudgetType.description" placeholder="Enter budget type description" />
     </div>
     <div class="mb-3">
       <label for="availableFunds" class="form-label">Available Funds</label>
-      <input type="number" class="form-control" id="availableFunds" [(ngModel)]="newBudgetType.availableFunds" placeholder="Enter available funds" />
+      <input type="number" class="form-control" id="availableFunds2" [(ngModel)]="newBudgetType.availableFunds" placeholder="Enter available funds" />
     </div>
     <div class="d-flex justify-content-between">
       <button class="btn btn-success" (click)="create()">Confirm</button>
@@ -99,9 +113,21 @@
     </div>
   </div>
 
+  <div class="d-flex justify-content-between mb-2">
+    <div class="flex-grow-1"><strong>Name</strong></div>
+    <div class="flex-grow-1 text-center"><strong>Description</strong></div>
+    <div class="flex-grow-1 text-end" style="margin-right: 120px;"><strong>Available Funds</strong></div>
+  </div>
+
   <ul class="list-group mb-4">
     <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let budgetType of budgetTypes">
-      {{ budgetType.name }}
+      <div class="d-flex w-100 justify-content-center">
+        <div class="me-3 flex-grow-1">{{ budgetType.name }}</div>
+        <div class="me-5 flex-grow-1 text-center">
+          {{ budgetType.description.length > 20 ? (budgetType.description | slice:0:20) + '...' : budgetType.description }}
+        </div>
+        <div class="flex-grow-1 text-end me-5">{{ budgetType.availableFunds | currency }}</div>
+      </div>
       <div>
         <button class="btn btn-info btn-sm mx-1" (click)="viewBudgetTypeInfo(budgetType)">Manage</button>
       </div>

@@ -26,21 +26,18 @@ export function updateBudgetType(
 
   const rb = new RequestBuilder(rootUrl, updateBudgetType.PATH, 'put');
 
-  rb.header('Authorization', headers.get('Authorization') || '');
-  rb.header('Nif', headers.get('Nif') || '');
-
-  if (params) {
+  if (params.body) {
     rb.body(params.body, 'application/json');
   }
 
   return http.request(
-    rb.build({ responseType: 'json', accept: 'application/json', context })
+    // @ts-ignore
+    rb.build({ responseType: 'json', accept: 'application/json', context, headers })
   ).pipe(
     filter((event: any): event is HttpResponse<any> => event instanceof HttpResponse),
-    map((response: HttpResponse<any>) => {
-      return response as StrictHttpResponse<BudgetTypeDto | null>;
-    }),
+    map((response: HttpResponse<any>) => response as StrictHttpResponse<BudgetTypeDto | null>),
     catchError(err => {
+      console.error('Error updating budget type:', err);
       return throwError(() => err);
     })
   );
