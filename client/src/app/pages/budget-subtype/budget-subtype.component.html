@@ -1,1 +1,113 @@
-<p>budget-subtype works!</p>
+<div class="container mt-5">
+  <h2 class="text-center">Budget Subtype Dashboard</h2>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <button *ngIf="!showCreateForm" class="btn btn-primary" (click)="openCreateForm()">Create Budget Subtype</button>
+
+    <div class="d-flex align-items-center">
+      <label for="pageSize" class="form-label mb-0 me-2">Items:</label>
+      <select id="pageSize" class="form-select form-select-sm" [(ngModel)]="itemsPerPage" (change)="changePageSize()">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+      </select>
+    </div>
+
+    <div class="d-flex align-items-center ms-3">
+      <label for="sortBy" class="form-label mb-0 me-2">Sort By:</label>
+      <select id="sortBy" class="form-select form-select-sm" [(ngModel)]="sortBy" (change)="applySort()">
+        <option value="name">Name</option>
+        <option value="description">Description</option>
+        <option value="budgetType">Budget Type</option>
+        <option value="availableFunds">Available Funds</option>
+      </select>
+    </div>
+
+    <div class="d-flex align-items-center ms-3">
+      <label for="sortDirection" class="form-label mb-0 me-2">Direction:</label>
+      <select id="sortDirection" class="form-select form-select-sm" [(ngModel)]="sortDirection" (change)="applySort()">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="successMsg" class="alert alert-success" role="alert">
+    <p>{{ successMsg }}</p>
+  </div>
+  <div *ngIf="errorMsg.length" class="alert alert-danger" role="alert">
+    <p *ngFor="let msg of errorMsg">{{ msg }}</p>
+  </div>
+
+  <div *ngIf="showCreateForm" class="mb-4">
+    <h4>Create Budget Subtype</h4>
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" class="form-control" id="name" [(ngModel)]="newBudgetSubtype.name" placeholder="Enter budget subtype name" />
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <input type="text" class="form-control" id="description" [(ngModel)]="newBudgetSubtype.description" placeholder="Enter budget subtype description" />
+    </div>
+    <div class="mb-3">
+      <label for="budgetType" class="form-label">Type</label>
+      <select id="budgetType" class="form-select" [(ngModel)]="newBudgetSubtype.budgetTypeId">
+        <option *ngFor="let budgetType of budgetTypes" [value]="budgetType.id">
+          {{ budgetType.name }}
+        </option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="availableFunds" class="form-label">Available Funds</label>
+      <input type="number" class="form-control" id="availableFunds" [(ngModel)]="newBudgetSubtype.availableFunds" placeholder="Enter available funds" />
+    </div>
+    <div class="d-flex justify-content-between">
+      <button class="btn btn-success" (click)="create()">Confirm</button>
+      <button class="btn btn-secondary" (click)="closeCreateForm()">Close</button>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mb-2">
+    <div class="flex-grow-1"><strong>Name</strong></div>
+    <div class="flex-grow-1 text-center"><strong>Description</strong></div>
+    <div class="flex-grow-1 text-center"><strong>Available Funds</strong></div>
+    <div class="flex-grow-1 text-end" style="margin-right: 120px;"><strong>Type</strong></div>
+  </div>
+
+  <ul class="list-group mb-4">
+    <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let subtype of budgetSubtypes">
+      <div class="d-flex w-100 justify-content-center">
+        <div class="me-3 flex-grow-1">{{ subtype.name }}</div>
+        <div class="me-5 flex-grow-1 text-center">
+          {{ subtype.description.length > 20 ? (subtype.description | slice:0:20) + '...' : subtype.description }}
+        </div>
+        <div class="me-5 flex-grow-1 text-center">{{ subtype.availableFunds | currency }}</div>
+        <div class="flex-grow-1 text-end me-5">{{ getBudgetTypeName(subtype.budgetTypeId) }}</div>
+      </div>
+      <div>
+        <button class="btn btn-info btn-sm mx-1" (click)="viewBudgetSubtypeInfo(subtype)">Manage</button>
+      </div>
+    </li>
+  </ul>
+
+  <nav *ngIf="totalPages > 1">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button class="page-link" (click)="changePage(currentPage - 1)">Previous</button>
+      </li>
+      <li class="page-item" *ngFor="let page of [].constructor(totalPages); let i = index" [class.active]="currentPage === i + 1">
+        <button class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button class="page-link" (click)="changePage(currentPage + 1)">Next</button>
+      </li>
+    </ul>
+  </nav>
+
+  <app-confirm-pop-up
+    [showModal]="showDeleteModal"
+    [message]="'Are you sure you want to delete this budget subtype?'"
+    (confirm)="confirmDelete()"
+    (cancel)="cancelDelete()">
+  </app-confirm-pop-up>
+</div>
