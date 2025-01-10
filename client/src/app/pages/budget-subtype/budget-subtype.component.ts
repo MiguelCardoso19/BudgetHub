@@ -30,6 +30,8 @@ export class BudgetSubtypeComponent implements OnInit {
   sortDirection: string = 'asc';
   showDeleteModal: boolean = false;
   selectedBudgetSubtypeId: string = '';
+  isEditable: boolean = false;
+  showEditForm: boolean = false;
 
   constructor(
     private budgetSubtypeService: BudgetSubtypeControllerService,
@@ -42,10 +44,6 @@ export class BudgetSubtypeComponent implements OnInit {
     this.loadBudgetTypes();
   }
 
-  get totalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
-  }
-
   loadBudgetSubtypes(): void {
     const pageable: Pageable = {
       page: this.currentPage - 1,
@@ -54,7 +52,7 @@ export class BudgetSubtypeComponent implements OnInit {
     };
 
     this.budgetSubtypeService.findAllSubtypes({ pageable }).subscribe({
-      next: (response) => this.handleResponse(response),
+      next: (response) => this.handleBudgetSubtypeResponse(response),
       error: (err) => this.handleError(err),
     });
   }
@@ -85,6 +83,49 @@ export class BudgetSubtypeComponent implements OnInit {
     }
   }
 
+  delete(id: string): void {
+    this.selectedBudgetSubtypeId = id;
+    this.showDeleteModal = true;
+  }
+
+  closeEditForm(): void {
+    this.showEditForm = false;
+    this.errorMsg = [];
+  }
+
+  update(): void {
+    if (this.validateForm()) {
+      this.budgetSubtypeService.updateSubtype({ body: this.newBudgetSubtype }).subscribe({
+        next: () => {
+          this.setSuccessMessage('Budget Subtype updated successfully!');
+          this.closeEditForm();
+          this.loadBudgetSubtypes();
+        },
+        error: (err) => this.handleError(err),
+      });
+    }
+  }
+
+  confirmDelete(): void {
+    const params = { id: this.selectedBudgetSubtypeId };
+    this.budgetSubtypeService.deleteSubtype(params).subscribe({
+      next: () => {
+        this.setSuccessMessage('Budget Subtype deleted successfully!');
+        this.showDeleteModal = false;
+        this.closeEditForm();
+        this.loadBudgetSubtypes();
+      },
+      error: (err) => {
+        this.handleError(err);
+        this.showDeleteModal = false;
+      },
+    });
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+  }
+
   getBudgetTypeName(id: string | null | undefined): string {
     const budgetType = this.budgetTypes.find((bt) => bt.id === id);
     return budgetType ? budgetType.name : 'Unknown';
@@ -105,6 +146,10 @@ export class BudgetSubtypeComponent implements OnInit {
     this.loadBudgetSubtypes();
   }
 
+  setEditableAsFalse() {
+    this.isEditable = false;
+  }
+
   openCreateForm(): void {
     this.showCreateForm = true;
     this.newBudgetSubtype = { id: '', name: '', description: '', budgetTypeId: '', correlationId: '', version: 0, availableFunds: 0 };
@@ -120,14 +165,93 @@ export class BudgetSubtypeComponent implements OnInit {
     this.loadBudgetSubtypes();
   }
 
-  private handleResponse(response: any): void {
+  get totalPages(): number {
+    return Math.ceil(this.totalItems / this.itemsPerPage);
+  }
+
+  toggleEdit(): void {
+    this.isEditable = !this.isEditable;
+  }
+
+  viewBudgetSubtypeInfo(subtype: BudgetSubtypeDto): void {
+    this.newBudgetSubtype = { ...subtype };
+    this.showEditForm = true;
+    this.isEditable = false;
+    this.showCreateForm = false;
+  }
+
+  private handleBudgetSubtypeResponse(response: any): void {
+    this.parseResponse(response, this.processBudgetSubtypes.bind(this), this.resetBudgetSubtypeData.bind(this));
+  }
+
+  private handleBudgetTypeResponse(response: any): void {
+    this.parseResponse(response, this.processResponseContent.bind(this), this.resetBudgetTypeData.bind(this));
+  }
+
+  private parseResponse(response: any, onSuccess: (parsedResponse: any) => void, onError: () => void): void {
+    if (response instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const jsonResponse = JSON.parse(reader.result as string);
+          onSuccess(jsonResponse);
+        } catch (error) {
+          console.error('Error parsing JSON from Blob', error);
+          onError();
+        }
+      };
+      reader.readAsText(response);
+    } else {
+      try {
+        onSuccess(response);
+      } catch (error) {
+        console.error('Error processing response', error);
+        onError();
+      }
+    }
+  }
+
+  private processBudgetSubtypes(response: any): void {
     if (response && response.content) {
-      this.budgetSubtypes = response.content;
+      this.budgetSubtypes = response.content.map((item: any) => ({
+        id: item.id || '',
+        name: item.name || '',
+        description: item.description || '',
+        availableFunds: item.availableFunds || 0,
+        budgetTypeId: item.budgetType?.id || '',
+        budgetTypeName: item.budgetType?.name || 'Unknown',
+      }));
       this.totalItems = response.totalElements || 0;
     } else {
-      this.budgetSubtypes = [];
-      this.totalItems = 0;
+      this.resetBudgetSubtypeData();
     }
+  }
+
+  private processResponseContent(response: any): void {
+    if (response && response.content) {
+      this.budgetTypes = response.content.map((item: any) => ({
+        id: item.id || '',
+        version: item.version || 0,
+        name: item.name || '',
+        availableFunds: item.availableFunds || 0,
+        description: item.description || '',
+        correlationId: item.correlationId || '',
+      }));
+      this.totalItems = response.totalElements || 0;
+    } else {
+      console.error('Unexpected API response:', response);
+      this.resetBudgetTypeData();
+    }
+  }
+
+  private resetBudgetSubtypeData(): void {
+    this.budgetSubtypes = [];
+    this.totalItems = 0;
+  }
+
+  private resetBudgetTypeData(): void {
+    this.budgetTypes = [];
+    this.totalItems = 0;
   }
 
   private validateForm(): boolean {
@@ -142,78 +266,6 @@ export class BudgetSubtypeComponent implements OnInit {
       this.errorMsg.push('Budget Type is required.');
     }
     return this.errorMsg.length === 0;
-  }
-
-  private handleBudgetTypeResponse(response: any): void {
-    if (response instanceof Blob) {
-      this.parseBlobResponse(response);
-    } else {
-      this.processResponseContent(response);
-    }
-  }
-
-  private parseBlobResponse(blob: Blob): void {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const jsonResponse = JSON.parse(reader.result as string);
-        this.processResponseContent(jsonResponse);
-      } catch (error) {
-        console.error('Error parsing JSON from Blob', error);
-        this.resetBudgetTypeData();
-      }
-    };
-    reader.readAsText(blob);
-  }
-
-  private processResponseContent(response: any): void {
-    if (response && response.content) {
-      this.budgetTypes = response.content.map((item: any) => ({
-        id: item.id || '',
-        version: item.version || 0,
-        name: item.name || '',
-        availableFunds: item.availableFunds || 0,
-        description: item.description || '',
-        correlationId: item.correlationId || ''
-      }));
-      this.totalItems = response.totalElements || 0;
-    } else {
-      console.error('Unexpected API response:', response);
-      this.resetBudgetTypeData();
-    }
-  }
-
-  private resetBudgetTypeData(): void {
-    this.budgetTypes = [];
-    this.totalItems = 0;
-  }
-
-  viewBudgetSubtypeInfo(subtype: BudgetSubtypeDto): void {
-    console.log('Viewing Budget Subtype Info:', subtype);
-  }
-
-  delete(id: string): void {
-    this.selectedBudgetSubtypeId = id;
-    this.showDeleteModal = true;
-  }
-
-  confirmDelete(): void {
-    const params = { id: this.selectedBudgetSubtypeId };
-    this.budgetSubtypeService.deleteSubtype(params).subscribe({
-      next: () => {
-        this.setSuccessMessage('Budget Subtype deleted successfully!');
-        this.showDeleteModal = false;
-        this.loadBudgetSubtypes();
-      },
-      error: (err) => {
-        this.handleError(err);
-        this.showDeleteModal = false;
-      },
-    });
-  }
-
-  cancelDelete(): void {
-    this.showDeleteModal = false;
   }
 
   private handleError(err: any): void {

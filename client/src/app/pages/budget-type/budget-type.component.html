@@ -1,8 +1,8 @@
 <div class="container mt-5">
-  <h2 class="text-center">Budget Type Dashboard</h2>
+  <h2 class="text-center mb-5">Budget Type Dashboard</h2>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <button *ngIf="!showCreateForm" class="btn btn-primary" (click)="openCreateForm()">Create Budget Type</button>
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <button *ngIf="!showCreateForm" class="btn btn-primary" (click)="openCreateForm()">Create</button>
 
     <div class="d-flex align-items-center">
       <label for="pageSize" class="form-label mb-0 me-2">Items:</label>
@@ -38,73 +38,67 @@
     <p *ngFor="let msg of errorMsg">{{ msg }}</p>
   </div>
 
-  <div *ngIf="editableBudgetType && isEditable" class="mb-4">
-    <h4>Edit Budget Type</h4>
-    <form>
-      <div class="mb-3">
-        <label for="name" class="form-label">Name</label>
-        <input
-          type="text"
-          class="form-control"
-          id="name"
-          [(ngModel)]="editableBudgetType.name"
-          name="name"
-          placeholder="Enter new name"
-          [readonly]="!isEditable"/>
-      </div>
-      <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <input
-          type="text"
-          class="form-control"
-          id="description"
-          [(ngModel)]="editableBudgetType.description"
-          name="description"
-          placeholder="Enter new description"
-          [readonly]="!isEditable"/>
-      </div>
-      <div class="mb-3">
-        <label for="availableFunds" class="form-label">Available Funds</label>
-        <input
-          type="number"
-          class="form-control"
-          id="availableFunds"
-          [(ngModel)]="editableBudgetType.availableFunds"
-          name="availableFunds"
-          placeholder="Enter new available funds"
-          [readonly]="!isEditable"/>
-      </div>
-      <div class="d-flex justify-content-between">
-        <button class="btn btn-success" (click)="confirmEdit()" [disabled]="!isEditable">Confirm</button>
-        <button class="btn btn-secondary" (click)="cancelEdit()" [disabled]="!isEditable">Cancel</button>
-      </div>
-    </form>
-  </div>
+  <div *ngIf="showEditForm" class="mb-5">
+    <h4 class="text-center">{{ isEditable ? 'Edit' : 'Info' }}</h4>
 
-  <div *ngIf="selectedBudgetType && !isEditable" class="mb-4">
-    <h4>Budget Type Info</h4>
-    <p><strong>Name:</strong> {{ selectedBudgetType.name }}</p>
-    <p><strong>Description:</strong> {{ selectedBudgetType.description }}</p>
-    <p><strong>Available Funds:</strong> {{ selectedBudgetType.availableFunds }}</p>
+    <div class="mb-3">
+      <label for="name2" class="form-label">Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="name3"
+        [(ngModel)]="newBudgetType.name"
+        placeholder="Enter budget subtype name"
+        [readonly]="!isEditable"
+        [disabled]="!isEditable"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="description2" class="form-label">Description</label>
+      <input
+        type="text"
+        class="form-control"
+        id="description3"
+        [(ngModel)]="newBudgetType.description"
+        placeholder="Enter budget subtype description"
+        [readonly]="!isEditable"
+        [disabled]="!isEditable"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="availableFunds2" class="form-label">Available Funds</label>
+      <input
+        type="number"
+        class="form-control"
+        id="availableFunds3"
+        [(ngModel)]="newBudgetType.availableFunds"
+        placeholder="Enter available funds"
+        [readonly]="!isEditable"
+        [disabled]="!isEditable"
+      />
+    </div>
+
     <div class="d-flex justify-content-between">
-      <button class="btn btn-warning" (click)="enableEdit()">Edit</button>
-      <button class="btn btn-danger" (click)="delete(selectedBudgetType.id)">Delete</button>
-      <button class="btn btn-secondary" (click)="closeInfoForm()">Close</button>
+      <button *ngIf="isEditable" class="btn btn-success" (click)="update()">Confirm</button>
+      <button *ngIf="isEditable" class="btn btn-secondary" (click)="setEditableAsFalse()">Cancel</button>
+      <button *ngIf="!isEditable" class="btn btn-warning" (click)="toggleEdit()">Edit</button>
+      <button *ngIf="!isEditable && newBudgetType.id" class="btn btn-danger" (click)="delete(newBudgetType.id)">Delete</button>
+      <button *ngIf="!isEditable" class="btn btn-secondary" (click)="closeEditForm()">Close</button>
     </div>
   </div>
 
-  <div *ngIf="showCreateForm" class="mb-4">
-    <h4>Create Budget Type</h4>
+  <div *ngIf="showCreateForm" class="mb-5">
+    <h4 class="text-center">Create</h4>
     <div class="mb-3">
-      <label for="name" class="form-label">Name</label>
+      <label for="name2" class="form-label">Name</label>
       <input type="text" class="form-control" id="name2" [(ngModel)]="newBudgetType.name" placeholder="Enter budget type name" />
     </div>
     <div class="mb-3">
-      <label for="description" class="form-label">Description</label>
+      <label for="description2" class="form-label">Description</label>
       <input type="text" class="form-control" id="description2" [(ngModel)]="newBudgetType.description" placeholder="Enter budget type description" />
     </div>
     <div class="mb-3">
-      <label for="availableFunds" class="form-label">Available Funds</label>
+      <label for="availableFunds2" class="form-label">Available Funds</label>
       <input type="number" class="form-control" id="availableFunds2" [(ngModel)]="newBudgetType.availableFunds" placeholder="Enter available funds" />
     </div>
     <div class="d-flex justify-content-between">

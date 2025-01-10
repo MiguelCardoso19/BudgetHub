@@ -6,6 +6,7 @@ import { BudgetTypeDto } from '../../services/models/budget-type-dto';
 import { ErrorHandlingService } from '../../services/error-handling/error-handling.service';
 import { Pageable } from '../../services/models/pageable';
 import {ConfirmPopUpComponent} from '../confirm-pop-up/confirm-pop-up.component';
+import {BudgetSubtypeDto} from '../../services/models/budget-subtype-dto';
 
 @Component({
   selector: 'app-budget-type',
@@ -30,6 +31,7 @@ export class BudgetTypeComponent implements OnInit {
   sortDirection: string = 'asc';
   showDeleteModal: boolean = false;
   showInfoForm: boolean = false;
+  showEditForm: boolean = false;
 
   constructor(
     private budgetTypeService: BudgetTypeControllerService,
@@ -74,11 +76,12 @@ export class BudgetTypeComponent implements OnInit {
   }
 
   update(): void {
-    this.budgetTypeService.updateBudgetType({ body: this.editableBudgetType }).subscribe({
+    this.budgetTypeService.updateBudgetType({ body: this.newBudgetType }).subscribe({
       next: () => {
         this.setSuccessMessage('Budget type updated successfully.');
         this.isEditable = false;
         this.closeInfoForm();
+        this.closeEditForm();
         this.loadBudgetTypes();
       },
       error: (err) => {
@@ -106,6 +109,7 @@ export class BudgetTypeComponent implements OnInit {
 
   closeInfoForm() {
     this.showInfoForm = false;
+    this.showEditForm = false;
     this.selectedBudgetType = null;
   }
 
@@ -147,38 +151,29 @@ export class BudgetTypeComponent implements OnInit {
     this.errorMsg = [];
   }
 
+  setEditableAsFalse() {
+    this.isEditable = false;
+  }
+
+  toggleEdit(): void {
+    this.isEditable = !this.isEditable;
+  }
+
+  closeEditForm(): void {
+    this.showEditForm = false;
+    this.errorMsg = [];
+  }
+
   changePage(page: number): void {
     this.currentPage = page;
     this.loadBudgetTypes();
   }
 
-  viewBudgetTypeInfo(budgetType: any) {
-    this.selectedBudgetType = budgetType;
-    this.showInfoForm = true;
-  }
-
-  enableEdit(): void {
-    this.isEditable = true;
-    if (this.selectedBudgetType) {
-      this.editableBudgetType = { ...this.selectedBudgetType };
-    }
-  }
-
-  cancelEdit(): void {
+  viewBudgetTypeInfo(budgetType: BudgetSubtypeDto) {
+    this.newBudgetType = {... budgetType};
+    this.showEditForm = true;
     this.isEditable = false;
-    if (this.selectedBudgetType && this.editableBudgetType) {
-      Object.assign(this.selectedBudgetType, this.editableBudgetType);
-    }
-  }
-
-  confirmEdit(): void {
-    if (!this.editableBudgetType) {
-      this.errorMsg = ['No budget type selected for editing.'];
-      return;
-    }
-
-    this.errorMsg = [];
-    this.update();
+    this.showCreateForm = false;
   }
 
   private handleBudgetTypeResponse(response: any): void {

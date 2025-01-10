@@ -1,8 +1,8 @@
 <div class="container mt-5">
-  <h2 class="text-center">Budget Subtype Dashboard</h2>
+  <h2 class="text-center mb-5">Budget Subtype Dashboard</h2>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <button *ngIf="!showCreateForm" class="btn btn-primary" (click)="openCreateForm()">Create Budget Subtype</button>
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <button *ngIf="!showCreateForm" class="btn btn-primary" (click)="openCreateForm()">Create</button>
 
     <div class="d-flex align-items-center">
       <label for="pageSize" class="form-label mb-0 me-2">Items:</label>
@@ -39,8 +39,8 @@
     <p *ngFor="let msg of errorMsg">{{ msg }}</p>
   </div>
 
-  <div *ngIf="showCreateForm" class="mb-4">
-    <h4>Create Budget Subtype</h4>
+  <div *ngIf="showCreateForm" class="mb-5">
+    <h4 class="text-center">Create</h4>
     <div class="mb-3">
       <label for="name" class="form-label">Name</label>
       <input type="text" class="form-control" id="name" [(ngModel)]="newBudgetSubtype.name" placeholder="Enter budget subtype name" />
@@ -52,6 +52,59 @@
     <div class="mb-3">
       <label for="budgetType" class="form-label">Type</label>
       <select id="budgetType" class="form-select" [(ngModel)]="newBudgetSubtype.budgetTypeId">
+        <option value="" disabled selected>Choose one</option>
+        <option *ngFor="let budgetType of budgetTypes" [value]="budgetType.id">
+          {{ budgetType.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="availableFunds" class="form-label">Available Funds</label>
+      <input type="number" class="form-control" id="availableFunds" [(ngModel)]="newBudgetSubtype.availableFunds" placeholder="Enter available funds" />
+    </div>
+    <div class="d-flex justify-content-between">
+      <button class="btn btn-success" (click)="create()">Confirm</button>
+      <button *ngIf="newBudgetSubtype.id" class="btn btn-danger" (click)="delete(newBudgetSubtype.id)">Delete</button>
+      <button class="btn btn-secondary" (click)="closeCreateForm()">Close</button>
+    </div>
+  </div>
+
+  <div *ngIf="showEditForm" class="mb-5">
+    <h4 class="text-center">{{ isEditable ? 'Edit' : 'Info' }}</h4>
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="name2"
+        [(ngModel)]="newBudgetSubtype.name"
+        placeholder="Enter budget subtype name"
+        [readonly]="!isEditable"
+        [disabled]="!isEditable"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <input
+        type="text"
+        class="form-control"
+        id="description2"
+        [(ngModel)]="newBudgetSubtype.description"
+        placeholder="Enter budget subtype description"
+        [readonly]="!isEditable"
+        [disabled]="!isEditable"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="budgetType" class="form-label">Type</label>
+      <select
+        id="budgetType2"
+        class="form-select"
+        [(ngModel)]="newBudgetSubtype.budgetTypeId"
+        [disabled]="!isEditable"
+      >
         <option *ngFor="let budgetType of budgetTypes" [value]="budgetType.id">
           {{ budgetType.name }}
         </option>
@@ -59,11 +112,23 @@
     </div>
     <div class="mb-3">
       <label for="availableFunds" class="form-label">Available Funds</label>
-      <input type="number" class="form-control" id="availableFunds" [(ngModel)]="newBudgetSubtype.availableFunds" placeholder="Enter available funds" />
+      <input
+        type="number"
+        class="form-control"
+        id="availableFunds2"
+        [(ngModel)]="newBudgetSubtype.availableFunds"
+        placeholder="Enter available funds"
+        [readonly]="!isEditable"
+        [disabled]="!isEditable"
+      />
     </div>
+
     <div class="d-flex justify-content-between">
-      <button class="btn btn-success" (click)="create()">Confirm</button>
-      <button class="btn btn-secondary" (click)="closeCreateForm()">Close</button>
+      <button *ngIf="isEditable" class="btn btn-success" (click)="update()">Confirm</button>
+      <button *ngIf="isEditable" class="btn btn-secondary" (click)="setEditableAsFalse()">Cancel</button>
+      <button *ngIf="!isEditable" class="btn btn-warning" (click)="toggleEdit()">Edit</button>
+      <button *ngIf="!isEditable && newBudgetSubtype.id" class="btn btn-danger" (click)="delete(newBudgetSubtype.id)">Delete</button>
+      <button *ngIf="!isEditable" class="btn btn-secondary" (click)="closeEditForm()">Close</button>
     </div>
   </div>
 
@@ -75,14 +140,19 @@
   </div>
 
   <ul class="list-group mb-4">
-    <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let subtype of budgetSubtypes">
-      <div class="d-flex w-100 justify-content-center">
-        <div class="me-3 flex-grow-1">{{ subtype.name }}</div>
-        <div class="me-5 flex-grow-1 text-center">
-          {{ subtype.description.length > 20 ? (subtype.description | slice:0:20) + '...' : subtype.description }}
+    <li
+      class="list-group-item d-flex justify-content-between align-items-center"
+      *ngFor="let subtype of budgetSubtypes"
+    >
+      <div class="d-flex w-100">
+        <div class="flex-grow-1">{{ subtype.name }}</div>
+        <div class="flex-grow-1 text-center">
+          {{ subtype.description.length > 20 ? (subtype.description | slice: 0:20) + '...' : subtype.description }}
         </div>
-        <div class="me-5 flex-grow-1 text-center">{{ subtype.availableFunds | currency }}</div>
-        <div class="flex-grow-1 text-end me-5">{{ getBudgetTypeName(subtype.budgetTypeId) }}</div>
+        <div class="flex-grow-1 text-center">{{ subtype.availableFunds | currency }}</div>
+        <div class="flex-grow-1 text-end me-3">
+          {{ getBudgetTypeName(subtype.budgetTypeId) }}
+        </div>
       </div>
       <div>
         <button class="btn btn-info btn-sm mx-1" (click)="viewBudgetSubtypeInfo(subtype)">Manage</button>
