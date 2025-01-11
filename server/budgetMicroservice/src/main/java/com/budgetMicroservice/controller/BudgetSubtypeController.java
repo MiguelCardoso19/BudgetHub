@@ -50,7 +50,7 @@ public class BudgetSubtypeController {
     })
     @PutMapping("/update")
     public ResponseEntity<BudgetSubtypeDTO> updateSubtype(@Valid @RequestBody BudgetSubtypeDTO budgetSubtypeDTO)
-            throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException {
+            throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException, BudgetTypeNotFoundException {
         return ResponseEntity.ok(budgetSubtypeService.updateBudgetSubtype(budgetSubtypeDTO));
     }
 

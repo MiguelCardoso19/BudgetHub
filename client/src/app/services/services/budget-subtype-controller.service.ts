@@ -194,5 +194,4 @@ export class BudgetSubtypeControllerService extends BaseService {
       map((r: StrictHttpResponse<void>): void => r.body)
     );
   }
-
 }

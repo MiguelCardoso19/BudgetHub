@@ -95,7 +95,17 @@ export class BudgetSubtypeComponent implements OnInit {
 
   update(): void {
     if (this.validateForm()) {
-      this.budgetSubtypeService.updateSubtype({ body: this.newBudgetSubtype }).subscribe({
+      const updatePayload = {
+        id: this.newBudgetSubtype.id,
+        budgetTypeId: this.newBudgetSubtype.budgetTypeId,
+        name: this.newBudgetSubtype.name,
+        description: this.newBudgetSubtype.description,
+        version: this.newBudgetSubtype.version,
+        availableFunds: this.newBudgetSubtype.availableFunds,
+        correlationId: '',
+      };
+
+      this.budgetSubtypeService.updateSubtype({ body: updatePayload }).subscribe({
         next: () => {
           this.setSuccessMessage('Budget Subtype updated successfully!');
           this.closeEditForm();
@@ -220,6 +230,7 @@ export class BudgetSubtypeComponent implements OnInit {
         availableFunds: item.availableFunds || 0,
         budgetTypeId: item.budgetType?.id || '',
         budgetTypeName: item.budgetType?.name || 'Unknown',
+        version: item.version
       }));
       this.totalItems = response.totalElements || 0;
     } else {

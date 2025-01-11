@@ -58,11 +58,12 @@ public class BudgetSubtypeServiceImpl implements BudgetSubtypeService {
 
     @Override
     @KafkaListener(topics = "update-budget-subtype", groupId = "budget_subtype_group", concurrency = "10", containerFactory = "budgetSubtypeKafkaListenerContainerFactory")
-    public BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException {
+    public BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException, BudgetTypeNotFoundException {
         BudgetSubtype existingBudgetSubtype = findById(budgetSubtypeDTO.getId());
         budgetUtils.checkBudgetExceeded(existingBudgetSubtype.getBudgetType(), budgetSubtypeDTO, budgetSubtypeRepository, existingBudgetSubtype);
         budgetValidator.checkForExistingBudgetSubtypeUpdate(budgetSubtypeDTO, budgetSubtypeRepository);
         BudgetSubtype budgetSubtype = budgetMapper.toEntity(budgetSubtypeDTO);
+        budgetSubtype.setBudgetType(budgetTypeService.findBudgetTypeEntityById(budgetSubtypeDTO.getBudgetTypeId()));
         BudgetSubtypeDTO savedBudgetSubtypeDTO = budgetMapper.toDTO(budgetSubtypeRepository.save(budgetSubtype));
         kafkaBudgetSubtypeTemplate.send("budget-subtype-response", savedBudgetSubtypeDTO);
         return savedBudgetSubtypeDTO;

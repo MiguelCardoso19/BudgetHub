@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public interface BudgetSubtypeService {
     BudgetSubtypeDTO addSubtypeToBudget(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetTypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetSubtypeNotFoundException, BudgetExceededException;
-    BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException;
+    BudgetSubtypeDTO updateBudgetSubtype(BudgetSubtypeDTO budgetSubtypeDTO) throws BudgetSubtypeNotFoundException, BudgetSubtypeAlreadyExistsException, BudgetExceededException, BudgetTypeNotFoundException;
     void deleteBudgetSubtype(UUID subtypeId) throws BudgetSubtypeNotFoundException;
     BudgetSubtypeDTO findBudgetSubtypeDTOById(UUID subtypeId) throws BudgetSubtypeNotFoundException;
     Page<BudgetSubtypeDTO> findAllBudgetSubtypes(CustomPageableDTO customPageableDTO) throws JsonProcessingException;
